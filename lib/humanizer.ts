@@ -1,89 +1,132 @@
-import { HumanizationOptions, HumanizationResult, SentenceResult, ModelProvider, ApiKeys } from './types';
-import { getSystemPrompt } from './prompts';
-import { humanizeWithGemini, humanizeWithOpenAI, humanizeWithClaude } from './models';
-import { chunkText, countWords } from './storage';
+// StealthHumanizer v2 - Multi-Pass Humanization Engine
 
-// Split text into sentences
+import { HumanizationOptions, HumanizationResult, SentenceResult } from './types';
+import { getSystemPrompt, getRehumanizePrompt } from './prompts';
+import { generateWithProvider, getProvider, generateAlternatives } from './providers';
+import { detectAI } from './detector';
+import { chunkText, countWords, addToHistory } from './storage';
+
 function splitIntoSentences(text: string): string[] {
   const sentences: string[] = [];
   let current = '';
   let i = 0;
-
+  const abbreviations = ['Mr.', 'Mrs.', 'Dr.', 'Prof.', 'Inc.', 'Ltd.', 'etc.', 'e.g.', 'i.e.', 'vs.', 'al.'];
   while (i < text.length) {
     current += text[i];
-
     if (['.', '!', '?'].includes(text[i])) {
       const beforeMatch = text.slice(Math.max(0, i - 5), i + 1);
-      const abbreviations = ['Mr.', 'Mrs.', 'Dr.', 'Prof.', 'Inc.', 'Ltd.', 'etc.', 'e.g.', 'i.e.', 'vs.'];
-
       if (!abbreviations.some(abbr => beforeMatch.endsWith(abbr))) {
-        if (text[i + 1] === '"' || text[i + 1] === "'") {
-          current += text[i + 1];
-          i++;
-        }
+        if (text[i + 1] === '"' || text[i + 1] === "'") { current += text[i + 1]; i++; }
         const trimmed = current.trim();
-        if (trimmed.length > 0) {
-          sentences.push(trimmed);
-        }
+        if (trimmed.length > 0) sentences.push(trimmed);
         current = '';
       }
     }
     i++;
   }
-
   const trimmed = current.trim();
-  if (trimmed.length > 0) {
-    sentences.push(trimmed);
-  }
-
+  if (trimmed.length > 0) sentences.push(trimmed);
   return sentences;
 }
 
 async function humanizeChunk(
   text: string,
   options: HumanizationOptions,
-  apiKey: string
+  apiKey: string,
+  customModel?: string
 ): Promise<string> {
-  const systemPrompt = getSystemPrompt(options.level, options.style);
+  const systemPrompt = getSystemPrompt(options.level, options.style, options.tone, options.customTone);
+  const providerInfo = getProvider(options.model);
+  const model = customModel || providerInfo?.defaultModel || options.model;
+  
+  const fullPrompt = options.language !== 'en'
+    ? `IMPORTANT: The text is in a language other than English. Rewrite it in the SAME language. Do not translate.\n\nText to humanize:\n\n${text}`
+    : `Text to humanize:\n\n${text}`;
 
-  switch (options.model) {
-    case 'gemini':
-      return humanizeWithGemini(apiKey, text, systemPrompt);
-    case 'openai':
-      return humanizeWithOpenAI(apiKey, text, systemPrompt);
-    case 'claude':
-      return humanizeWithClaude(apiKey, text, systemPrompt);
-  }
+  return generateWithProvider(options.model, apiKey, systemPrompt, fullPrompt, { model });
+}
+
+async function rehumanizeFlaggedSentences(
+  flaggedSentences: string[],
+  options: HumanizationOptions,
+  apiKey: string
+): Promise<string[]> {
+  const rehumanizePrompt = getRehumanizePrompt(flaggedSentences, options.level, options.style, options.tone, options.customTone);
+  const providerInfo = getProvider(options.model);
+  const model = providerInfo?.defaultModel || options.model;
+  const result = await generateWithProvider(options.model, apiKey, rehumanizePrompt, '', { model });
+  
+  return result
+    .split('\n')
+    .map(line => line.replace(/^\d+[\.\)]\s*/, '').trim())
+    .filter(line => line.length > 10);
 }
 
 export async function humanizeText(
   text: string,
   options: HumanizationOptions,
   apiKey: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (pass: number, maxPasses: number, message: string) => void
 ): Promise<HumanizationResult> {
   const inputWordCount = countWords(text);
+  const targetScore = options.targetScore || 80;
+  const maxPasses = options.level === 'ninja' ? 3 : options.level === 'aggressive' ? 2 : 1;
   const chunks = chunkText(text, 2500);
 
   let humanizedText = '';
-  const originalSentences = splitIntoSentences(text);
-
+  
+  // Pass 1: Full humanization
+  onProgress?.(1, maxPasses, 'Humanizing text...');
   for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    const humanizedChunk = await humanizeChunk(chunk, options, apiKey);
+    const humanizedChunk = await humanizeChunk(chunks[i], options, apiKey);
     humanizedText += (i > 0 ? '\n\n' : '') + humanizedChunk;
+  }
 
-    if (onProgress) {
-      onProgress(((i + 1) / chunks.length) * 100);
+  let currentText = humanizedText;
+  let passes = 1;
+
+  // Multi-pass: Re-humanize flagged sentences until target score is reached
+  if (maxPasses > 1) {
+    for (let pass = 2; pass <= maxPasses; pass++) {
+      const detection = detectAI(currentText);
+      onProgress?.(pass, maxPasses, `Pass ${pass}/${maxPasses} — Score: ${detection.score}% (target: ${targetScore}%)`);
+      
+      if (detection.score >= targetScore) break;
+
+      const flagged = detection.sentences
+        .filter(s => s.classification === 'ai' || s.classification === 'maybe')
+        .map(s => s.text);
+
+      if (flagged.length === 0) break;
+
+      try {
+        const rehumanized = await rehumanizeFlaggedSentences(flagged, options, apiKey);
+        const originalSentences = splitIntoSentences(currentText);
+        let sentenceIndex = 0;
+        const newSentences = originalSentences.map(orig => {
+          if (flagged.includes(orig) && sentenceIndex < rehumanized.length) {
+            const replacement = rehumanized[sentenceIndex];
+            sentenceIndex++;
+            return replacement;
+          }
+          return orig;
+        });
+        currentText = newSentences.join(' ');
+        passes = pass;
+      } catch {
+        break;
+      }
     }
   }
 
-  const humanizedSentences = splitIntoSentences(humanizedText);
-  const outputWordCount = countWords(humanizedText);
+  const finalText = currentText;
+  const finalDetection = detectAI(finalText);
+  const outputWordCount = countWords(finalText);
 
-  // Map sentences (best effort matching)
-  const sentenceResults: SentenceResult[] = [];
+  const originalSentences = splitIntoSentences(text);
+  const humanizedSentences = splitIntoSentences(finalText);
   const maxLen = Math.max(originalSentences.length, humanizedSentences.length);
+  const sentenceResults: SentenceResult[] = [];
 
   for (let i = 0; i < maxLen; i++) {
     sentenceResults.push({
@@ -91,18 +134,22 @@ export async function humanizeText(
       humanized: humanizedSentences[i] || '',
       alternatives: [],
       index: i,
+      detectionScore: finalDetection.sentences[i]?.score,
     });
   }
 
+  const providerInfo = getProvider(options.model);
+
   return {
     sentences: sentenceResults,
-    fullText: humanizedText,
+    fullText: finalText,
     model: options.model,
-    wordCount: {
-      input: inputWordCount,
-      output: outputWordCount,
-    },
+    modelName: providerInfo?.name || options.model,
+    wordCount: { input: inputWordCount, output: outputWordCount },
     timestamp: Date.now(),
+    passes,
+    finalScore: finalDetection.score,
+    options,
   };
 }
 
@@ -113,23 +160,20 @@ export async function getAlternatives(
   apiKey: string,
   count: number = 3
 ): Promise<string[]> {
-  const { getAlternativeRewrite } = await import('./models');
-  const alternatives: string[] = [];
+  const systemPrompt = getSystemPrompt(options.level, options.style, options.tone, options.customTone);
+  return generateAlternatives(options.model, apiKey, originalSentence, currentHumanized, systemPrompt, count);
+}
 
-  for (let i = 0; i < count; i++) {
-    try {
-      const alt = await getAlternativeRewrite(
-        options.model,
-        apiKey,
-        originalSentence,
-        currentHumanized,
-        getSystemPrompt(options.level, options.style)
-      );
-      alternatives.push(alt.trim());
-    } catch {
-      // If we fail to get an alternative, skip it
-    }
-  }
-
-  return alternatives;
+export function saveResult(result: HumanizationResult): void {
+  addToHistory({
+    originalText: result.sentences.map(s => s.original).join(' '),
+    humanizedText: result.fullText,
+    options: result.options,
+    wordCount: result.wordCount,
+    timestamp: result.timestamp,
+    model: result.model,
+    modelName: result.modelName,
+    finalScore: result.finalScore,
+    passes: result.passes,
+  });
 }

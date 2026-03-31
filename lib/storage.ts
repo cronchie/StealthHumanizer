@@ -1,4 +1,5 @@
 import { ApiKeys, HistoryEntry } from './types';
+// Note: HistoryEntry fields are optional at storage level for backwards compatibility
 
 const KEYS = {
   API_KEYS: 'stealthhumanizer_api_keys',
@@ -40,7 +41,7 @@ export function getHistory(): HistoryEntry[] {
   }
 }
 
-export function addToHistory(entry: Omit<HistoryEntry, 'id' | 'timestamp'>): HistoryEntry {
+export function addToHistory(entry: Partial<HistoryEntry> & { originalText: string; humanizedText: string }): HistoryEntry {
   const history = getHistory();
   const newEntry: HistoryEntry = {
     ...entry,

@@ -1,0 +1,508 @@
+// Unified Provider Interface for all AI providers
+// StealthHumanizer v2 - WORLD'S BEST AI Text Humanizer
+
+import { ModelProvider, Provider } from './types';
+
+// ==================== PROVIDER CONFIGURATIONS ====================
+
+export const PROVIDERS: Provider[] = [
+  {
+    id: 'gemini',
+    name: 'Google Gemini',
+    description: 'Free tier with generous limits. Recommended for most users!',
+    free: true,
+    apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+    getApiKeyUrl: 'https://aistudio.google.com/apikey',
+    docsUrl: 'https://ai.google.dev/docs',
+    defaultModel: 'gemini-1.5-flash',
+    models: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'],
+    placeholder: 'AIza...',
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI GPT-4',
+    description: 'Industry-leading AI, excellent quality for complex texts',
+    free: false,
+    apiUrl: 'https://api.openai.com/v1/chat/completions',
+    getApiKeyUrl: 'https://platform.openai.com/api-keys',
+    docsUrl: 'https://platform.openai.com/docs',
+    defaultModel: 'gpt-4o',
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    placeholder: 'sk-...',
+  },
+  {
+    id: 'claude',
+    name: 'Anthropic Claude',
+    description: 'Excellent for academic and professional writing',
+    free: false,
+    apiUrl: 'https://api.anthropic.com/v1/messages',
+    getApiKeyUrl: 'https://console.anthropic.com/',
+    docsUrl: 'https://docs.anthropic.com',
+    defaultModel: 'claude-sonnet-4-20250514',
+    models: ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307'],
+    placeholder: 'sk-ant-...',
+  },
+  {
+    id: 'groq',
+    name: 'Groq',
+    description: 'Ultra-fast inference with Llama/Mixtral models. FREE tier!',
+    free: true,
+    apiUrl: 'https://api.groq.com/openai/v1/chat/completions',
+    getApiKeyUrl: 'https://console.groq.com/keys',
+    docsUrl: 'https://console.groq.com/docs',
+    defaultModel: 'llama-3.3-70b-versatile',
+    models: ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768', 'gemma2-9b-it'],
+    placeholder: 'gsk_...',
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral AI',
+    description: 'European AI company with excellent open models. Free tier available.',
+    free: true,
+    apiUrl: 'https://api.mistral.ai/v1/chat/completions',
+    getApiKeyUrl: 'https://console.mistral.ai/',
+    docsUrl: 'https://docs.mistral.ai',
+    defaultModel: 'mistral-large-latest',
+    models: ['mistral-large-latest', 'mistral-medium', 'mistral-small', 'open-mixtral-8x22b'],
+    placeholder: '...',
+  },
+  {
+    id: 'cohere',
+    name: 'Cohere',
+    description: 'Enterprise-focused AI with strong language understanding. Free tier.',
+    free: true,
+    apiUrl: 'https://api.cohere.ai/v1/chat',
+    getApiKeyUrl: 'https://dashboard.cohere.com/api-keys',
+    docsUrl: 'https://docs.cohere.com',
+    defaultModel: 'command-r-plus',
+    models: ['command-r-plus', 'command-r', 'command', 'command-light'],
+    placeholder: '...',
+  },
+  {
+    id: 'together',
+    name: 'Together AI',
+    description: 'Access to many open-source models. Free tier available.',
+    free: true,
+    apiUrl: 'https://api.together.xyz/v1/chat/completions',
+    getApiKeyUrl: 'https://api.together.xyz/settings/api-keys',
+    docsUrl: 'https://docs.together.ai',
+    defaultModel: 'meta-llama/Llama-3-70b-chat-hf',
+    models: [
+      'meta-llama/Llama-3-70b-chat-hf',
+      'meta-llama/Llama-3-8b-chat-hf',
+      'mistralai/Mixtral-8x7B-Instruct-v0.1',
+      'Qwen/Qwen2-72B-Instruct',
+    ],
+    placeholder: '...',
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    description: 'Unified API for many models including free ones. Highly recommended!',
+    free: true,
+    apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
+    getApiKeyUrl: 'https://openrouter.ai/keys',
+    docsUrl: 'https://openrouter.ai/docs',
+    defaultModel: 'meta-llama/llama-3.1-70b-instruct',
+    models: [
+      'meta-llama/llama-3.1-70b-instruct',
+      'meta-llama/llama-3.1-8b-instruct',
+      'google/gemini-flash-1.5',
+      'anthropic/claude-3.5-sonnet',
+      'openai/gpt-4o',
+      'mistralai/mistral-large',
+    ],
+    placeholder: 'sk-or-...',
+  },
+  {
+    id: 'cerebras',
+    name: 'Cerebras',
+    description: 'Ultra-fast inference with Llama models. FREE tier!',
+    free: true,
+    apiUrl: 'https://api.cerebras.ai/v1/chat/completions',
+    getApiKeyUrl: 'https://cloud.cerebras.ai/',
+    docsUrl: 'https://inference-docs.cerebras.ai',
+    defaultModel: 'llama3.1-70b',
+    models: ['llama3.1-70b', 'llama3.1-8b'],
+    placeholder: '...',
+  },
+  {
+    id: 'deepinfra',
+    name: 'DeepInfra',
+    description: 'Cost-effective inference for many models. Free tier available.',
+    free: true,
+    apiUrl: 'https://api.deepinfra.com/v1/openai/chat/completions',
+    getApiKeyUrl: 'https://deepinfra.com/dash/api_keys',
+    docsUrl: 'https://deepinfra.com/docs',
+    defaultModel: 'meta-llama/Meta-Llama-3-70B-Instruct',
+    models: [
+      'meta-llama/Meta-Llama-3-70B-Instruct',
+      'meta-llama/Meta-Llama-3-8B-Instruct',
+      'mistralai/Mixtral-8x7B-Instruct-v0.1',
+      'Qwen/Qwen2-72B-Instruct',
+    ],
+    placeholder: '...',
+  },
+  {
+    id: 'huggingface',
+    name: 'HuggingFace',
+    description: 'Free inference API for open-source models. Rate limited.',
+    free: true,
+    apiUrl: 'https://api-inference.huggingface.co/models',
+    getApiKeyUrl: 'https://huggingface.co/settings/tokens',
+    docsUrl: 'https://huggingface.co/docs/api-inference',
+    defaultModel: 'meta-llama/Meta-Llama-3-8B-Instruct',
+    models: [
+      'meta-llama/Meta-Llama-3-8B-Instruct',
+      'mistralai/Mistral-7B-Instruct-v0.3',
+      'microsoft/Phi-3-mini-4k-instruct',
+    ],
+    placeholder: 'hf_...',
+  },
+  {
+    id: 'cloudflare',
+    name: 'Cloudflare Workers AI',
+    description: 'Edge inference with various models. Free tier.',
+    free: true,
+    apiUrl: 'https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run',
+    getApiKeyUrl: 'https://dash.cloudflare.com/',
+    docsUrl: 'https://developers.cloudflare.com/workers-ai',
+    defaultModel: '@cf/meta/llama-3-8b-instruct',
+    models: [
+      '@cf/meta/llama-3-8b-instruct',
+      '@cf/mistral/mistral-7b-instruct-v0.1',
+      '@cf/qwen/qwen1.5-14b-chat-awq',
+    ],
+    placeholder: '...',
+  },
+];
+
+// ==================== PROVIDER FUNCTIONS ====================
+
+export function getProvider(id: ModelProvider): Provider | undefined {
+  return PROVIDERS.find(p => p.id === id);
+}
+
+export function getAvailableProvider(keys: Record<string, string | undefined>): ModelProvider | null {
+  // Priority order for free providers
+  const priority: ModelProvider[] = [
+    'gemini', 'groq', 'openrouter', 'together', 'cerebras',
+    'mistral', 'cohere', 'deepinfra', 'huggingface', 'cloudflare',
+    'openai', 'claude'
+  ];
+  
+  for (const provider of priority) {
+    if (keys[provider]) return provider;
+  }
+  return null;
+}
+
+export function getProviderDisplayName(provider: ModelProvider): string {
+  const p = getProvider(provider);
+  return p?.name || provider;
+}
+
+// ==================== GENERATION FUNCTIONS ====================
+
+interface GenerationOptions {
+  temperature?: number;
+  maxTokens?: number;
+  model?: string;
+}
+
+// Generic OpenAI-compatible fetch (used by Groq, Together, OpenRouter, DeepInfra, Cerebras)
+async function openAICompatibleGenerate(
+  apiUrl: string,
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string,
+  options: GenerationOptions = {}
+): Promise<string> {
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      ...(apiUrl.includes('openrouter') && { 'HTTP-Referer': 'https://stealthhumanizer.app' }),
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: options.temperature ?? 0.9,
+      max_tokens: options.maxTokens ?? 4096,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+// Gemini API (uses SDK pattern but with fetch)
+async function geminiGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'gemini-1.5-flash',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
+      }],
+      generationConfig: {
+        temperature: options.temperature ?? 0.9,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: options.maxTokens ?? 8192,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Gemini API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// Cohere API
+async function cohereGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'command-r-plus',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const response = await fetch('https://api.cohere.ai/v1/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      preamble: systemPrompt,
+      message: userPrompt,
+      temperature: options.temperature ?? 0.9,
+      max_tokens: options.maxTokens ?? 4096,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Cohere API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.text || '';
+}
+
+// HuggingFace Inference API
+async function huggingfaceGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'meta-llama/Meta-Llama-3-8B-Instruct',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const url = `https://api-inference.huggingface.co/models/${model}`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      inputs: `${systemPrompt}\n\n${userPrompt}`,
+      parameters: {
+        temperature: options.temperature ?? 0.9,
+        max_new_tokens: options.maxTokens ?? 2048,
+        return_full_text: false,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || `HuggingFace API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
+}
+
+// Claude API
+async function claudeGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'claude-sonnet-4-20250514',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: options.maxTokens ?? 4096,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Claude API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const textBlock = data.content?.find((b: any) => b.type === 'text');
+  return textBlock?.text || '';
+}
+
+// ==================== MAIN GENERATION FUNCTION ====================
+
+export async function generateWithProvider(
+  provider: ModelProvider,
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  options: GenerationOptions = {}
+): Promise<string> {
+  const providerConfig = getProvider(provider);
+  if (!providerConfig) {
+    throw new Error(`Unknown provider: ${provider}`);
+  }
+
+  const model = options.model || providerConfig.defaultModel;
+  const fullUserPrompt = `Text to humanize:\n\n${userPrompt}`;
+
+  switch (provider) {
+    case 'gemini':
+      return geminiGenerate(apiKey, systemPrompt, userPrompt, model, options);
+    
+    case 'claude':
+      return claudeGenerate(apiKey, systemPrompt, fullUserPrompt, model, options);
+    
+    case 'cohere':
+      return cohereGenerate(apiKey, systemPrompt, fullUserPrompt, model, options);
+    
+    case 'huggingface':
+      return huggingfaceGenerate(apiKey, systemPrompt, fullUserPrompt, model, options);
+    
+    case 'openai':
+      return openAICompatibleGenerate(
+        'https://api.openai.com/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'groq':
+      return openAICompatibleGenerate(
+        'https://api.groq.com/openai/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'mistral':
+      return openAICompatibleGenerate(
+        'https://api.mistral.ai/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'together':
+      return openAICompatibleGenerate(
+        'https://api.together.xyz/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'openrouter':
+      return openAICompatibleGenerate(
+        'https://openrouter.ai/api/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'cerebras':
+      return openAICompatibleGenerate(
+        'https://api.cerebras.ai/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'deepinfra':
+      return openAICompatibleGenerate(
+        'https://api.deepinfra.com/v1/openai/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    case 'cloudflare':
+      // Cloudflare requires account_id in URL - user needs to configure this
+      // For now, use a placeholder that the user can customize
+      const accountId = apiKey.split(':')[0]; // Format: account_id:api_token
+      const apiToken = apiKey.split(':')[1] || apiKey;
+      return openAICompatibleGenerate(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+        apiToken, systemPrompt, fullUserPrompt, model, options
+      );
+    
+    default:
+      throw new Error(`Provider ${provider} not implemented`);
+  }
+}
+
+// ==================== ALTERNATIVE GENERATION ====================
+
+export async function generateAlternatives(
+  provider: ModelProvider,
+  apiKey: string,
+  originalSentence: string,
+  currentHumanized: string,
+  systemPrompt: string,
+  count: number = 3
+): Promise<string[]> {
+  const altPrompt = `${systemPrompt}
+
+ORIGINAL SENTENCE: "${originalSentence}"
+CURRENT HUMANIZED VERSION: "${currentHumanized}"
+
+Provide ${count} DIFFERENT alternative humanizations of the original sentence. Make each one noticeably different from the current version and from each other while still preserving meaning.
+
+Return ONLY the ${count} alternative sentences, one per line. No numbering, no explanations.`;
+
+  const result = await generateWithProvider(provider, apiKey, altPrompt, '', { temperature: 1.0, maxTokens: 1024 });
+  
+  return result
+    .split('\n')
+    .map(line => line.replace(/^[\d\-\*\.]+\s*/, '').trim())
+    .filter(line => line.length > 10 && line !== currentHumanized)
+    .slice(0, count);
+}
+
+// ==================== TEST API KEY ====================
+
+export async function testApiKey(provider: ModelProvider, apiKey: string): Promise<boolean> {
+  try {
+    await generateWithProvider(provider, apiKey, 'You are a test assistant.', 'Say "ok" and nothing else.', { maxTokens: 10 });
+    return true;
+  } catch {
+    return false;
+  }
+}
