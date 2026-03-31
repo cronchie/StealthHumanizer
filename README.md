@@ -2,7 +2,7 @@
 
 # 🥷 StealthHumanizer v2
 
-**The world's most comprehensive free & open-source AI text humanizer.**
+**A comprehensive free & open-source AI text humanizer.**
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-22c55e?style=for-the-badge&logo=github)](https://rudra496.github.io/StealthHumanizer/)
 [![Deploy](https://img.shields.io/badge/🚀_Deploy-Vercel-000?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/rudra496/StealthHumanizer)
@@ -13,7 +13,7 @@
 [![Forks](https://img.shields.io/github/forks/rudra496/StealthHumanizer?style=social)](https://github.com/rudra496/StealthHumanizer/network/members)
 [![Issues](https://img.shields.io/github/issues/rudra496/StealthHumanizer)](https://github.com/rudra496/StealthHumanizer/issues)
 
-Transform AI-generated text into **100% natural, undetectable human writing** using 13 AI providers, 4 rewrite levels, 13 tones, multi-pass humanization, and a 12-metric detection engine.
+Transform AI-generated text into **natural, human-like writing** using 13 AI providers, 4 rewrite levels, 13 tones, multi-pass humanization, and a 12-metric detection engine.
 
 **✅ 100% Free • No Login • No Limits • Open Source (MIT) • Private & Secure**
 
@@ -135,7 +135,7 @@ npm run dev
    - Tone: Conversational / Formal / Journalistic / etc.
    - Target: 80% → 100%
 
-4. **Click "Humanize"** — get undetectable human writing!
+4. **Click "Humanize"** — get human-like natural writing!
 
 ---
 

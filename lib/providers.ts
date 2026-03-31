@@ -1,5 +1,5 @@
 // Unified Provider Interface for all AI providers
-// StealthHumanizer v2 - WORLD'S BEST AI Text Humanizer
+// StealthHumanizer v2 - Free AI Text Humanizer
 
 import { ModelProvider, Provider } from './types';
 

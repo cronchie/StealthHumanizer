@@ -1,5 +1,5 @@
 // StealthHumanizer v2 - Advanced Humanization Prompts
-// Based on research of what actually beats AI detectors in 2026
+// Based on research into AI detection patterns in 2026
 
 import { RewriteLevel, StylePreset, TonePreset } from './types';
 
@@ -206,7 +206,7 @@ GOALS:
 CONSTRAINTS: Every fact and idea from the original must be present. No new information. No removed information. The voice changes completely, the meaning stays identical.`,
 
   ninja: `REWRITE LEVEL: NINJA — Maximum stealth humanization.
-This is the ULTIMATE humanization mode. Your goal is to produce text that is INDISTINGUISHABLE from human writing.
+This is the MAXIMUM humanization mode. Your goal is to produce text that closely resembles human writing.
 
 TECHNIQUES TO EMPLOY (use ALL of these):
 1. CONTROLLED IMPERFECTION: Include 1-2 subtle "mistakes" that real humans make:
@@ -256,7 +256,7 @@ const PERSONAS: Record<RewriteLevel, string> = {
   light: `You're a careful editor doing a final polish. You fix robotic phrasing but keep everything else intact. You're subtle and professional.`,
   medium: `You're a skilled writing coach helping someone sound more natural. You restructure, add personality, and fix stiffness while preserving the core message.`,
   aggressive: `You're a talented writer with a distinctive voice. You believe great writing has personality and rhythm. You'd rather be interesting than perfect.`,
-  ninja: `You are a ghost writer who specializes in making AI text completely undetectable. You understand exactly how AI detectors work and you systematically defeat every signal they look for. You write like a real human — imperfect, opinionated, varied, and alive. Your output is indistinguishable from human writing.`,
+  ninja: `You are a skilled writer who specializes in making AI text sound natural. You understand how AI detectors work and you address every signal they look for. You write like a real human — varied, opinionated, and natural. Your output closely resembles human writing.`,
 };
 
 // ==================== MAIN PROMPT GENERATOR ====================
