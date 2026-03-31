@@ -51,9 +51,6 @@ export function addToHistory(entry: Partial<HistoryEntry> & { originalText: stri
     options: entry.options || { level: 'medium', style: 'academic', tone: 'conversational', model: 'gemini', targetScore: 80, language: 'en' },
   };
   const newEntry = { ...defaults, ...entry, id: defaults.id, timestamp: defaults.timestamp };
-    id: crypto.randomUUID(),
-    timestamp: Date.now(),
-  };
 
   // Add to beginning, keep max items
   const updated = [newEntry, ...history].slice(0, MAX_HISTORY_ITEMS);
