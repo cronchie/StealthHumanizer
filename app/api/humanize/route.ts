@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const systemPrompt = getSystemPrompt(level, style, tone, customTone);
     const providerInfo = getProvider(model);
     const modelId = providerInfo?.defaultModel || model;
-    const maxPasses = level === 'ninja' ? 3 : level === 'aggressive' ? 2 : 1;
+    const maxPasses = level === 'ninja' ? 5 : level === 'aggressive' ? 3 : 1;
     const target = targetScore || 80;
     const chunks = chunkText(text, 2500);
 
@@ -70,12 +70,24 @@ export async function POST(request: NextRequest) {
         const rehumanizePrompt = getRehumanizePrompt(flagged, level, style, tone, customTone);
         const result = await generateWithProvider(model, apiKey, rehumanizePrompt, '', { model: modelId, temperature: 1.0 });
         const rehumanized = result.split('\n').map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(l => l.length > 10);
+        
+        // Positional matching: replace flagged sentences by their position in the full text
         const origSentences = splitSentences(currentText);
-        let idx = 0;
-        currentText = origSentences.map(orig => {
-          if (flagged.includes(orig) && idx < rehumanized.length) { idx++; return rehumanized[idx - 1]; }
+        const flaggedIndices = new Set();
+        origSentences.forEach((orig, i) => {
+          if (flagged.includes(orig)) flaggedIndices.add(i);
+        });
+        
+        let replacementIdx = 0;
+        const newSentences = origSentences.map((orig, i) => {
+          if (flaggedIndices.has(i) && replacementIdx < rehumanized.length) {
+            const replacement = rehumanized[replacementIdx];
+            replacementIdx++;
+            return replacement;
+          }
           return orig;
-        }).join(' ');
+        });
+        currentText = newSentences.join(' ');
         passes = pass;
       } catch { break; }
     }

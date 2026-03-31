@@ -70,7 +70,7 @@ export async function humanizeText(
 ): Promise<HumanizationResult> {
   const inputWordCount = countWords(text);
   const targetScore = options.targetScore || 80;
-  const maxPasses = options.level === 'ninja' ? 3 : options.level === 'aggressive' ? 2 : 1;
+  const maxPasses = options.level === 'ninja' ? 5 : options.level === 'aggressive' ? 3 : 1;
   const chunks = chunkText(text, 2500);
 
   let humanizedText = '';
