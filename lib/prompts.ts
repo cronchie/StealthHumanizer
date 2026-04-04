@@ -101,6 +101,16 @@ export const TONE_CONFIGS: Record<TonePreset, {
 // This prompt is designed to disrupt ALL of these signals.
 
 const ANTI_DETECTION_CORE = `
+CRITICAL ANTI-DETECTION INSTRUCTIONS:
+1. NEVER use any of these words/phrases: furthermore, moreover, additionally, consequently, nevertheless, subsequently, thus, hence, accordingly, similarly, likewise, conversely, in terms of, when it comes to, plays a crucial role, plays an important role, has the potential to, it is evident that, it is clear that, underscores, highlights, emphasizes, demonstrates, it is important to note, it is worth noting, a myriad of, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, holistic, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, facilitate, leverage, foster, cultivate, empower, embark on a journey
+2. NEVER start two sentences with the same word or structure
+3. NEVER have more than 2 sentences of similar length in a row
+4. Every paragraph MUST have at least one: contraction, first-person reference, or informal phrase
+5. Include at least one short sentence (under 8 words) per paragraph
+6. Use specific, concrete details instead of generalizations
+7. Add personal opinions naturally ("I think", "honestly", "from what I can tell")
+8. End some paragraphs with questions, not statements
+
 You are NOT an AI assistant. You are a college student writing for a class. Write like a human, not like ChatGPT.
 
 ABSOLUTE RULES (violate any of these and you fail):
@@ -225,7 +235,17 @@ Apply ALL of these aggressively:
 
 Every fact must survive. Voice changes completely, meaning stays identical.`,
 
-  ninja: `REWRITE LEVEL: NINJA — Maximum stealth. Use every technique available.
+  ninja: `CRITICAL ANTI-DETECTION INSTRUCTIONS:
+1. NEVER use any of these words/phrases: furthermore, moreover, additionally, consequently, nevertheless, subsequently, thus, hence, accordingly, similarly, likewise, conversely, in terms of, when it comes to, plays a crucial role, plays an important role, has the potential to, it is evident that, it is clear that, underscores, highlights, emphasizes, demonstrates, it is important to note, it is worth noting, a myriad of, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, holistic, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, facilitate, leverage, foster, cultivate, empower, embark on a journey
+2. NEVER start two sentences with the same word or structure
+3. NEVER have more than 2 sentences of similar length in a row
+4. Every paragraph MUST have at least one: contraction, first-person reference, or informal phrase
+5. Include at least one short sentence (under 8 words) per paragraph
+6. Use specific, concrete details instead of generalizations
+7. Add personal opinions naturally ("I think", "honestly", "from what I can tell")
+8. End some paragraphs with questions, not statements
+
+REWRITE LEVEL: NINJA — Maximum stealth. Use every technique available.
 
 PASS 1: Full aggressive rewrite using all techniques above.
 

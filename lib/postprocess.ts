@@ -2,7 +2,7 @@
 // This is the most important layer — pure deterministic transformations that
 // break AI statistical fingerprints without any LLM involvement.
 
-import { getRandomSynonym } from './synonyms';
+import { getRandomSafeSynonym } from './synonyms';
 import { applyCollocation, applyRandomCollocation } from './collocations';
 
 // ==================== HELPERS ====================
@@ -54,6 +54,9 @@ function isInQuotes(text: string, index: number): boolean {
 // ==================== 2a. SYNONYM SWAPPING ====================
 
 function swapSynonyms(text: string): string {
+  // Only swap the safest single-word synonyms at low probability.
+  // No context-blind replacements — only words where all synonyms
+  // preserve meaning and grammatical role.
   const words = text.split(/(\s+)/);
   const result: string[] = [];
 
@@ -65,6 +68,12 @@ function swapSynonyms(text: string): string {
       continue;
     }
 
+    // Skip all-caps words
+    if (word === word.toUpperCase()) {
+      result.push(word);
+      continue;
+    }
+
     // Check if in quotes
     const fullTextSoFar = words.slice(0, i).join('');
     if (isInQuotes(text, fullTextSoFar.length)) {
@@ -72,16 +81,16 @@ function swapSynonyms(text: string): string {
       continue;
     }
 
-    // Check if looks like proper noun
+    // Check if looks like proper noun (capitalized mid-sentence)
     const sentenceContext = words.slice(Math.max(0, i - 20), i + 20).join('');
     if (looksLikeProperNoun(word, i, sentenceContext)) {
       result.push(word);
       continue;
     }
 
-    // 30% chance to swap
-    if (chance(0.30)) {
-      const synonym = getRandomSynonym(word);
+    // 10% chance to swap (reduced from 30%)
+    if (chance(0.10)) {
+      const synonym = getRandomSafeSynonym(word);
       if (synonym) {
         // Preserve capitalization
         if (/^[A-Z]/.test(word) && /^[a-z]/.test(synonym)) {
@@ -97,6 +106,21 @@ function swapSynonyms(text: string): string {
   }
 
   return result.join('');
+}
+
+// ==================== CHARACTER SHIELD (Optional) ====================
+
+export function addInvisibleCharacters(text: string): string {
+  const invisibleChars = ['\u200B', '\u200C', '\u200D', '\uFEFF'];
+  const words = text.split(/(\s+)/);
+  return words.map((word, i) => {
+    if (i % 7 === 0 && word.trim().length > 3) {
+      const char = invisibleChars[Math.floor(Math.random() * invisibleChars.length)];
+      const pos = Math.floor(word.length * 0.6);
+      return word.slice(0, pos) + char + word.slice(pos);
+    }
+    return word;
+  }).join('');
 }
 
 // ==================== 2b. SENTENCE REORDERING ====================
@@ -393,6 +417,7 @@ function randomizeParagraphs(text: string): string {
 
 export interface PostProcessOptions {
   light?: boolean; // If true, apply lighter version (for Layer 4)
+  characterShield?: boolean; // If true, insert invisible Unicode chars to disrupt detectors
 }
 
 /**
@@ -444,6 +469,11 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
     })
     .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
     .trim();
+
+  // Optional: Character Shield
+  if (options?.characterShield) {
+    result = addInvisibleCharacters(result);
+  }
 
   return result;
 }

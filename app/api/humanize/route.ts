@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
       targetScore, language, writingSample,
       // New pipeline parameters
       postprocess: enablePostprocess = true,
+      characterShield: enableCharShield = false,
       chainModels: chainModelIds = [],
       apiKeys: extraApiKeys = {},
     } = await request.json();
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // ==================== LAYER 2: Post-Processing ====================
     if (enablePostprocess) {
-      currentText = postprocess(currentText);
+      currentText = postprocess(currentText, { characterShield: enableCharShield });
     }
 
     // ==================== LAYER 3: Multi-Model Chain ====================

@@ -939,10 +939,103 @@ export const SYNONYMS: Record<string, string[]> = {
   'young': ['early', 'new', 'fresh'],
 };
 
+// Safe synonyms only — these never change meaning or break grammar
+// when swapped context-blindly. Curated subset ~100 words.
+const SAFE_SYNONYMS: Record<string, string[]> = {
+  'actually': ['really', 'honestly', 'truthfully', 'in fact'],
+  'basically': ['essentially', 'pretty much', 'fundamentally', 'at its core'],
+  'because': ['since', 'as', 'seeing as', 'given that'],
+  'before': ['earlier', 'prior', 'leading up to', 'ahead of'],
+  'begin': ['start', 'kick off', 'get going', 'launch'],
+  'believe': ['think', 'feel', 'reckon', 'figure'],
+  'big': ['large', 'huge', 'massive', 'major'],
+  'change': ['shift', 'alter', 'modify', 'revamp'],
+  'choose': ['pick', 'select', 'opt for', 'go with'],
+  'clear': ['obvious', 'plain', 'apparent', 'straightforward'],
+  'common': ['widespread', 'typical', 'standard', 'usual'],
+  'create': ['make', 'build', 'craft', 'develop'],
+  'deal': ['handle', 'manage', 'tackle', 'address'],
+  'decide': ['choose', 'settle on', 'make up your mind', 'resolve'],
+  'different': ['distinct', 'various', 'diverse', 'unlike'],
+  'difficult': ['hard', 'tough', 'challenging', 'tricky'],
+  'end': ['finish', 'wrap up', 'close', 'conclude'],
+  'enough': ['plenty', 'sufficient', 'adequate'],
+  'especially': ['particularly', 'notably', 'specifically', 'above all'],
+  'exactly': ['precisely', 'spot-on', 'specifically'],
+  'fast': ['quick', 'rapid', 'swift', 'speedy'],
+  'finally': ['at last', 'in the end', 'after all that'],
+  'find': ['discover', 'come across', 'stumble upon', 'uncover'],
+  'first': ['initially', 'to start', 'for starters', 'first off'],
+  'focus': ['concentrate', 'zero in', 'hone in', 'center'],
+  'follow': ['track', 'pursue', 'go after', 'trail'],
+  'get': ['obtain', 'acquire', 'land', 'pick up'],
+  'give': ['provide', 'supply', 'hand over', 'deliver'],
+  'good': ['solid', 'great', 'strong', 'quality'],
+  'grow': ['expand', 'increase', 'develop', 'build up'],
+  'handle': ['deal with', 'manage', 'tackle', 'take care of'],
+  'happen': ['occur', 'take place', 'come about', 'go down'],
+  'help': ['assist', 'support', 'aid', 'lend a hand'],
+  'huge': ['massive', 'enormous', 'gigantic', 'immense'],
+  'idea': ['concept', 'thought', 'notion', 'plan'],
+  'important': ['crucial', 'key', 'vital', 'significant'],
+  'improve': ['enhance', 'boost', 'upgrade', 'better'],
+  'include': ['feature', 'incorporate', 'cover', 'involve'],
+  'interesting': ['fascinating', 'intriguing', 'compelling', 'thought-provoking'],
+  'keep': ['maintain', 'hold on to', 'retain', 'preserve'],
+  'know': ['understand', 'realize', 'be aware'],
+  'large': ['big', 'huge', 'substantial', 'sizeable'],
+  'learn': ['find out', 'pick up', 'figure out', 'discover'],
+  'look': ['appear', 'seem', 'come across as'],
+  'main': ['primary', 'chief', 'principal', 'key'],
+  'make': ['create', 'build', 'craft', 'produce'],
+  'many': ['a lot of', 'tons of', 'quite a few', 'numerous'],
+  'method': ['approach', 'technique', 'way', 'strategy'],
+  'need': ['require', 'demand', 'call for', 'want'],
+  'new': ['fresh', 'novel', 'recent', 'latest'],
+  'often': ['frequently', 'regularly', 'commonly', 'a lot'],
+  'old': ['previous', 'former', 'past', 'earlier'],
+  'part': ['piece', 'section', 'portion', 'component'],
+  'place': ['spot', 'location', 'area', 'site'],
+  'plan': ['strategy', 'scheme', 'blueprint', 'proposal'],
+  'point': ['purpose', 'objective', 'goal', 'message'],
+  'problem': ['issue', 'challenge', 'difficulty', 'headache'],
+  'quick': ['fast', 'rapid', 'swift', 'speedy'],
+  'really': ['truly', 'genuinely', 'actually', 'honestly'],
+  'reason': ['cause', 'motive', 'basis', 'rationale'],
+  'result': ['outcome', 'consequence', 'effect', 'end product'],
+  'right': ['correct', 'proper', 'appropriate', 'suitable'],
+  'see': ['notice', 'observe', 'spot', 'catch'],
+  'seem': ['appear', 'look like', 'come across as'],
+  'show': ['reveal', 'display', 'present', 'demonstrate'],
+  'simple': ['easy', 'straightforward', 'basic', 'uncomplicated'],
+  'small': ['tiny', 'little', 'modest', 'minor'],
+  'start': ['begin', 'kick off', 'launch', 'get going'],
+  'still': ['yet', 'even so', 'nevertheless'],
+  'stop': ['halt', 'cease', 'end', 'quit'],
+  'thing': ['item', 'object', 'piece', 'stuff'],
+  'think': ['believe', 'consider', 'reckon', 'feel'],
+  'try': ['attempt', 'make an effort', 'give it a shot'],
+  'turn': ['shift', 'change', 'flip', 'switch'],
+  'use': ['employ', 'apply', 'put to work', 'utilize'],
+  'very': ['extremely', 'incredibly', 'super', 'quite'],
+  'want': ['need', 'desire', 'wish', 'aim for'],
+  'way': ['method', 'approach', 'manner', 'strategy'],
+  'work': ['job', 'task', 'labor', 'effort'],
+  'worth': ['valuable', 'meaningful', 'of value'],
+};
+
 // Helper to get a random synonym for a word
 export function getRandomSynonym(word: string): string | null {
   const lower = word.toLowerCase().replace(/[^a-z]/g, '');
   const candidates = SYNONYMS[lower];
+  if (!candidates || candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+// Safe synonym lookup — only from the curated safe list
+export function getRandomSafeSynonym(word: string): string | null {
+  const lower = word.toLowerCase().replace(/[^a-z]/g, '');
+  const candidates = SAFE_SYNONYMS[lower];
   if (!candidates || candidates.length === 0) return null;
   return candidates[Math.floor(Math.random() * candidates.length)];
 }

@@ -110,6 +110,7 @@ export default function Humanizer({ showToast }: HumanizerProps) {
 
   // Pipeline options
   const [enablePostprocess, setEnablePostprocess] = useState(true);
+  const [characterShield, setCharacterShield] = useState(false);
   const [enableChain, setEnableChain] = useState(false);
   const [selectedChainModels, setSelectedChainModels] = useState<string[]>([]);
   const [pipelineStep, setPipelineStep] = useState('');
@@ -167,6 +168,7 @@ export default function Humanizer({ showToast }: HumanizerProps) {
           text: inputText, level, style, tone, customTone,
           model: providerId, apiKey, targetScore, language, writingSample,
           postprocess: enablePostprocess,
+          characterShield,
           chainModels: enableChain ? selectedChainModels : [],
           apiKeys: allApiKeys,
         }),
@@ -490,6 +492,20 @@ export default function Humanizer({ showToast }: HumanizerProps) {
                   </button>
                 </div>
 
+                {/* Character Shield Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-dark-200">🛡️ Character Shield</p>
+                    <p className="text-xs text-dark-500">Insert invisible Unicode chars to disrupt AI detector tokenization</p>
+                  </div>
+                  <button
+                    onClick={() => setCharacterShield(!characterShield)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${characterShield ? 'bg-accent-500' : 'bg-dark-600'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${characterShield ? 'translate-x-5' : ''}`} />
+                  </button>
+                </div>
+
                 {/* Multi-Model Chain Toggle */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -497,7 +513,14 @@ export default function Humanizer({ showToast }: HumanizerProps) {
                     <p className="text-xs text-dark-500">Pass text through multiple AI models to mix fingerprints</p>
                   </div>
                   <button
-                    onClick={() => setEnableChain(!enableChain)}
+                    onClick={() => {
+                      const newVal = !enableChain;
+                      setEnableChain(newVal);
+                      // Default to free models when enabling
+                      if (newVal && selectedChainModels.length === 0) {
+                        setSelectedChainModels(['gemini', 'groq']);
+                      }
+                    }}
                     className={`relative w-11 h-6 rounded-full transition-colors ${enableChain ? 'bg-accent-500' : 'bg-dark-600'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${enableChain ? 'translate-x-5' : ''}`} />
@@ -509,7 +532,7 @@ export default function Humanizer({ showToast }: HumanizerProps) {
                   <div className="space-y-2 animate-fade-in">
                     <p className="text-xs text-dark-400">Select models to chain through (requires API keys in Settings):</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {PROVIDERS.filter(p => p.free || ['openai', 'claude'].includes(p.id)).map(p => (
+                      {PROVIDERS.filter(p => p.free).map(p => (
                         <label key={p.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors text-xs ${
                           selectedChainModels.includes(p.id)
                             ? 'bg-accent-500/20 border border-accent-500/50 text-accent-300'
