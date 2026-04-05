@@ -35,11 +35,13 @@ async function humanizeChunk(
   apiKey: string,
   customModel?: string
 ): Promise<string> {
-  const systemPrompt = getSystemPrompt(options.level, options.style, options.tone, options.customTone);
+  const systemPrompt = getSystemPrompt(options.level, options.style, options.tone, options.customTone, undefined, options.language);
   const providerInfo = getProvider(options.model);
   const model = customModel || providerInfo?.defaultModel || options.model;
   
-  const fullPrompt = options.language !== 'en'
+  const fullPrompt = options.language === 'zh-CN' || options.language === 'zh-TW'
+    ? `待改写的文本：\n\n${text}`
+    : options.language !== 'en'
     ? `IMPORTANT: The text is in a language other than English. Rewrite it in the SAME language. Do not translate.\n\nText to humanize:\n\n${text}`
     : `Text to humanize:\n\n${text}`;
 

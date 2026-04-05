@@ -234,6 +234,26 @@ StealthHumanizer/
     └── LICENSE                  # MIT License
 ```
 
+### 🌏 Chinese Language Support
+
+StealthHumanizer now includes **detector-aware transformations** specifically designed for Chinese AI detection systems:
+
+| Feature | Details |
+|---------|---------|
+| **Simplified Chinese (zh-CN)** | Targets CNKI AIGC, Wanfang, VIP detection systems |
+| **Traditional Chinese (zh-TW)** | Adapts to Taiwan/HK writing conventions |
+| **Two Modes** | General natural rewrite + Academic rewrite |
+| **Structural Variations** | 把/被 constructions, topic-comment reordering, idiom insertion |
+| **Connector Density Control** | Chinese detectors heavily weight connector frequency |
+| **Burstiness Engineering** | Chinese-optimized sentence length variation |
+
+**What makes Chinese detection different:**
+- Chinese detectors flag connector density (因此/同时/此外), sentence-length regularity, balanced clause structures, and repeated rhetorical templates
+- Traditional Chinese requires different discourse patterns — not just script conversion
+- Academic mode preserves terminology while reducing AIGC fingerprints
+
+> 💡 Inspired by the [humanize-chinese](https://github.com/nicholasgasior/humanize-chinese) open-source project.
+
 ---
 
 ## 🗺️ Roadmap
