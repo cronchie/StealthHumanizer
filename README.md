@@ -4,7 +4,7 @@
 
 **A comprehensive free & open-source AI text humanizer.**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-22c55e?style=for-the-badge&logo=github)](https://rudra496.github.io/StealthHumanizer/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Vercel-22c55e?style=for-the-badge&logo=vercel)](https://stealthhumanizer.vercel.app/)
 [![Deploy](https://img.shields.io/badge/🚀_Deploy-Vercel-000?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/rudra496/StealthHumanizer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)

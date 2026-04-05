@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (countWords(text) > 10000) return NextResponse.json({ error: 'Exceeds 10,000 word limit' }, { status: 400 });
 
     const params = LEVEL_PARAMS[level as RewriteLevel];
-    const systemPrompt = getSystemPrompt(level, style, tone, customTone, writingSample);
+    const systemPrompt = getSystemPrompt(level, style, tone, customTone, writingSample, language);
     const providerInfo = getProvider(model);
     const modelId = providerInfo?.defaultModel || model;
 
@@ -84,15 +84,17 @@ export async function POST(request: NextRequest) {
     const target = targetScore || 80;
     const chunks = chunkText(text, 2500);
 
+    // Language note for non-English/non-Chinese text (Chinese is handled by getSystemPrompt)
     let langNote = '';
-    if (language && language !== 'en' && language !== 'auto') {
+    if (language && language !== 'en' && language !== 'auto' && language !== 'zh-CN' && language !== 'zh-TW') {
       langNote = '\n\nIMPORTANT: The text is in a language other than English. Rewrite it in the SAME language. Do NOT translate.';
     }
 
     // ==================== LAYER 1: LLM Rewrite ====================
     let humanizedText = '';
     for (let i = 0; i < chunks.length; i++) {
-      const result = await generateWithProvider(model, apiKey, systemPrompt, chunks[i], {
+      const chunkPrompt = chunks[i] + langNote;
+      const result = await generateWithProvider(model, apiKey, systemPrompt, chunkPrompt, {
         model: modelId,
         temperature: params.temperature,
         topP: params.topP,
