@@ -113,28 +113,28 @@ Rewrite this text to sound human. Rules:
 // ==================== LEVEL-SPECIFIC INSTRUCTIONS ====================
 
 const LEVEL_INSTRUCTIONS: Record<RewriteLevel, string> = {
-  light: `REWRITE LEVEL: LIGHT
-Make subtle changes — add contractions, replace a few formal words, vary sentence lengths slightly. Keep the same structure and meaning. Just nudge it toward human.`,
+  light: `LEVEL: Light — Minimal changes.
+Only fix obvious AI patterns. Swap 2-3 formal words for casual ones. Add contractions. Keep 90% of the original text intact. If it already sounds natural, change almost nothing.`,
 
-  medium: `REWRITE LEVEL: MEDIUM
-Restructure sentences, vary paragraph lengths, add personal asides, replace formal transitions. More noticeable humanization while preserving all facts.`,
+  medium: `LEVEL: Medium — Moderate rewrite.
+Rearrange 30-40% of sentences for variety. Add personal voice in a few spots. Replace transitions with casual alternatives. Keep the core structure but make it feel like a real person wrote it.`,
 
-  aggressive: `REWRITE LEVEL: AGGRESSIVE
-Rewrite with strong personal voice. Extreme sentence length variation. Natural tangents and topic drift. Remove every AI-sounding phrase. The voice changes completely but all facts survive.`,
+  aggressive: `LEVEL: Aggressive — Strong rewrite.
+Rewrite most sentences in your own words. Strong personal voice throughout. Vary sentence lengths dramatically. Remove all formal transitions. The facts stay, but the voice is completely different — like a student explaining it to a friend.`,
 
-  ninja: `REWRITE LEVEL: NINJA — Maximum stealth.
-Full aggressive rewrite, then self-check: find anything that still sounds polished or AI-like and roughen it. Reorder information non-linearly. End with something open-ended, not a conclusion.`,
+  ninja: `LEVEL: Ninja — Maximum stealth.
+Rewrite everything. The output should read like a blog post by someone passionate about the topic, not an essay. Short paragraphs. One-sentence paragraphs for emphasis. Occasional rhetorical questions. End with a thought, not a conclusion. No paragraph should start with "The" or "This".`,
 };
 
 // ==================== STYLE-SPECIFIC RULES ====================
 
 const STYLE_OVERLAYS: Record<StylePreset, string> = {
-  humanize: `Style: General humanization. Apply all anti-detection techniques equally. Write like a college student.`,
-  academic: `Style: Academic but natural. You're a student writing a paper, not publishing in Nature. Use "I" when arguing. Reference ideas conversationally: "Smith (2023) makes a good point about this" not "According to the comprehensive research conducted by Smith (2023)". Vary paragraph lengths. End paragraphs with interesting thoughts, not summaries.`,
-  casual: `Style: Super casual, like explaining to a friend. Use contractions constantly. "Honestly," "basically," "I mean," "you know," "kind of." Sentence fragments are fine. Start paragraphs with "So" or "Anyway." Be opinionated.`,
-  professional: `Style: Professional but human. Clear and direct, not corporate-robot. Use "we" and "our." Short paragraphs. Specific numbers over vague claims. No buzzwords unless genuinely useful. End sections with clear takeaways.`,
-  creative: `Style: Creative and vivid. Sensory details, fresh metaphors, varied rhythm like music. Show don't tell. Unexpected word choices. One-word paragraphs for effect. The writing should have a distinctive voice.`,
-  technical: `Style: Technical but accessible. Precise terms, concrete examples, clear definitions on first use. "You" to address the reader. Step-by-step explanations. Balance accuracy with readability.`,
+  humanize: `Style: General. Write like a college student who knows the topic but isn't trying to impress anyone.`,
+  academic: `Style: Academic but real. Like a student paper, not a journal article. Use "I" sometimes. Cite casually: "Smith (2023) makes a good point about this." Don't over-explain.`,
+  casual: `Style: Super casual. Like texting a friend who asked about this. Contractions everywhere. "Honestly," "basically," "kind of." Sentence fragments are fine.`,
+  professional: `Style: Professional but real person. Direct, specific, no buzzwords. Short paragraphs. "We found" not "It was discovered."`,
+  creative: `Style: Vivid and engaging. Sensory details, fresh comparisons. Unexpected word choices. The writing should feel alive.`,
+  technical: `Style: Technical but human. Precise terms, concrete examples. "You'll see" not "It can be observed." Step-by-step.`,
 };
 
 // ==================== HUMAN WRITING SAMPLE HANDLING ====================
@@ -164,10 +164,10 @@ IMPORTANT: Match this person's writing patterns. If they write short punchy sent
 // ==================== PERSONA INJECTION ====================
 
 const PERSONAS: Record<RewriteLevel, string> = {
-  light: `You're doing a quick editorial pass. Just fix the most obvious AI patterns. Subtle changes only.`,
-  medium: `You're a writing coach making the text sound natural and human. You restructure for variety and add personality.`,
-  aggressive: `You're a talented, slightly quirky writer with strong opinions. You write with personality, rhythm, and occasional imperfections. You'd rather be interesting than perfect.`,
-  ninja: `You're a ghostwriter who specializes in making AI text completely undetectable. You understand statistical fingerprinting. You write with such authentic human patterns that no detector can distinguish your output from genuine human writing.`,
+  light: `You're a student doing a quick proofread. Fix obvious AI patterns. Subtle changes only.`,
+  medium: `You're rewriting this in your own words. Make it sound natural and human.`,
+  aggressive: `You're a blogger rewriting this for your audience. Strong voice, interesting, not academic.`,
+  ninja: `You're making this completely undetectable. Write like a real person — not polished, not perfect, just genuinely human.`,
 };
 
 // ==================== MAIN PROMPT GENERATOR ====================
