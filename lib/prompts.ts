@@ -101,172 +101,29 @@ export const TONE_CONFIGS: Record<TonePreset, {
 // This prompt is designed to disrupt ALL of these signals.
 
 const ANTI_DETECTION_CORE = `
-CRITICAL ANTI-DETECTION INSTRUCTIONS:
-1. NEVER use any of these words/phrases: furthermore, moreover, additionally, consequently, nevertheless, subsequently, thus, hence, accordingly, similarly, likewise, conversely, in terms of, when it comes to, plays a crucial role, plays an important role, has the potential to, it is evident that, it is clear that, underscores, highlights, emphasizes, demonstrates, it is important to note, it is worth noting, a myriad of, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, holistic, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, facilitate, leverage, foster, cultivate, empower, embark on a journey
-2. NEVER start two sentences with the same word or structure
-3. NEVER have more than 2 sentences of similar length in a row
-4. Every paragraph MUST have at least one: contraction, first-person reference, or informal phrase
-5. Include at least one short sentence (under 8 words) per paragraph
-6. Use specific, concrete details instead of generalizations
-7. Add personal opinions naturally ("I think", "honestly", "from what I can tell")
-8. End some paragraphs with questions, not statements
-
-You are NOT an AI assistant. You are a college student writing for a class. Write like a human, not like ChatGPT.
-
-ABSOLUTE RULES (violate any of these and you fail):
-- NEVER use: "furthermore", "moreover", "additionally", "in conclusion", "it is important to note", "it should be noted",
-  "it is worth noting", "it is worth mentioning", "delve", "delve into", "tapestry", "realm", "landscape",
-  "in today's world", "in this day and age", "in the modern era", "in the contemporary landscape",
-  "navigating", "underscore", "plays a crucial role", "plays a pivotal role", "has the potential to",
-  "it is evident that", "it is clear that", "at the end of the day", "first and foremost", "last but not least",
-  "it is crucial", "it is essential", "it is imperative", "embark on a journey", "sheds light on",
-  "a myriad of", "multifaceted", "robust", "seamless", "synergy", "paradigm shift", "holistic",
-  "groundbreaking", "transformative", "unprecedented", "comprehensive",
-  "demonstrates the", "illustrates the", "showcases the", "brings to the forefront"
-- NEVER start two sentences in a paragraph with the same word or same structure
-- NEVER end a paragraph with a summary or wrap-up sentence
-- NEVER use exactly the same sentence length twice in a row — vary by at least 5 words
-- NEVER stay rigidly on topic — allow natural tangents and associations`;
-
-const BURSTINESS_ENGINE = `
-BURSTINESS ENGINEERING (this is the #1 detector-defeating technique):
-- Create EXTREME sentence length variation. Pattern: short → long → medium → very short → very long → short
-- Minimum: at least one 3-5 word sentence per paragraph
-- Minimum: at least one 25+ word sentence per paragraph  
-- Mix sentence TYPES aggressively: declarative, interrogative, imperative, exclamatory, fragments
-- Example pattern for one paragraph: "Right." (1 word) → 30-word flowing sentence → "So that's interesting." (4 words) → 25-word analytical sentence → question → 15-word response
-- NEVER have two sentences within 5 words of each other in length, consecutively`;
-
-const PERPLEXITY_INJECTION = `
-PERPLEXITY INJECTION (make word choices unpredictable):
-- Replace common collocations with unusual but correct alternatives:
-  "make a decision" → "land on something" or "figure out which way to go"
-  "important role" → "kind of a big deal actually" or "matters more than people think"
-  "significant impact" → "really changes things" or "shifts everything"
-  "widely used" → "pretty much everywhere now" or "you see it all over"
-  "research shows" → "if you look at the numbers" or "the data's pretty clear on this"
-- Use concrete specific nouns instead of vague ones:
-  "various industries" → "journalism, marketing, even entertainment"
-  "many experts" → "people like Sarah Chen at MIT, or Marcus Webb who studies this stuff"
-- Use idiomatic expressions that AI rarely generates: "hit the ground running", "the whole nine yards",
-  "goes without saying" (sparingly), "at the end of the day" (only in dialogue/casual)
-- Occasionally use a slightly unusual but perfectly valid word`;
-
-const STRUCTURAL_DISRUPTION = `
-STRUCTURAL DISRUPTION (break AI paragraph patterns):
-- Paragraphs should vary wildly in length: some 1 sentence, some 2, some 6-8
-- Never more than 2 paragraphs of similar length in a row
-- Start paragraphs with: conjunctions (And, But, So, Because), questions, one-word openers
-- Occasional one-sentence paragraphs for emphasis
-- Occasional very short 2-sentence paragraphs that feel conversational
-- Let ideas flow non-linearly: mention a result, then explain what led to it, then add an aside
-- Transition between ideas like a human thinking out loud: "OK so," "Anyway," "Here's where it gets interesting," "So basically"
-- Don't be afraid to break a paragraph mid-thought and continue in the next one`;
-
-const HUMAN_VOICE = `
-HUMAN VOICE INJECTION:
-- Write as if explaining to a specific person — a classmate, a friend, a professor you're comfortable with
-- Include genuine opinions and takes: "I think this is actually pretty concerning" or "this part's kind of cool honestly"
-- Show uncertainty naturally: "I'm not totally sure about this, but..." or "my guess would be..."
-- Add personal asides in parentheses (like I'm doing here) or em-dashes—like this
-- Use "I" and "you" naturally throughout, even in academic contexts
-- Humans have specific, sometimes quirky knowledge — reference a specific paper, person, or example by name
-- Show the thinking process: "So the way I see it..." or "This took me a while to wrap my head around, but..."
-- Include at least one moment where you slightly contradict or qualify what you just said
-- Natural topic drift: go slightly off-topic for a sentence then come back`;
-
-const CONTROLLED_IMPERFECTION = `
-CONTROLLED IMPERFECTION (humans aren't perfect writers):
-- Include 1-2 subtle "imperfections" per 300 words:
-  - A sentence that's slightly awkward but grammatically OK
-  - A slightly ambiguous pronoun reference (humans do this constantly)
-  - A run-on sentence held together by dashes or commas
-  - A sentence that trails off with "..." or "or something like that"
-  - Repetition for emphasis (repeating a key word within a paragraph)
-  - An opinion stated as if it were fact (humans blur this line)
-  - A slightly informal word in a formal context, or vice versa
-- Do NOT add actual grammar errors — the imperfections should be stylistic, not mechanical
-- These make the text feel AUTHENTIC, not broken`;
+Rewrite this text to sound human. Rules:
+1. Don't use: furthermore, moreover, additionally, consequently, in conclusion, it is important to note, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented
+2. Vary sentence lengths — mix short (under 10 words) and long (25+ words)
+3. Start each paragraph differently — use "And", "But", "So", questions, or one-word openers
+4. Use contractions naturally (it's, don't, can't, wouldn't've)
+5. Include personal voice: "I think", "honestly", "from what I can tell"
+6. Don't end paragraphs with summary sentences
+7. Let ideas flow naturally — slight tangents are fine`;
 
 // ==================== LEVEL-SPECIFIC INSTRUCTIONS ====================
 
 const LEVEL_INSTRUCTIONS: Record<RewriteLevel, string> = {
-  light: `REWRITE LEVEL: LIGHT — Subtle surgical changes.
+  light: `REWRITE LEVEL: LIGHT
+Make subtle changes — add contractions, replace a few formal words, vary sentence lengths slightly. Keep the same structure and meaning. Just nudge it toward human.`,
 
-GOALS:
-- Add contractions (it's, don't, can't, wouldn't've, could've)
-- Replace 3-4 formal words with common equivalents
-- Break the most uniform sentence into two different-length sentences  
-- Add one parenthetical aside
-- Start one paragraph with a conjunction
-- Remove any "furthermore/moreover/additionally" style transitions
+  medium: `REWRITE LEVEL: MEDIUM
+Restructure sentences, vary paragraph lengths, add personal asides, replace formal transitions. More noticeable humanization while preserving all facts.`,
 
-Keep same structure, same paragraphs, same meaning. Just nudge it toward human.`,
+  aggressive: `REWRITE LEVEL: AGGRESSIVE
+Rewrite with strong personal voice. Extreme sentence length variation. Natural tangents and topic drift. Remove every AI-sounding phrase. The voice changes completely but all facts survive.`,
 
-  medium: `REWRITE LEVEL: MEDIUM — Noticeable humanization with structural changes.
-
-GOALS:
-- Apply ALL burstiness engineering: vary sentence lengths dramatically
-- Apply ALL perplexity injection: replace predictable collocations
-- Restructure at least 3 sentences — change opening words, combine or split
-- Add 2-3 personal asides or opinions per paragraph  
-- Break at least 2 paragraphs into different lengths than original
-- Replace ALL formal transitions
-- Start at least half the paragraphs differently than original
-- Include at least one rhetorical question
-- Add one parenthetical aside per paragraph
-- One slightly imperfect sentence per paragraph (stylistic, not grammatical)
-
-Preserve all facts. Structure can change moderately. Meaning stays identical.`,
-
-  aggressive: `REWRITE LEVEL: AGGRESSIVE — Complete rewrite using all anti-detection techniques.
-
-Apply ALL of these aggressively:
-- BURSTINESS ENGINEERING: Extreme sentence length variation in every paragraph
-- PERPLEXITY INJECTION: Replace all predictable word choices with unusual-but-correct ones
-- STRUCTURAL DISRUPTION: Wildly vary paragraph lengths, non-linear flow
-- HUMAN VOICE: Strong personal opinions, thinking-out-loud style, genuine takes
-- CONTROLLED IMPERFECTION: 2-3 stylistic imperfections per paragraph
-- Remove EVERY AI marker phrase. Every single one.
-- Rewrite as if you're a passionate student who actually cares about this topic
-- Add specific names, examples, and concrete details wherever possible
-- Include natural tangents and topic drift
-- Use informal transitions: "OK so", "Anyway", "Here's the thing"
-
-Every fact must survive. Voice changes completely, meaning stays identical.`,
-
-  ninja: `CRITICAL ANTI-DETECTION INSTRUCTIONS:
-1. NEVER use any of these words/phrases: furthermore, moreover, additionally, consequently, nevertheless, subsequently, thus, hence, accordingly, similarly, likewise, conversely, in terms of, when it comes to, plays a crucial role, plays an important role, has the potential to, it is evident that, it is clear that, underscores, highlights, emphasizes, demonstrates, it is important to note, it is worth noting, a myriad of, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, holistic, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, facilitate, leverage, foster, cultivate, empower, embark on a journey
-2. NEVER start two sentences with the same word or structure
-3. NEVER have more than 2 sentences of similar length in a row
-4. Every paragraph MUST have at least one: contraction, first-person reference, or informal phrase
-5. Include at least one short sentence (under 8 words) per paragraph
-6. Use specific, concrete details instead of generalizations
-7. Add personal opinions naturally ("I think", "honestly", "from what I can tell")
-8. End some paragraphs with questions, not statements
-
-REWRITE LEVEL: NINJA — Maximum stealth. Use every technique available.
-
-PASS 1: Full aggressive rewrite using all techniques above.
-
-Then do a SELF-CHECK: read what you wrote and identify anything that still sounds AI-generated.
-Common remaining AI patterns to fix:
-- Any sentence that sounds "polished" or "smooth" — roughen it
-- Any place where the flow is TOO perfect — add a small stumble
-- Any remaining formal vocabulary — replace with casual equivalent  
-- Any sentence that starts the same way as a nearby sentence — restructure it
-- Any paragraph that wraps up too neatly — cut the concluding sentence or trail off
-
-PASS 2+: Fix every flagged sentence. Prioritize burstiness and perplexity.
-
-Additional ninja techniques:
-- Reorder information non-linearly: conclusion first, then build back to it
-- Add a brief hypothetical or analogy that's slightly unexpected
-- Include one moment of genuine uncertainty or hedging
-- Reference something specific and real (a study, a person, a place)
-- End the final paragraph with something open-ended — NOT a conclusion
-
-The text should read like a smart but imperfect human wrote it at 2am. Authentic, varied, opinionated.`,
+  ninja: `REWRITE LEVEL: NINJA — Maximum stealth.
+Full aggressive rewrite, then self-check: find anything that still sounds polished or AI-like and roughen it. Reorder information non-linearly. End with something open-ended, not a conclusion.`,
 };
 
 // ==================== STYLE-SPECIFIC RULES ====================
@@ -341,11 +198,6 @@ Personality: ${toneConfig.personalityTraits.join(', ')}`
   return `${PERSONAS[level]}
 
 ${ANTI_DETECTION_CORE}
-${level !== 'light' ? BURSTINESS_ENGINE : ''}
-${level !== 'light' ? PERPLEXITY_INJECTION : ''}
-${level !== 'light' ? STRUCTURAL_DISRUPTION : ''}
-${level !== 'light' ? HUMAN_VOICE : ''}
-${level !== 'light' && level !== 'medium' ? CONTROLLED_IMPERFECTION : ''}
 
 ${STYLE_OVERLAYS[style]}
 ${toneSection}
@@ -353,50 +205,29 @@ ${sampleSection}
 
 ${LEVEL_INSTRUCTIONS[level]}
 
-MEANING PRESERVATION RULES:
-1. Every fact, data point, name, date, and idea from the original MUST appear in the output
-2. Do NOT add new information not present in the original
-3. Do NOT remove key information
-4. Output length should be within ±20% of input length
-
-Return ONLY the humanized text. No explanations, no notes, no preamble.`;
+Return ONLY the rewritten text.`;
 }
 
 // ==================== SELF-CHECK PROMPT ====================
 
 export function getSelfCheckPrompt(): string {
-  return `You are an AI text detector. Analyze this text and find anything that sounds AI-generated.
-
-Check for:
-- Predictable word choices or collocations (low perplexity)
-- Uniform sentence lengths (low burstiness)  
-- AI-typical phrases ("furthermore", "moreover", "it is important to note", etc.)
-- Too-perfect grammar or flow
-- Rigid topic adherence with no natural drift
-- Paragraphs that all feel the same length
-- Any sentence that starts with "The [noun]" pattern
-- Overly smooth transitions between ideas
+  return `Analyze this text for AI-sounding patterns. Look for: predictable word choices, uniform sentence lengths, AI-typical phrases, overly smooth flow.
 
 TEXT:
 """
 {TEXT}
 """
 
-Return JSON: {"score": <0-100 human percentage>, "issues": ["specific phrase or pattern that sounds AI"], "flaggedSentences": ["full sentences to rewrite"]}`;
+Return JSON: {"score": <0-100 human percentage>, "issues": ["specific phrase that sounds AI"], "flaggedSentences": ["full sentences to rewrite"]}`;
 }
 
 export function getFixPrompt(flaggedIssues: string[]): string {
-  return `Fix these AI-sounding patterns in the text. For each issue, make the text more human:
-- Replace predictable words with unexpected-but-correct alternatives
-- Break uniform sentence lengths — add a short sentence or a long one nearby
-- Remove AI transitions and replace with human ones ("so", "anyway", "basically")
-- Add a natural aside, opinion, or slight imperfection
-- Roughen anything that sounds "too smooth"
+  return `Fix these AI-sounding patterns. Replace predictable words, vary sentence lengths, add natural voice.
 
-ISSUES TO FIX:
+ISSUES:
 ${flaggedIssues.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
-Return ONLY the rewritten text. Preserve all meaning.`;
+Return ONLY the rewritten text.`;
 }
 
 // ==================== RE-HUMANIZATION PROMPT ====================
@@ -689,7 +520,7 @@ ${CHINESE_LEVEL_INSTRUCTIONS[level]}
 // Temperature and top_p settings per level
 export const LEVEL_PARAMS: Record<RewriteLevel, { temperature: number; topP: number }> = {
   light: { temperature: 0.7, topP: 0.9 },
-  medium: { temperature: 0.85, topP: 0.92 },
-  aggressive: { temperature: 0.95, topP: 0.95 },
-  ninja: { temperature: 1.0, topP: 0.98 },
+  medium: { temperature: 0.75, topP: 0.92 },
+  aggressive: { temperature: 0.8, topP: 0.95 },
+  ninja: { temperature: 0.85, topP: 0.98 },
 };

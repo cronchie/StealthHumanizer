@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       text, level, style, tone, customTone, model, apiKey,
       targetScore, language, writingSample,
       // New pipeline parameters
-      postprocess: enablePostprocess = true,
+      postprocess: enablePostprocess = false,
       characterShield: enableCharShield = false,
       chainModels: chainModelIds = [],
       apiKeys: extraApiKeys = {},
@@ -141,7 +141,10 @@ export async function POST(request: NextRequest) {
       currentText = postprocess(currentText, { light: true });
     }
 
-    // Multi-pass self-check loop (only if not chaining, to save time)
+    // NOTE: Self-check loop disabled — multi-pass LLM self-checking adds more AI fingerprints
+    // with each pass, making text MORE detectable, not less. Single-pass rewrite is more effective.
+    // The code below is preserved but skipped.
+    /*
     if (chainModelIds.length === 0) {
       for (let pass = 2; pass <= maxPasses; pass++) {
         const check = await llmSelfCheck(model, apiKey, currentText);
@@ -168,6 +171,7 @@ export async function POST(request: NextRequest) {
         } catch { break; }
       }
     }
+    */
 
     const finalText = currentText;
     const finalDetection = detectAI(finalText);

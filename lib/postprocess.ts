@@ -218,19 +218,6 @@ function addPunctuationNoise(text: string): string {
     }
   }
 
-  // 2% chance: capitalize occasional nouns that don't need it
-  if (chance(0.02)) {
-    const words = result.split(/\s+/);
-    const nouns = ['technology', 'science', 'research', 'data', 'system', 'method', 'process', 'approach', 'strategy', 'result', 'impact', 'effect', 'change', 'growth', 'development', 'analysis', 'study', 'report', 'finding', 'discovery'];
-    const candidates = words.map((w, i) => ({ word: w, index: i }))
-      .filter(({ word }) => nouns.includes(word.toLowerCase()));
-    if (candidates.length > 0) {
-      const pick = randomPick(candidates);
-      words[pick.index] = words[pick.index].charAt(0).toUpperCase() + words[pick.index].slice(1);
-      result = words.join(' ');
-    }
-  }
-
   // Contractions expansion/randomization
   if (chance(0.15)) {
     const contraction = randomPick(CONTRACTIONS);
@@ -334,17 +321,6 @@ function manipulateSentenceLengths(text: string): string {
         result.push(first + '. ' + secondCapitalized);
         continue;
       }
-    }
-
-    // Add filler phrase to medium-length sentences with 10% chance
-    if (wc >= 5 && wc <= 20 && chance(0.10)) {
-      const filler = randomPick(FILLER_PHRASES);
-      // Insert after the first few words
-      const firstWords = words.slice(0, Math.min(3, Math.floor(wc / 3)));
-      const rest = words.slice(firstWords.length);
-      const newSentence = firstWords.join(' ') + ' ' + filler + ' ' + rest.join(' ');
-      result.push(newSentence);
-      continue;
     }
 
     result.push(sentence);
