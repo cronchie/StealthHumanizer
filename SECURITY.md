@@ -3,39 +3,45 @@
 ## Supported Versions
 
 | Version | Supported |
-|---------|-----------|
-| 2.x     | ✅ Active |
+| --- | --- |
+| 2.x | ✅ |
+| < 2.0 | ❌ |
 
-## Reporting a Vulnerability
+## Responsible Disclosure
 
-Since this is a client-side application that runs entirely in the browser:
+Please do **not** open public issues for security vulnerabilities.
 
-1. **API keys** are stored only in the user's `localStorage` — never on any server
-2. **No server-side data storage** — no databases, no user accounts
-3. **No authentication system** — nothing to breach
-4. **No server-side secrets** — no API keys in code
+Use one of the following channels:
 
-## Security Features
+1. GitHub Security Advisory (preferred):
+   - https://github.com/rudra496/StealthHumanizer/security/advisories/new
+2. Maintainer contact through repository support channels in [SUPPORT.md](./SUPPORT.md)
 
-- All provider API calls use HTTPS
-- API keys are masked in the UI
-- No third-party tracking or analytics
-- CSP-ready (can be deployed with strict Content Security Policy)
-- No `eval()` or `innerHTML` with user content
-- Input sanitization on all text fields
+Include:
 
-## Scope
+- Clear vulnerability description
+- Reproduction steps or proof of concept
+- Impact assessment
+- Suggested remediation (if available)
 
-Vulnerabilities in this project would primarily relate to:
+## Security Model Highlights
 
-- **XSS** in the GitHub Pages static version
-- **API key exposure** if keys are accidentally committed
-- **Dependency vulnerabilities** in npm packages
+- User provider keys are stored client-side in browser storage.
+- No intentional server-side persistence of user prompts/outputs.
+- HTTPS-based provider communication is expected for deployments.
+- Dependency updates are monitored via Dependabot and CI checks.
 
-If you find a vulnerability, please open a [security advisory](https://github.com/rudra496/StealthHumanizer/security/advisories/new) rather than a public issue.
+## Scope Examples
 
-## Policy
+In-scope classes of issues include:
 
-- Do not publicly disclose vulnerabilities before they are fixed
-- Provide a clear description of the issue and reproduction steps
-- Allow reasonable time for the fix to be merged
+- XSS risks in rendered content paths
+- API key exposure risks
+- Dependency vulnerabilities with exploitable impact
+- Privilege or secret leakage in CI/CD configuration
+
+## Response Targets
+
+- Initial triage acknowledgement: within 5 business days
+- Mitigation plan for valid findings: as soon as practical based on severity
+- Public disclosure: after remediation is available

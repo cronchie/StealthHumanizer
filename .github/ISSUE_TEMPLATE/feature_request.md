@@ -1,22 +1,29 @@
 ---
-name: Feature Request
-about: Suggest a new feature for StealthHumanizer
-title: '[FEATURE] '
-labels: enhancement
-assignees: ''
+name: Feature request
+about: Propose an improvement to StealthHumanizer
+title: "[FEATURE] "
+labels: [enhancement, needs-triage]
+assignees: []
 ---
 
-## Feature Description
-A clear description of the feature you'd like.
+## Problem Statement
 
-## Problem It Solves
-What problem does this feature solve? Is it related to a problem? Please describe.
+What user/developer pain point does this solve?
 
 ## Proposed Solution
-Describe the solution you'd like.
+
+Describe the desired behavior and expected outcome.
 
 ## Alternatives Considered
-Any alternative solutions you've considered.
+
+What alternatives did you evaluate?
+
+## Scope and Risk
+
+- Is this a breaking change? [Yes/No]
+- Is this safe/non-breaking? [Yes/No]
+- Affected areas:
 
 ## Additional Context
-Any other context, screenshots, or examples.
+
+Mockups, references, or examples.
