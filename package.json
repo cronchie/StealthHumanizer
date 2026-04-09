@@ -17,7 +17,8 @@
     "model:train": "node scripts/model/train-framework.mjs",
     "model:eval": "node scripts/model/evaluate-framework.mjs",
     "test:integration": "node scripts/tests/integration-smoke.mjs",
-    "test:pr2-integrity": "node scripts/tests/pr2-integrity-schema-check.mjs"
+    "test:pr2-integrity": "node scripts/tests/pr2-integrity-schema-check.mjs",
+    "pipeline:complete": "node scripts/tests/complete-e2e.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.8.0",
