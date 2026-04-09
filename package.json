@@ -13,7 +13,8 @@
     "papers:benchmark": "node scripts/papers/build-benchmark.mjs",
     "model:train": "node scripts/model/train-framework.mjs",
     "model:eval": "node scripts/model/evaluate-framework.mjs",
-    "test:integration": "node scripts/tests/integration-smoke.mjs"
+    "test:integration": "node scripts/tests/integration-smoke.mjs",
+    "test:pr2-integrity": "node scripts/tests/pr2-integrity-schema-check.mjs"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.9",
