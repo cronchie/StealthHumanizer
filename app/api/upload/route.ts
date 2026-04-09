@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PDFParse } from 'pdf-parse';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,12 +24,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (ext === 'pdf') {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require('pdf-parse');
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const result = await pdfParse(buffer);
-      return NextResponse.json({ text: result.text, name: file.name });
+      const parser = new PDFParse({ data: buffer });
+      try {
+        const result = await parser.getText();
+        return NextResponse.json({ text: result.text || '', name: file.name });
+      } finally {
+        await parser.destroy();
+      }
     }
 
     return NextResponse.json({ error: `Unsupported file type: .${ext}. Supported: .txt, .docx, .pdf` }, { status: 400 });
