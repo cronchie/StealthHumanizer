@@ -10,7 +10,7 @@ import {
   trainBaseline,
 } from "./lib/training.mjs";
 import { sha256 } from "../papers/lib/hash.mjs";
-import { ensureDir, readJson, readJsonl, writeJson, writeJsonl } from "../papers/lib/io.mjs";
+import { appendJsonl, ensureDir, readJson, readJsonl, writeJson, writeJsonl } from "../papers/lib/io.mjs";
 
 function utcStamp() {
   return new Date().toISOString().replace(/[:.]/g, "-");
@@ -86,7 +86,7 @@ async function main() {
   }
 
   const baselineModel = trainBaseline();
-  const advancedModel = trainAdvancedLogistic(
+  const advancedModel = await trainAdvancedLogistic(
     split.train,
     config,
     async (checkpoint) => {
@@ -143,7 +143,7 @@ async function main() {
   await writeJson(path.join(currentRoot, "metrics.report.json"), metrics);
   await writeJson(path.join(currentRoot, "run.manifest.json"), runManifest);
 
-  await writeJsonl(path.join(lineageRoot, "experiments.jsonl"), [
+  await appendJsonl(path.join(lineageRoot, "experiments.jsonl"), [
     {
       runId,
       generatedAt: runManifest.generatedAt,

@@ -89,7 +89,7 @@ export function trainBaseline() {
   };
 }
 
-export function trainAdvancedLogistic(trainRows, config = {}, onCheckpoint) {
+export async function trainAdvancedLogistic(trainRows, config = {}, onCheckpoint) {
   const learningRate = Number(config.learningRate ?? 0.05);
   const epochs = Number(config.epochs ?? 60);
   const l2 = Number(config.l2 ?? 0.0005);
@@ -119,7 +119,7 @@ export function trainAdvancedLogistic(trainRows, config = {}, onCheckpoint) {
     }
 
     if (typeof onCheckpoint === "function") {
-      onCheckpoint({
+      await onCheckpoint({
         epoch,
         meanLoss: loss / Math.max(trainRows.length, 1),
         weights: {

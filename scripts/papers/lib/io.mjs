@@ -16,6 +16,13 @@ export async function writeJsonl(filePath, rows) {
   await fs.writeFile(filePath, payload.length > 0 ? `${payload}\n` : "", "utf8");
 }
 
+export async function appendJsonl(filePath, rows) {
+  if (!rows.length) return;
+  await ensureDir(path.dirname(filePath));
+  const payload = rows.map((row) => JSON.stringify(row)).join("\n");
+  await fs.appendFile(filePath, `${payload}\n`, "utf8");
+}
+
 export async function readJson(filePath) {
   const content = await fs.readFile(filePath, "utf8");
   return JSON.parse(content);
