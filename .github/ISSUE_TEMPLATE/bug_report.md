@@ -1,34 +1,34 @@
 ---
-name: Bug Report
-about: Report a bug in StealthHumanizer
-title: '[BUG] '
-labels: bug
-assignees: ''
+name: Bug report
+about: Report a reproducible defect in StealthHumanizer
+title: "[BUG] "
+labels: [bug, needs-triage]
+assignees: []
 ---
 
-## Bug Description
-A clear description of what the bug is.
+## Summary
 
-## Steps to Reproduce
-1. Go to '...'
-2. Click on '...'
-3. Enter text: '...'
-4. See error
-
-## Expected Behavior
-What you expected to happen.
-
-## Actual Behavior
-What actually happened.
-
-## Screenshots
-If applicable, add screenshots.
+Describe the bug clearly and concisely.
 
 ## Environment
-- Browser: [e.g., Chrome 120]
-- Deployment: [Vercel / Local]
-- AI Provider: [e.g., Gemini, Groq]
-- Text length: [e.g., 500 words]
+
+- Deployment: [Local / Vercel / GitHub Pages]
+- Browser + Version:
+- OS:
+- Provider + Model:
+
+## Steps to Reproduce
+
+1.
+2.
+3.
+
+## Expected Behavior
+
+## Actual Behavior
+
+## Logs / Screenshots / Console Output
 
 ## Additional Context
-Any other context about the problem.
+
+Include related configuration, sample input size, and any workaround found.

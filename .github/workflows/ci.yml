@@ -1,22 +1,38 @@
-name: CI - Quality Gates
+name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
-  dataset-and-training-smoke:
+  lint-and-smoke:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js 20
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Benchmark smoke
           node-version: 20
       - run: npm ci
       - name: Lint gate
@@ -27,10 +43,13 @@ jobs:
         run: npm run test:pr2-integrity
       - name: PR3 benchmark smoke
         run: npm run papers:benchmark -- --config data/papers/benchmark.smoke.config.json --run-id ci-pr3-smoke
-      - name: PR4 training smoke + quality gate
+
+      - name: Model training smoke
         run: npm run model:train -- --config data/models/train.smoke.config.json --run-id ci-pr4-smoke
-      - name: PR4 gate check
+
+      - name: Model gate validation
         run: npm run model:eval -- --manifest data/models/current/run.manifest.json
+
       - name: Integration smoke
         run: npm run test:integration
         env:
@@ -38,14 +57,23 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: dataset-and-training-smoke
+    needs: lint-and-smoke
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js 20
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
       - run: npm ci
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+        run: npm run build

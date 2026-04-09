@@ -1,327 +1,136 @@
-<div align="center">
+# StealthHumanizer
 
-# 🥷 StealthHumanizer v2
+[![CI](https://github.com/rudra496/StealthHumanizer/actions/workflows/ci.yml/badge.svg)](https://github.com/rudra496/StealthHumanizer/actions/workflows/ci.yml)
+[![Docs](https://github.com/rudra496/StealthHumanizer/actions/workflows/pages.yml/badge.svg)](https://github.com/rudra496/StealthHumanizer/actions/workflows/pages.yml)
+[![Release](https://img.shields.io/github/v/release/rudra496/StealthHumanizer?sort=semver)](https://github.com/rudra496/StealthHumanizer/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-**A comprehensive free & open-source AI text humanizer.**
+StealthHumanizer is an open-source web application for rewriting AI-generated text into more human-like writing with configurable tone, style, and rewrite intensity, plus an integrated detection and readability analysis layer.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Vercel-22c55e?style=for-the-badge&logo=vercel)](https://stealthhumanizer.vercel.app/)
-[![GitHub Pages](https://img.shields.io/badge/📄_GitHub_Pages-Demo-1f6feb?style=for-the-badge&logo=github)](https://rudra496.github.io/StealthHumanizer/)
-[![Deploy](https://img.shields.io/badge/🚀_Deploy-Vercel-000?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/rudra496/StealthHumanizer)
-[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)
+**Docs site:** https://rudra496.github.io/StealthHumanizer/
 
-[![Stars](https://img.shields.io/github/stars/rudra496/StealthHumanizer?style=social)](https://github.com/rudra496/StealthHumanizer/stargazers)
-[![Forks](https://img.shields.io/github/forks/rudra496/StealthHumanizer?style=social)](https://github.com/rudra496/StealthHumanizer/network/members)
-[![Issues](https://img.shields.io/github/issues/rudra496/StealthHumanizer)](https://github.com/rudra496/StealthHumanizer/issues)
+## Table of Contents
 
-Transform AI-generated text into **natural, human-like writing** using 13 AI providers, 4 rewrite levels, 13 tones, multi-pass humanization, and a 12-metric detection engine.
+- [Features](#features)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Configuration](#configuration)
+- [Usage Examples](#usage-examples)
+- [Testing and Local Development](#testing-and-local-development)
+- [Benchmarks and Performance](#benchmarks-and-performance)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Security, Support, and License](#security-support-and-license)
 
-**✅ 100% Free • No Login • No Limits • Open Source (MIT) • Private & Secure**
+## Features
 
-</div>
+- Multi-provider generation pipeline with support for free and paid model providers.
+- Multiple rewrite levels (including multi-pass modes) to control transformation strength.
+- Preset writing styles and tone controls for output targeting.
+- Built-in detector with multiple heuristics and readability scoring.
+- Side-by-side workflow for source text, transformed output, and quality feedback.
+- Browser-first key handling to keep user API keys local to the client.
 
----
+## Architecture
 
-## 📺 Demo
+High-level architecture:
 
-> 💡 **Try it now:** [**Live Demo on GitHub Pages**](https://rudra496.github.io/StealthHumanizer/) — no installation needed!
+1. **UI layer (`components/`, `app/page.tsx`)** handles text entry, settings, and result rendering.
+2. **API routes (`app/api/`)** orchestrate provider calls and rewrite workflows.
+3. **Core logic (`lib/`)** provides prompt construction, provider abstraction, detector scoring, and storage helpers.
+4. **Research and evaluation scripts (`scripts/`, `data/`)** support benchmark and training smoke pipelines.
+5. **Documentation (`docs/`)** provides user and contributor guides published through GitHub Pages.
 
-![StealthHumanizer Demo](https://img.shields.io/badge/🎬_Demo_Screenshot-Coming_Soon-8b5cf6?style=for-the-badge)
+For deeper technical details, see [ARCHITECTURE.md](./ARCHITECTURE.md) and [STYLE_ENGINE.md](./STYLE_ENGINE.md).
 
-### How It Works
+## Installation
 
-```
-📝 AI Text → 🥷 Multi-Pass Rewrite → 📊 AI Detection → 🔁 Re-Humanize → ✅ Human Score 100%
-```
+### Prerequisites
 
-1. **Paste** your AI-generated text (up to 10,000 words)
-2. **Select** rewrite level, style, and tone
-3. **Set** target human score (50%–100%)
-4. **Humanize** — AI rewrites with human patterns
-5. **Auto-loop** — re-humanizes flagged sentences until target reached
-6. **Export** — copy, download TXT/DOCX
+- Node.js 20+
+- npm 10+
 
----
-
-## ✨ Features
-
-### 🥷 Rewrite Engine
-| Feature | Details |
-|---------|---------|
-| **4 Rewrite Levels** | Light, Medium, Aggressive, **Ninja** (5-pass auto-loop) |
-| **5 Writing Styles** | Academic, Professional, Casual, Creative, Technical |
-| **13 Tone Presets** | Conversational, Academic Formal/Casual, Journalistic, Creative Writing, Professional, Technical, Persuasive, Storytelling, Humorous, Emotional, Analytical |
-| **Multi-Pass Humanization** | Ninja: 5 passes, Aggressive: 3 passes, auto-target 100% |
-| **Target Score Control** | Slider from 50% to 100% human |
-| **Alternative Rewrites** | Click any sentence for 3 different versions |
-| **Side-by-Side Comparison** | Diff view with per-sentence scores |
-| **16 Languages** | Auto-detects and preserves input language |
-
-### 🔍 12-Metric AI Detector
-| Metric | What It Measures |
-|--------|-----------------|
-| **Perplexity** | How predictable/unexpected the word choices are |
-| **Burstiness** | Sentence length variation (humans vary wildly) |
-| **Vocabulary Diversity** | Unique word usage vs repetition |
-| **Sentence Variation** | Length, structure, type diversity |
-| **Sentence Start Diversity** | Do sentences start the same way? |
-| **Pronoun Usage** | First/second person pronouns (human indicator) |
-| **Transition Frequency** | Overuse of formal transitions |
-| **Passive Voice** | Ratio of passive constructions |
-| **AI Phrase Density** | Detection of 50+ known AI phrases |
-| **Hedging Language** | "It could be argued", "one might consider" |
-| **Quantifier Patterns** | Overuse of "numerous", "various", "multiple" |
-| **Contraction Usage** | Humans use contractions; AI often doesn't |
-
-**Readability Scores:** Flesch Reading Ease, Flesch-Kincaid Grade Level, Coleman-Liau Index
-
-### 🆓 13 AI Providers (10 Free!)
-
-| Provider | Free? | Speed | Quality | Model |
-|----------|:-----:|:-----:|:-------:|-------|
-| [Google Gemini](https://aistudio.google.com/apikey) | ✅ | ⚡ | ⭐⭐⭐⭐⭐ | gemini-1.5-flash/pro |
-| [Groq](https://console.groq.com/keys) | ✅ | ⚡⚡⚡ | ⭐⭐⭐⭐ | llama-3.3-70b |
-| [ZAI (GLM-5)](https://z.ai/manage-apikey/apikey-list) | ✅ | ⚡⚡ | ⭐⭐⭐⭐⭐ | glm-5 |
-| [OpenRouter](https://openrouter.ai/keys) | ✅ | ⚡⚡ | ⭐⭐⭐⭐ | 100+ models |
-| [Together AI](https://api.together.xyz/settings/api-keys) | ✅ | ⚡⚡ | ⭐⭐⭐⭐ | llama-3-70b |
-| [Cerebras](https://cloud.cerebras.ai/) | ✅ | ⚡⚡⚡ | ⭐⭐⭐⭐ | llama3.1-70b |
-| [Mistral AI](https://console.mistral.ai/) | ✅ | ⚡⚡ | ⭐⭐⭐⭐ | mistral-large |
-| [Cohere](https://dashboard.cohere.com/api-keys) | ✅ | ⚡⚡ | ⭐⭐⭐ | command-r-plus |
-| [DeepInfra](https://deepinfra.com/dash/api_keys) | ✅ | ⚡⚡ | ⭐⭐⭐⭐ | llama-3-70b |
-| [HuggingFace](https://huggingface.co/settings/tokens) | ✅ | ⚡ | ⭐⭐⭐ | llama-3-8b |
-| [Cloudflare Workers AI](https://dash.cloudflare.com/) | ✅ | ⚡⚡⚡ | ⭐⭐⭐ | llama-3-8b |
-| [OpenAI GPT-4](https://platform.openai.com/api-keys) | ❌ | ⚡ | ⭐⭐⭐⭐⭐ | gpt-4o |
-| [Anthropic Claude](https://console.anthropic.com/) | ❌ | ⚡ | ⭐⭐⭐⭐⭐ | claude-sonnet-4 |
-
-> 💡 **No API key?** Start with **Gemini** or **Groq** — both free, no credit card needed!
-
-### 🎨 UX Features
-- 🌙 Dark / ☀️ Light mode
-- ⌨️ Keyboard shortcuts (`Ctrl+Enter`, `Ctrl+1/2/3/4`)
-- 📜 History (localStorage, 50 entries)
-- 📋 Copy / 💾 Export as TXT & DOCX
-- 📱 Fully mobile responsive
-- 🔒 Zero server data storage
-- 🏃 No account or sign-up required
-
----
-
-## 🚀 Quick Start
-
-### Option 1: 🌐 Use Online (Zero Install)
-👉 **[Live Demo](https://rudra496.github.io/StealthHumanizer/)** — add any free API key and start humanizing!
-
-### Option 2: 🚀 Deploy on Vercel (Recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rudra496/StealthHumanizer)
-
-### Option 3: 💻 Run Locally
+### Setup
 
 ```bash
 git clone https://github.com/rudra496/StealthHumanizer.git
 cd StealthHumanizer
-npm install
+npm ci
+```
+
+## Quickstart
+
+Run the application locally:
+
+```bash
 npm run dev
 ```
 
-### Step-by-Step Usage
+Then open `http://localhost:3000`, add a provider API key in settings, and run a rewrite.
 
-1. **Get a free API key:**
-   - [Google Gemini](https://aistudio.google.com/apikey) — Sign in → Create API Key → Copy
-   - [Groq](https://console.groq.com/keys) — Sign up → Create key → Paste
+## Configuration
 
-2. **Paste your AI-generated text**
+StealthHumanizer is configured primarily through UI controls and local browser storage.
 
-3. **Configure:**
-   - Level: Light / Medium / Aggressive / **Ninja**
-   - Style: Academic / Professional / Casual / Creative / Technical
-   - Tone: Conversational / Formal / Journalistic / etc.
-   - Target: 80% → 100%
+- **Provider keys:** configured in app settings and stored locally.
+- **Rewrite strategy:** choose level, style, tone, and target score.
+- **Research pipeline scripts:** use JSON configs under `data/papers/*.config.example.json` and `data/models/*.config.example.json`.
 
-4. **Click "Humanize"** — get human-like natural writing!
+See [docs/configuration.md](./docs/configuration.md) for full details.
 
----
+## Usage Examples
 
-## 🏆 StealthHumanizer vs Others
+### Application usage
 
-| Feature | StealthWriter | QuillBot | **StealthHumanizer** |
-|---------|:------------:|:--------:|:--------------------:|
-| **Price** | $20–50/mo | $19.95/mo | **FREE forever** |
-| **Daily Limit** | 10–150 | Limited | **Unlimited** |
-| **Word Limit** | 1K–5K | 1.2K | **10K** |
-| **AI Providers** | 1 | 1 | **13 (10 free)** |
-| **Rewrite Levels** | 3 | 2 | **4 (+ Ninja)** |
-| **Writing Styles** | 3 | 4 | **5** |
-| **Tone Presets** | 0 | 0 | **13** |
-| **Multi-Pass** | ❌ | ❌ | **✅ (up to 5)** |
-| **Target Score** | ❌ | ❌ | **✅ (50–100%)** |
-| **AI Detector** | Basic | None | **12 metrics** |
-| **Readability** | ❌ | ❌ | **3 scores** |
-| **Open Source** | ❌ | ❌ | **✅ MIT** |
-| **Self-Hostable** | ❌ | ❌ | **✅** |
-| **API Keys Stored** | Their server | Their server | **Your browser only** |
-| **No Account** | ❌ | ❌ | **✅** |
+1. Paste AI-generated text.
+2. Select rewrite level, style, and tone.
+3. Run humanization.
+4. Review detector/readability scores and iterate.
 
----
+### Scripted benchmark/training smoke flow
 
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | [Next.js 14](https://nextjs.org/) (App Router) |
-| Language | [TypeScript](https://www.typescriptlang.org/) |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) |
-| AI Integration | Native `fetch()` — zero SDK dependencies |
-| Deployment | [Vercel](https://vercel.com/) / GitHub Pages |
-| Dependencies | `next`, `react`, `lucide-react` — that's it |
-
----
-
-## 🔒 Security & Privacy
-
-- 🔑 **API keys never leave your browser** — stored only in `localStorage`
-- 🚫 **No server-side storage** — no databases, no user accounts
-- 🔐 **All API calls use HTTPS** — encrypted in transit
-- 📵 **No tracking, no analytics** — zero third-party scripts
-- 🛡️ **MIT Licensed** — fully transparent, auditable code
-- See [SECURITY.md](SECURITY.md) for full security policy
-
----
-
-## 📁 Project Structure
-
-```
-StealthHumanizer/
-├── app/
-│   ├── api/
-│   │   ├── humanize/route.ts    # Multi-pass humanization endpoint
-│   │   └── alternative/route.ts # Alternative rewrite suggestions
-│   ├── layout.tsx               # Root layout with metadata
-│   ├── page.tsx                 # Main application page
-│   └── globals.css              # Global styles + dark mode
-├── components/
-│   ├── Humanizer.tsx            # Main humanization interface
-│   ├── Detector.tsx             # AI detection dashboard
-│   ├── Settings.tsx             # API key management
-│   ├── History.tsx              # Humanization history
-│   ├── Navbar.tsx               # Navigation bar
-│   └── Toast.tsx                # Notification toasts
-├── lib/
-│   ├── types.ts                 # TypeScript types
-│   ├── providers.ts             # 13 AI provider configs
-│   ├── prompts.ts               # 13 tones × 4 levels system prompts
-│   ├── detector.ts              # 12-metric AI detection engine
-│   ├── humanizer.ts             # Multi-pass humanization logic
-│   ├── readability.ts           # Readability score calculations
-│   └── storage.ts               # localStorage management
-├── docs/
-│   ├── index.html               # Standalone GitHub Pages version
-│   ├── sitemap.xml              # SEO sitemap
-│   ├── robots.txt               # Crawler rules
-│   ├── DATA_PIPELINE.md         # PR1 open-access ingestion + provenance
-│   ├── FULLTEXT_ANALYSIS.md     # PR2 full-text extraction + corpus analysis
-│   ├── HUMAN_AI_SIGNAL_LAYER.md # PR3 benchmark + signal/label validation
-│   ├── MODEL_TRAINING_FRAMEWORK.md # PR4 deterministic training + eval
-│   ├── HUMANIZATION_OPTIMIZATION.md # PR5 optimization + regression guards
-│   ├── PRODUCTION_GOVERNANCE.md # PR6-PR9 integration, safety, CI, publication
-│   └── BENCHMARK_METHODOLOGY.md # PR9 benchmark methodology + limitations
-├── .github/
-│   ├── workflows/
-│   │   ├── pages.yml            # GitHub Pages auto-deploy
-│   │   └── ci.yml               # Build verification
-│   └── ISSUE_TEMPLATE/          # Bug report & feature request
-└── [Documentation files]
-    ├── README.md                ← You are here
-    ├── ARCHITECTURE.md          # System architecture
-    ├── STYLE_ENGINE.md          # Tone/style system design
-    ├── API_USAGE.md             # Provider API details
-    ├── SECURITY.md              # Security policy
-    ├── CONTRIBUTING.md          # How to contribute
-    ├── ROADMAP.md               # Future plans
-    ├── CODE_OF_CONDUCT.md       # Community guidelines
-    └── LICENSE                  # MIT License
+```bash
+npm run papers:benchmark -- --config data/papers/benchmark.smoke.config.json --run-id local-smoke
+npm run model:train -- --config data/models/train.smoke.config.json --run-id local-smoke
+npm run model:eval -- --manifest data/models/current/run.manifest.json
 ```
 
-### 🌏 Chinese Language Support
+## Testing and Local Development
 
-StealthHumanizer now includes **detector-aware transformations** specifically designed for Chinese AI detection systems:
+Common commands:
 
-| Feature | Details |
-|---------|---------|
-| **Simplified Chinese (zh-CN)** | Targets CNKI AIGC, Wanfang, VIP detection systems |
-| **Traditional Chinese (zh-TW)** | Adapts to Taiwan/HK writing conventions |
-| **Two Modes** | General natural rewrite + Academic rewrite |
-| **Structural Variations** | 把/被 constructions, topic-comment reordering, idiom insertion |
-| **Connector Density Control** | Chinese detectors heavily weight connector frequency |
-| **Burstiness Engineering** | Chinese-optimized sentence length variation |
+```bash
+npm run lint
+npm run test:integration
+npm run build
+```
 
-**What makes Chinese detection different:**
-- Chinese detectors flag connector density (因此/同时/此外), sentence-length regularity, balanced clause structures, and repeated rhetorical templates
-- Traditional Chinese requires different discourse patterns — not just script conversion
-- Academic mode preserves terminology while reducing AIGC fingerprints
+Notes:
 
-> 💡 Inspired by the [humanize-chinese](https://github.com/nicholasgasior/humanize-chinese) open-source project.
+- `npm run test:integration` expects generated benchmark/model manifests.
 
----
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow standards.
 
-## 🗺️ Roadmap
+## Benchmarks and Performance
 
-- [x] v1: Core humanization engine
-- [x] v2: 13 providers, 13 tones, multi-pass, ninja mode
-- [x] GitHub Pages deployment
-- [x] SEO optimization & structured data
-- [x] GitHub Actions CI/CD
-- [ ] v3: Browser extension (Chrome/Firefox)
-- [ ] v3: Real-time streaming humanization
-- [ ] v3: Batch processing (multiple texts)
-- [ ] v3: Custom model fine-tuning guide
+Benchmark and analysis documentation:
 
-See [ROADMAP.md](ROADMAP.md) for full details.
+- [docs/BENCHMARK_METHODOLOGY.md](./docs/BENCHMARK_METHODOLOGY.md)
+- [docs/HUMAN_AI_SIGNAL_LAYER.md](./docs/HUMAN_AI_SIGNAL_LAYER.md)
+- [docs/MODEL_TRAINING_FRAMEWORK.md](./docs/MODEL_TRAINING_FRAMEWORK.md)
 
----
+## Roadmap
 
-## 🤝 Contributing
+See [ROADMAP.md](./ROADMAP.md) for release milestones and planned improvements.
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
-5. Open a Pull Request
+Contributions are welcome. Please review [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
 
----
+## Security, Support, and License
 
-## 📄 License
-
-This project is licensed under the **MIT License** — use it however you want.
-
-See [LICENSE](LICENSE) for details.
-
----
-
-## ⭐ Star History
-
-<a href="https://star-history.com/#rudra496/StealthHumanizer&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rudra496/StealthHumanizer&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rudra496/StealthHumanizer&type=Date" />
-   <img alt="Star History" src="https://api.star-history.com/svg?repos=rudra496/StealthHumanizer&type=Date" />
- </picture>
-</a>
-
----
-
-<div align="center">
-
-**Built with ❤️ by [Rudra Sarker](https://github.com/rudra496)**
-
-[![Twitter](https://img.shields.io/badge/Twitter-@Rudra496-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/Rudra496)
-[![Website](https://img.shields.io/badge/Website-rudra496.github.io-22c55e?style=flat-square&logo=github)](https://rudra496.github.io/site)
-[![GitHub](https://img.shields.io/badge/GitHub-rudra496-181717?style=flat-square&logo=github)](https://github.com/rudra496)
-
-<p><sub>Shahjalal University of Science and Technology, Bangladesh</sub></p>
-
-**⭐ If you find this useful, please give it a star! It helps more than you know.**
-
-</div>
+- Security policy: [SECURITY.md](./SECURITY.md)
+- Support channels: [SUPPORT.md](./SUPPORT.md)
+- Code of Conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- License: [MIT](./LICENSE)

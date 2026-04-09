@@ -1,27 +1,35 @@
-## Description
-Brief description of the changes in this PR.
+## Summary
+
+<!-- What changed and why? -->
 
 ## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-- [ ] Refactoring
 
-## Changes Made
-- Change 1
-- Change 2
+- [ ] feat (new capability)
+- [ ] fix (bug fix)
+- [ ] docs (documentation only)
+- [ ] ci (workflow/automation)
+- [ ] chore (maintenance)
 
-## Testing
-- [ ] Tested locally with `npm run dev`
-- [ ] Tested with [provider] API key
-- [ ] Mobile responsive verified
-- [ ] No TypeScript errors
+## Validation
 
-## Screenshots (if applicable)
+- [ ] `npm run lint`
+- [ ] `npm run test:integration`
+- [ ] `npm run build`
+- [ ] Not applicable (explain below)
+
+## Risk and Compatibility
+
+- [ ] Non-breaking change
+- [ ] Potentially breaking change (describe impact and migration)
+
+## Documentation
+
+- [ ] README updated (if needed)
+- [ ] Docs under `docs/` updated (if needed)
+- [ ] Changelog updated (if needed)
 
 ## Checklist
-- [ ] Code compiles without errors
-- [ ] Follows existing code style
-- [ ] Updated documentation if needed
-- [ ] No secrets or API keys in code
+
+- [ ] No secrets or credentials committed
+- [ ] Changes are scoped and focused
+- [ ] Follow-up tasks documented

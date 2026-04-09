@@ -1,102 +1,37 @@
-# Roadmap — StealthHumanizer
+# Roadmap
 
-## v2.0 — Current Release ✅
+This roadmap reflects safe, incremental improvements that preserve existing behavior while improving developer and user experience.
 
-### Core Platform
-- [x] Multi-provider AI abstraction (12 providers, 9 free)
-- [x] 4 rewrite levels (Light, Medium, Aggressive, Ninja)
-- [x] 5 writing styles
-- [x] 13 tone presets + custom tone
-- [x] Multi-pass humanization pipeline
-- [x] Target human score control
-- [x] 16 language support
+## Current Focus (v1.x stabilization)
 
-### Detection & Analysis
-- [x] Built-in AI detector (12 metrics)
-- [x] Readability scoring (Flesch, Coleman-Liau, Grade Level)
-- [x] Sentence-by-sentence analysis
-- [x] Before/after comparison view
+- Harden documentation and onboarding quality.
+- Maintain a reliable CI/CD baseline for lint/build/test/docs.
+- Improve contributor throughput with better templates and governance.
+- Keep release management predictable with changelog-driven tags.
 
-### UI/UX
-- [x] Dark/Light mode
-- [x] Mobile responsive
-- [x] Keyboard shortcuts
-- [x] History (localStorage)
-- [x] Export (TXT, DOCX)
+## Near-Term
 
-### Infrastructure
-- [x] Zero external SDK dependencies (all fetch-based)
-- [x] Vercel deployment ready
-- [x] MIT License
-- [x] Complete documentation
+- Expand integration checks for provider-specific edge cases.
+- Increase detector quality validation coverage and reproducibility docs.
+- Improve docs examples for common provider and prompt strategies.
 
----
+## Mid-Term
 
-## v2.1 — Next Release
+- Add optional benchmarking dashboards from generated manifest data.
+- Improve release artifact metadata and automated release note generation.
+- Expand static analysis and docs lint quality gates.
 
-### Features
-- [ ] **Text Enhancement Tools** — Grammar, spelling, punctuation, vocabulary
-- [ ] **Personal Style Learning** — Upload writing samples, learn and replicate style
-- [ ] **Batch Processing** — Process multiple texts at once, ZIP download
-- [ ] **Streaming Responses** — Real-time output as text is generated
-- [ ] **Diff View** — Git-style before/after comparison with change stats
-- [ ] **Markdown Export** — Download as .md file
-- [ ] **PDF Export** — Browser-based PDF generation
+## Long-Term
 
-### Improvements
-- [ ] Custom provider configuration (base URL, headers, model name)
-- [ ] Prompt optimization for lower token usage
-- [ ] Rate limit tracking and auto-provider switching
-- [ ] Undo/redo in text editor
+- Additional developer tooling for profiling and benchmark comparisons.
+- Optional hosted API layer guidance for teams that need centralized controls.
+- Internationalization of user-facing docs and onboarding.
 
-### Research Pipeline (PR3→PR9)
-- [x] PR3 benchmark layer (paired labels + signal/anti-pattern features + validation checks)
-- [x] PR4 deterministic training framework (baseline/advanced models + checkpoints + eval suite)
-- [x] PR5 rewrite optimization guards (confidence + fallback protection)
-- [x] PR6 production model scoring endpoint and API/UI confidence exposure
-- [x] PR7 safety policy gates, provenance disclosures, and audit logging
-- [x] PR8 CI quality bar (dataset + training smoke + fail gates + integration smoke)
-- [x] PR9 publication/reproducibility docs and contribution roadmap foundations
+## Contribution Alignment
 
----
+Roadmap updates should be proposed via pull request and include:
 
-## v3.0 — Long Term Vision
-
-### Advanced Features
-- [ ] **Style Cloning Engine** — Deep learning-based style transfer
-- [ ] **Document Analysis** — Upload PDF/DOCX, analyze and humanize
-- [ ] **Plagiarism Checker** — Similarity detection against web sources
-- [ ] **Collaborative Mode** — Team writing with shared styles
-- [ ] **API Rate Limit Dashboard** — Real-time usage tracking per provider
-- [ ] **Provider Cost Calculator** — Estimate token costs per request
-
-### Premium Architecture
-- [ ] Freemium tier system (localStorage-based, no auth needed)
-- [ ] Priority processing queue
-- [ ] Advanced analytics and scoring
-- [ ] Template marketplace (user-submitted styles)
-
-### Platform Expansion
-- [ ] Browser extension (Chrome, Firefox)
-- [ ] VS Code extension
-- [ ] API-as-a-service (deploy your own backend)
-- [ ] Desktop app (Electron/Tauri)
-
-### Internationalization
-- [ ] Full UI translation (20+ languages)
-- [ ] Right-to-left support
-- [ ] Language-specific detection models
-
----
-
-## Community Goals
-
-- [ ] 1,000 GitHub stars
-- [ ] 50 contributors
-- [ ] Plugin ecosystem for styles and providers
-- [ ] Published on npm as a library
-- [ ] Academic paper on humanization techniques
-
----
-
-*Last updated: 2026-04-09*
+- Problem statement
+- Proposed scope
+- Risk level (must remain safe/non-breaking unless explicitly approved)
+- Validation plan

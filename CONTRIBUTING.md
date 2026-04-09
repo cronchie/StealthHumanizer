@@ -1,152 +1,88 @@
 # Contributing to StealthHumanizer
 
-Thank you for your interest in contributing! This guide will help you get started.
+Thank you for contributing to StealthHumanizer. This guide defines the repository's development, review, and release expectations.
+
+## Table of Contents
+
+- [Development Setup](#development-setup)
+- [Branching, Commits, and Pull Requests](#branching-commits-and-pull-requests)
+- [Issue Triage and Prioritization](#issue-triage-and-prioritization)
+- [Coding Standards](#coding-standards)
+- [Validation Checklist](#validation-checklist)
 
 ## Development Setup
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- A free AI provider API key (Gemini recommended)
 
-### Steps
+- Node.js 20+
+- npm 10+
+
+### Setup
 
 ```bash
 git clone https://github.com/rudra496/StealthHumanizer.git
 cd StealthHumanizer
-npm install
+npm ci
 npm run dev
 ```
 
-Open http://localhost:3000 and configure your API key in Settings.
+Open `http://localhost:3000` and configure API keys in the app settings.
 
-## Project Structure
+## Branching, Commits, and Pull Requests
 
-```
-stealthhumanizer/
-├── app/
-│   ├── api/
-│   │   ├── humanize/route.ts    # Main humanization endpoint
-│   │   └── alternative/route.ts # Alternative rewrites endpoint
-│   ├── page.tsx                 # Main app page
-│   ├── layout.tsx               # Root layout
-│   └── globals.css              # Global styles
-├── components/
-│   ├── Humanizer.tsx            # Main humanizer UI
-│   ├── Detector.tsx             # AI detector UI
-│   ├── Settings.tsx             # API key management
-│   ├── History.tsx              # Past humanizations
-│   ├── Navbar.tsx               # Navigation
-│   └── Toast.tsx                # Notifications
-├── lib/
-│   ├── types.ts                 # TypeScript type definitions
-│   ├── providers.ts             # Multi-provider AI abstraction
-│   ├── prompts.ts               # Humanization prompt templates
-│   ├── detector.ts              # AI detection engine
-│   ├── humanizer.ts             # Multi-pass humanization logic
-│   ├── readability.ts           # Readability scoring
-│   └── storage.ts               # LocalStorage utilities
-└── docs/                        # Documentation
-```
+### Branching standard
 
-## Code Style
+- Base branch: `main`
+- Use descriptive topic branches, for example:
+  - `feat/provider-timeout-handling`
+  - `fix/detector-score-rounding`
+  - `docs/readme-information-architecture`
 
-- **TypeScript strict mode** — All files must have proper types
-- **Functional components** with hooks (no class components)
-- **Tailwind CSS** for styling — no custom CSS files
-- **Descriptive naming** — `getSystemPrompt()` not `gsp()`
-- **Error handling** — Always wrap API calls in try/catch
+### Commit standard
 
-## Adding a New Provider
+Use concise conventional-style commit prefixes:
 
-1. Add provider config to `PROVIDERS` array in `lib/providers.ts`
-2. Add a case in `generateWithProvider()` function
-3. Add setup instructions in `components/Settings.tsx`
-4. Test with `testApiKey()` function
-5. Update README.md provider table
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation changes
+- `chore:` for maintenance updates
+- `ci:` for workflow and automation changes
 
-## Adding a New Tone
+### Pull request standard
 
-1. Add tone config to `TONE_CONFIGS` in `lib/prompts.ts`
-2. Add personality traits, vocabulary, and writing patterns
-3. Add option to `TONES` array in `components/Humanizer.tsx`
-4. Update `TonePreset` type in `lib/types.ts`
+Each PR should:
 
-## Adding a New Detection Metric
+- Explain **what changed** and **why**.
+- Include validation evidence (`lint`, `test`, `build` as applicable).
+- Update docs for any behavior or workflow changes.
+- Stay focused on one logical unit of change.
 
-1. Add calculation function in `lib/detector.ts`
-2. Add score to `DetectionResult.analysis` in `lib/types.ts`
-3. Add weight to the overall score calculation
-4. Add display in `components/Detector.tsx`
+## Issue Triage and Prioritization
 
-## Pull Request Process
+When filing or triaging issues:
 
-Follow this exact sequence with direct links:
+- Use issue templates whenever available.
+- Include reproducible steps and expected/actual behavior.
+- Label by type (`bug`, `enhancement`, `docs`, `security`).
+- For regressions, include the first known affected commit/version if available.
+- For provider-specific issues, include provider name and model.
 
-1. Open repository home:  
-   https://github.com/rudra496/StealthHumanizer
+## Coding Standards
 
-2. Open branch list (copy your branch name):  
-   https://github.com/rudra496/StealthHumanizer/branches
+- TypeScript strict mode is required.
+- Keep API route behavior deterministic and error-safe.
+- Prefer small, composable utility functions over monolithic handlers.
+- Avoid introducing server-side persistence of user content or keys.
+- Keep public interfaces backward-compatible unless explicitly planned.
 
-3. Confirm your branch contains your commits (example: `feature-login`).
+## Validation Checklist
 
-4. Open this exact compare URL (replace `YOUR_BRANCH`):  
-   https://github.com/rudra496/StealthHumanizer/compare/main...YOUR_BRANCH?quick_pull=1
-
-5. Verify on the compare page:
-   - Base branch is `main`
-   - Compare branch is `YOUR_BRANCH`
-   - Click **Create pull request**
-
-6. Fill in PR details:
-   - Add a clear title
-   - Add a clear description of your changes
-   - Click **Create pull request**
-
-7. Open PR list anytime here:  
-   https://github.com/rudra496/StealthHumanizer/pulls
-
-8. Open your PR from the list.
-
-9. Merge the PR:
-   - Scroll to the merge section
-   - Click **Merge pull request**
-   - Click **Confirm merge**
-
-10. Optional cleanup:
-    - Click **Delete branch** after merge
-
-11. If merge is blocked:
-    - Open the PR **Checks** tab
-    - Wait for pending checks or fix failing checks
-    - Retry merge after checks pass
-
-Reusable compare link template:
-
-`https://github.com/rudra496/StealthHumanizer/compare/main...YOUR_BRANCH?quick_pull=1`
-
-## Benchmark & Model Contribution Path (PR3+)
-
-Use the reproducible pipeline sequence:
+Before opening a PR, run:
 
 ```bash
-npm run papers:benchmark -- --config data/papers/benchmark.config.example.json
-npm run model:train -- --config data/models/train.config.example.json
-npm run model:eval -- --manifest data/models/current/run.manifest.json
+npm run lint
+npm run test:integration
+npm run build
 ```
 
-When contributing benchmark/model changes:
-
-- Keep label classes balanced (`human_academic` vs `ai_transformed`)
-- Preserve run manifests and quality-gate outputs
-- Do not bypass fail gates by lowering thresholds without justification
-- Update docs under `docs/` when adding metrics, policies, or evaluation criteria
-
-### PR Checklist
-- [ ] Code compiles without errors (`npm run build`)
-- [ ] No TypeScript errors
-- [ ] New features include updated types
-- [ ] UI changes are responsive (mobile + desktop)
-- [ ] No API keys or secrets in code
-- [ ] PR3/PR4 quality gates pass when related pipeline code is changed
+If any command fails due to known environment limits (for example external network resolution), note it clearly in the PR.
