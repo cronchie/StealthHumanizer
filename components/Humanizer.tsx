@@ -110,7 +110,7 @@ export default function Humanizer({ showToast }: HumanizerProps) {
   const [writingSample, setWritingSample] = useState('');
 
   // Pipeline options
-  const [enablePostprocess, setEnablePostprocess] = useState(true);
+  const [enablePostprocess, setEnablePostprocess] = useState(false);
   const [characterShield, setCharacterShield] = useState(false);
   const [enableChain, setEnableChain] = useState(false);
   const [selectedChainModels, setSelectedChainModels] = useState<string[]>([]);

@@ -258,11 +258,11 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   // Human indicators (positive signals)
   let humanSignals = 0;
   HUMAN_INDICATORS.forEach(h => { if (lower.includes(h)) humanSignals++; });
-  score += humanSignals * 12;
+  score += humanSignals * 6;
 
-  // Contractions (strong human signal)
+  // Contractions (human signal)
   const contractions = sentence.match(/\w+'(?:t|s|re|ve|ll|d|m)\b/gi);
-  if (contractions) score += contractions.length * 8;
+  if (contractions) score += contractions.length * 4;
 
   // First person (human signal)
   if (/\b(I|me|my|we|us|our)\b/i.test(sentence)) { score += 7; }
