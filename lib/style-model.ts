@@ -1,10 +1,11 @@
 /**
  * Style Model — Loads corpus style statistics and provides calibrated
  * constraints for the humanizer engine.
+ *
+ * Server-only module: file I/O uses dynamic require that webpack/Next.js
+ * cannot statically analyze, preventing Node.js built-ins from leaking
+ * into client bundles.
  */
-
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 
 // ==================== TYPES ====================
 
@@ -95,25 +96,49 @@ export interface CalibratedThresholds {
 
 let cachedModel: CorpusStyleModel | null = null;
 
+/** Check if we're in a Node.js environment */
+function isNode(): boolean {
+  return typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+}
+
+/** Dynamically require a Node.js built-in — webpack cannot statically analyze this. */
+function nodeRequire(mod: string): unknown {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  const _r = new Function('mod', 'return require(mod)');
+  return _r(mod);
+}
+
 export function loadStyleModel(modelPath?: string): CorpusStyleModel | null {
   if (cachedModel) return cachedModel;
+  if (!isNode()) return null;
 
+  let fs: { readFileSync: (p: string, e: string) => string; existsSync: (p: string) => boolean };
+  let pathMod: { resolve: (...parts: string[]) => string };
+
+  try {
+    fs = nodeRequire('node:fs') as typeof fs;
+    pathMod = nodeRequire('node:path') as typeof pathMod;
+  } catch {
+    return null;
+  }
+
+  const base = __dirname;
   const paths = [
     modelPath,
-    resolve(process.cwd(), 'data/models/corpus-style-model.json'),
-    resolve(process.cwd(), '../data/models/corpus-style-model.json'),
-    resolve(__dirname, '../../data/models/corpus-style-model.json'),
+    pathMod.resolve('data/models/corpus-style-model.json'),
+    pathMod.resolve('../data/models/corpus-style-model.json'),
+    pathMod.resolve(base, '../../data/models/corpus-style-model.json'),
   ].filter(Boolean);
 
   for (const p of paths) {
     try {
-      if (existsSync(p!)) {
-        const raw = readFileSync(p!, 'utf-8');
+      if (fs.existsSync(p!)) {
+        const raw = fs.readFileSync(p!, 'utf-8');
         cachedModel = JSON.parse(raw) as CorpusStyleModel;
         return cachedModel;
       }
     } catch {
-      // try next path
+      // try next
     }
   }
 
@@ -139,7 +164,6 @@ export function getStyleConstraints(domain?: string): StyleConstraints {
   const burst = model.burstinessProfile;
   const vocab = model.vocabularyDiversityRange;
 
-  // Calculate total transition frequency
   const totalTransitions = Object.values(model.transitionWordFrequency)
     .reduce((sum, v) => sum + v, 0);
 
@@ -189,7 +213,6 @@ export function buildStyleInjectionPrompt(domain?: string): string {
   const sl = constraints.sentenceLengthRange;
   const examples = model.humanWritingExamples.slice(0, 5);
 
-  // Pick top 5 common starters from corpus
   const topStarters = Object.entries(model.sentenceStarters)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
@@ -223,7 +246,6 @@ ${examples.map((e, i) => `${i + 1}. "${e}"`).join('\n')}
 
 /**
  * Get detection thresholds calibrated against real human writing from the corpus.
- * These replace hardcoded values in the detector.
  */
 export function getCorpusCalibratedThresholds(): CalibratedThresholds {
   const model = loadStyleModel();
@@ -239,15 +261,12 @@ export function getCorpusCalibratedThresholds(): CalibratedThresholds {
     };
   }
 
-  // Based on corpus statistics, real human writing scores should fall in this range.
-  // We set thresholds so that output matching corpus patterns is classified as human.
-  const burstinessFloor = Math.round(model.burstinessProfile.mean * 50); // ~50% of corpus mean
-  const vocabularyFloor = Math.round(model.vocabularyDiversityRange.mean * 85); // ~85% of corpus mean
+  const burstinessFloor = Math.round(model.burstinessProfile.mean * 50);
+  const vocabularyFloor = Math.round(model.vocabularyDiversityRange.mean * 85);
 
-  // Total transition frequency — set ceiling
   const totalTransitions = Object.values(model.transitionWordFrequency)
     .reduce((sum, v) => sum + v, 0);
-  const transitionCeiling = Math.round(totalTransitions * 200); // generous ceiling
+  const transitionCeiling = Math.round(totalTransitions * 200);
 
   return {
     humanScoreMin: 45,
