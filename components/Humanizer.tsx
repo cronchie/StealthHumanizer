@@ -279,7 +279,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
         const resp = await fetch('/api/rehumanize', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            flaggedSentences: flagged, level, style, tone, customTone,
+            flaggedSentences: flagged, level: 'ninja', style, tone, customTone,
             model: providerId, apiKey, fullText: currentFullText,
           }),
         });
@@ -289,8 +289,6 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
         currentFullText = data.fullText;
         const newDetection = detectAI(currentFullText);
         currentScore = newDetection.score;
-
-        if (round > 2 && currentScore <= result.finalScore + 5) break;
       }
 
       const finalDetection = detectAI(currentFullText);

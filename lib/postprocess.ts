@@ -90,8 +90,8 @@ function swapSynonyms(text: string): string {
       continue;
     }
 
-    // 10% chance to swap (reduced from 30%)
-    if (chance(0.10)) {
+    // 25% chance to swap
+    if (chance(0.25)) {
       const synonym = getRandomSafeSynonym(word);
       if (synonym) {
         // Preserve capitalization
@@ -539,6 +539,101 @@ function injectHumanVoice(text: string, model: CorpusStyleModel): string {
   return result;
 }
 
+// ==================== 2g. AGGRESSIVE AI VOCABULARY REMOVAL ====================
+
+function aggressiveSynonymSwap(text: string): string {
+  const replacements: [RegExp, string[]][] = [
+    [/\bdemonstrates?\b/gi, ['shows', 'makes clear', 'reveals', 'tells us']],
+    [/\bfurthermore\b/gi, ['also', 'and', 'on top of that', 'plus']],
+    [/\bmoreover\b/gi, ['also', 'and', 'besides', "what's more"]],
+    [/\badditionally\b/gi, ['also', 'and', 'plus', 'on top of that']],
+    [/\bconsequently\b/gi, ['so', 'which means', 'as a result', 'because of that']],
+    [/\bsignificantly\b/gi, ['a lot', 'noticeably', 'quite a bit', 'really']],
+    [/\bsubstantially\b/gi, ['a lot', 'quite a bit', 'in a big way']],
+    [/\bnotably\b/gi, ['especially', 'worth pointing out', 'interestingly']],
+    [/\bremarkably\b/gi, ['surprisingly', 'pretty amazing', 'kind of wild']],
+    [/\bparticularly\b/gi, ['especially', 'mainly', 'mostly']],
+    [/\bessentially\b/gi, ['basically', 'at its core', 'when you get down to it']],
+    [/\bfundamentally\b/gi, ['basically', 'at its core', 'really']],
+    [/\bultimately\b/gi, ['in the end', 'at the end of the day', 'when all is said and done']],
+    [/\binherently\b/gi, ['naturally', 'by its nature', 'built into it']],
+    [/\butilize\b/gi, ['use', 'work with', 'make use of']],
+    [/\bfacilitate\b/gi, ['help with', 'make easier', 'enable']],
+    [/\bleverage\b/gi, ['use', 'take advantage of', 'build on']],
+    [/\boptimize\b/gi, ['improve', 'make better', 'fine-tune']],
+    [/\bimplement\b/gi, ['set up', 'put in place', 'start using']],
+    [/\bcomprehensive\b/gi, ['thorough', 'complete', 'full']],
+    [/\binnovative\b/gi, ['new', 'fresh', 'creative', 'different']],
+    [/\btransformative\b/gi, ['game-changing', 'really big', 'major']],
+    [/\bunprecedented\b/gi, ['never seen before', 'completely new', 'totally unusual']],
+    [/\bstreamline\b/gi, ['simplify', 'make smoother', 'speed up']],
+    [/\bcrucial\b/gi, ['key', 'important', 'really matters']],
+    [/\bpivotal\b/gi, ['key', 'important', 'central']],
+    [/\bit is evident that\b/gi, ['clearly', 'obviously', 'you can see that']],
+    [/\bit is clear that\b/gi, ['clearly', 'obviously']],
+    [/\bplays? a crucial role\b/gi, ['matters a lot', 'is really important', 'makes a big difference']],
+    [/\bplays? an important role\b/gi, ['matters', 'is important', 'makes a difference']],
+    [/\bhas the potential to\b/gi, ['could', 'might', 'stands to']],
+    [/\bin today's world\b/gi, ['now', 'these days', 'right now']],
+    [/\bin the modern era\b/gi, ['now', 'these days']],
+    [/\bin conclusion\b/gi, ['']],
+    [/\bin summary\b/gi, ['']],
+    [/\bto summarize\b/gi, ['']],
+    [/\bit is important to note\b/gi, ['']],
+    [/\bit is worth noting\b/gi, ['']],
+    [/\bit is worth mentioning\b/gi, ['']],
+    [/\bdelves? into\b/gi, ['looks at', 'digs into', 'explores']],
+    [/\blandscape\b/gi, ['space', 'area', 'world', 'field']],
+    [/\bmultifaceted\b/gi, ['complex', 'complicated', 'many-sided']],
+    [/\bembark on a journey\b/gi, ['start', 'begin', 'get into']],
+    [/\bseamless(ly)?\b/gi, ['smooth', 'easy', 'natural']],
+    [/\bnumerous\b/gi, ['many', 'a lot of', 'tons of']],
+    [/\ba variety of\b/gi, ['different', 'various', 'all kinds of']],
+    [/\ba multitude of\b/gi, ['many', 'a lot of', 'tons of']],
+    [/\ba significant number of\b/gi, ['many', 'a lot of']],
+  ];
+
+  let result = text;
+  for (const [pattern, alternatives] of replacements) {
+    result = result.replace(pattern, () => randomPick(alternatives));
+  }
+  return result;
+}
+
+// ==================== 2h. FLOW DISRUPTION ====================
+
+function disruptFlow(text: string): string {
+  const paragraphs = splitParagraphs(text);
+  return paragraphs.map(p => {
+    const sentences = splitSentences(p);
+    if (sentences.length < 2) return p;
+
+    let result = [...sentences];
+
+    // 30% chance: add a short emphasis sentence
+    if (chance(0.30) && result.length >= 3) {
+      const insertions = ['Right.', 'Exactly.', 'Makes sense.', 'Think about that.', 'Hmm.', 'Interesting.', 'Yeah.', 'No, really.', 'Wild.', 'Honestly.'];
+      const idx = 1 + Math.floor(Math.random() * (result.length - 1));
+      result.splice(idx, 0, randomPick(insertions));
+    }
+
+    // 20% chance: start with a conjunction
+    if (chance(0.20)) {
+      const conjunctions = ['And ', 'But ', 'So ', 'Plus ', 'Then again, ', 'OK—', 'Well, '];
+      result[0] = randomPick(conjunctions) + result[0].charAt(0).toLowerCase() + result[0].slice(1);
+    }
+
+    // 15% chance: add a rhetorical question
+    if (chance(0.15) && result.length >= 2) {
+      const questions = ['Why does this matter?', 'Makes you wonder, right?', 'Sound familiar?', 'Who would have thought?', 'And is that really so surprising?'];
+      const idx = Math.floor(Math.random() * result.length);
+      result.splice(idx, 0, randomPick(questions));
+    }
+
+    return result.join(' ');
+  }).join('\n\n');
+}
+
 // ==================== MAIN POST-PROCESS FUNCTION ====================
 
 export interface PostProcessOptions {
@@ -554,49 +649,48 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
   const light = options?.light ?? false;
   let result = text;
 
-  // Step 1: Collocation replacements (always)
+  // ALWAYS: Aggressive AI vocabulary removal
+  result = aggressiveSynonymSwap(result);
+
+  // ALWAYS: Collocation replacements
   result = injectPerplexity(result);
 
   if (light) {
-    // Light version: only synonym swapping + light punctuation
     result = swapSynonyms(result);
     if (chance(0.5)) result = addPunctuationNoise(result);
+    if (chance(0.3)) result = disruptFlow(result);
     return result;
   }
 
-  // Step 2: Synonym swapping
+  // Full post-processing pipeline
   result = swapSynonyms(result);
-
-  // Step 3: Punctuation & formatting noise
   result = addPunctuationNoise(result);
-
-  // Step 4: Sentence length manipulation
   result = manipulateSentenceLengths(result);
+  result = disruptFlow(result);
 
-  // Step 5: Sentence reordering within paragraphs
+  // Sentence reordering
   const paragraphs = splitParagraphs(result);
   const reorderedParagraphs = paragraphs.map(p => reorderSentences(p));
   result = joinParagraphs(reorderedParagraphs);
 
-  // Step 6: Paragraph structure randomization
   result = randomizeParagraphs(result);
 
-  // Step 7: Additional random collocation pass
+  // Additional collocation passes
   for (let i = 0; i < 3; i++) {
     result = applyRandomCollocation(result);
   }
 
-  // Clean up: normalize whitespace but keep intentional double spaces between sentences
+  // Clean up
   result = result
     .replace(/  +/g, (match) => {
-      // Keep intentional double spaces (between sentences)
       if (/[.!?]  /.test(match)) return '  ';
       return ' ';
     })
-    .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\.\s*\./g, '.')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 
-  // Optional: Character Shield
   if (options?.characterShield) {
     result = addInvisibleCharacters(result);
   }

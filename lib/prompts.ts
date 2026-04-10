@@ -101,14 +101,55 @@ export const TONE_CONFIGS: Record<TonePreset, {
 // This prompt is designed to disrupt ALL of these signals.
 
 const ANTI_DETECTION_CORE = `
-Rewrite this text to sound human. Rules:
-1. Don't use: furthermore, moreover, additionally, consequently, in conclusion, it is important to note, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented
-2. Vary sentence lengths — mix short (under 10 words) and long (25+ words)
-3. Start each paragraph differently — use "And", "But", "So", questions, or one-word openers
-4. Use contractions naturally (it's, don't, can't, wouldn't've)
-5. Include personal voice: "I think", "honestly", "from what I can tell"
-6. Don't end paragraphs with summary sentences
-7. Let ideas flow naturally — slight tangents are fine`;
+You are a text rewriter. Your job is to make AI-generated text undetectable by AI detection tools.
+
+CRITICAL RULES — Follow these EXACTLY:
+
+1. BURSTINESS (sentence length variation):
+   - Every paragraph MUST have sentences of dramatically different lengths
+   - Include at least ONE very short sentence (3-6 words) per paragraph
+   - Include at least ONE long sentence (25+ words) per paragraph
+   - Pattern example: short. Medium length with some detail here. Long sentence that really goes into depth and explores the idea thoroughly. Short! Another medium one.
+   - NEVER have 3+ sentences of similar length in a row
+
+2. PERPLEXITY (unpredictable word choices):
+   - NEVER use: furthermore, moreover, additionally, consequently, in conclusion, it is important to note, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, utilize, facilitate, leverage, foster, cultivate, empower, streamline, optimize, implement, navigate, embark, underscores, highlights, showcases, illustrates, demonstrates
+   - NEVER use: significantly, substantially, notably, remarkably, particularly, essentially, fundamentally, ultimately, inherently, arguably
+   - NEVER start sentences with: "In this [article/paper/study]", "The [results/findings/analysis]", "Research has shown", "It is [widely/commonly]", "There is a growing", "One of the"
+   - Use unexpected word choices. Instead of "important" → "kind of a big deal", "matters", "changes things"
+   - Instead of "demonstrates" → "shows", "makes clear", "tells us"
+   - Instead of "significant" → "real", "big", "notable", "the kind that matters"
+
+3. STRUCTURAL DISRUPTION:
+   - Never start two consecutive paragraphs the same way
+   - Start paragraphs with: "And", "But", "So", "OK", "Here's the thing", "Wait—", a question, or a short fragment
+   - End paragraphs mid-thought sometimes — don't wrap up neatly
+   - Use ONE-word paragraphs occasionally for emphasis
+   - Mix paragraph lengths: some 1 sentence, some 5-6 sentences
+
+4. HUMAN VOICE:
+   - Use contractions everywhere: it's, don't, can't, won't, that's, there's, you'd, they're, we've, shouldn't've
+   - Include personal asides: "(which, honestly, surprised me)", "—at least in my experience", "if you think about it"
+   - Use first person occasionally: "I'd argue", "from what I can tell", "the way I see it"
+   - Add casual connectors: "so", "anyway", "right", "basically", "plus", "though"
+   - Occasional incomplete thoughts: "Well." "Right." "Exactly."
+
+5. FLOW DISRUPTION:
+   - Occasionally break the fourth wall: "which is kind of wild when you think about it"
+   - Add rhetorical questions
+   - Use em-dashes (—) for sudden topic shifts
+   - Use semicolons occasionally
+   - Add parenthetical asides that add personality
+
+6. ABSOLUTELY FORBIDDEN:
+   - No "In conclusion" or "To summarize" — just stop
+   - No "It is worth noting/mentioning" — just note it
+   - No hedging: "it could be argued", "one might consider", "it is possible that"
+   - No lists of three adjectives: "comprehensive, robust, and innovative"
+   - No balanced sentence pairs: "not only X but also Y"
+   - No "plays a [adjective] role" constructions
+
+OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
 // ==================== LEVEL-SPECIFIC INSTRUCTIONS ====================
 
@@ -239,12 +280,20 @@ export function getRehumanizePrompt(
   tone: TonePreset = 'conversational',
   customTone?: string
 ): string {
-  const base = getSystemPrompt('aggressive', style, tone, customTone);
-  
-  return `${base}
+  return `These sentences were flagged as AI-generated. Rewrite each one to sound completely human.
 
-These sentences still sound AI-generated. Rewrite each one to sound authentically human:
+RULES FOR EACH SENTENCE:
+- Change the sentence structure completely (don't just swap words)
+- Add a casual opener if possible: "Honestly,", "Basically,", "Look,", "The thing is,"
+- Use contractions
+- Make it shorter or longer than the original (different length = different fingerprint)
+- If it's long (>20 words), split it into two shorter sentences
+- If it's short (<8 words), merge with context or add detail
+- Remove any formal vocabulary: significantly, notably, remarkably, particularly, essentially, fundamentally, ultimately, demonstrates, facilitates, leverages, utilizes, comprehensive, innovative, unprecedented
+- Add personality: em-dash, parenthetical aside, or rhetorical question
+- Never start with "The" followed by a noun
 
+SENTENCES TO REWRITE:
 ${flaggedSentences.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
 Return ONLY the rewritten sentences, numbered, with no other text.`;
@@ -540,8 +589,8 @@ export function getCorpusAwareSystemPrompt(
 
 // Temperature and top_p settings per level
 export const LEVEL_PARAMS: Record<RewriteLevel, { temperature: number; topP: number }> = {
-  light: { temperature: 0.7, topP: 0.9 },
-  medium: { temperature: 0.75, topP: 0.92 },
-  aggressive: { temperature: 0.8, topP: 0.95 },
-  ninja: { temperature: 0.85, topP: 0.98 },
+  light: { temperature: 0.8, topP: 0.92 },
+  medium: { temperature: 0.9, topP: 0.95 },
+  aggressive: { temperature: 1.0, topP: 0.97 },
+  ninja: { temperature: 1.1, topP: 0.99 },
 };

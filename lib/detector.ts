@@ -211,7 +211,7 @@ function calculateQuantifierOveruse(text: string): number {
 
 function analyzeSentence(sentence: string): SentenceDetectionResult {
   const issues: string[] = [];
-  let score = 50;
+  let score = 35;
 
   const lower = sentence.toLowerCase();
 
@@ -259,32 +259,32 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   // Human indicators (positive signals)
   let humanSignals = 0;
   HUMAN_INDICATORS.forEach(h => { if (lower.includes(h)) humanSignals++; });
-  score += humanSignals * 3;
+  score += humanSignals * 1;
 
   // Contractions (human signal)
   const contractions = sentence.match(/\w+'(?:t|s|re|ve|ll|d|m)\b/gi);
-  if (contractions) score += contractions.length * 2;
+  if (contractions) score += contractions.length * 1;
 
   // First person (human signal)
-  if (/\b(I|me|my|we|us|our)\b/i.test(sentence)) { score += 4; }
+  if (/\b(I|me|my|we|us|our)\b/i.test(sentence)) { score += 2; }
 
   // Second person
-  if (/\byou\b/i.test(sentence)) { score += 2; }
+  if (/\byou\b/i.test(sentence)) { score += 1; }
 
   // Questions (human signal)
-  if (sentence.endsWith('?')) { score += 3; }
+  if (sentence.endsWith('?')) { score += 1; }
 
   // Exclamation
-  if (sentence.endsWith('!')) { score += 2; }
+  if (sentence.endsWith('!')) { score += 1; }
 
   // Em-dashes (human signal)
-  if (sentence.includes('—') || sentence.includes(' - ')) { score += 2; }
+  if (sentence.includes('—') || sentence.includes(' - ')) { score += 1; }
 
   // Parenthetical asides
-  if (/\([^)]+\)/.test(sentence)) { score += 3; }
+  if (/\([^)]+\)/.test(sentence)) { score += 1; }
 
   // Starts with conjunction
-  if (/^(and|but|so|because|also|plus|or|well|ok|hey)\b/i.test(sentence)) { score += 3; }
+  if (/^(and|but|so|because|also|plus|or|well|ok|hey)\b/i.test(sentence)) { score += 1; }
 
   // Uniform structure penalty
   if (/^(\w+\s+){8,20}\w+[.!?]$/.test(sentence)) {
@@ -294,7 +294,7 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   score = Math.max(0, Math.min(100, score));
 
   let classification: 'human' | 'maybe' | 'ai';
-  const sFloor = calibratedThresholds?.humanScoreMin ?? 60;
+  const sFloor = calibratedThresholds?.humanScoreMin ?? 55;
   const sMid = Math.max(20, sFloor - 20);
   if (score >= sFloor) classification = 'human';
   else if (score >= sMid) classification = 'maybe';
@@ -320,7 +320,7 @@ export function calibrateWithCorpus(styleModel: CorpusStyleModel): CalibratedThr
   const transitionCeiling = Math.round(totalTransitions * 200);
 
   calibratedThresholds = {
-    humanScoreMin: 45,
+    humanScoreMin: 55,
     humanScoreMax: 95,
     humanScoreMedian: 70,
     targetScore: 75,
@@ -395,7 +395,7 @@ export function detectAI(text: string): DetectionResult {
   );
 
   let overallVerdict: 'human' | 'ai' | 'mixed';
-  const humanFloor = calibratedThresholds?.humanScoreMin ?? 60;
+  const humanFloor = calibratedThresholds?.humanScoreMin ?? 55;
   const mixedFloor = Math.max(20, humanFloor - 20);
   if (overallScore >= humanFloor) overallVerdict = 'human';
   else if (overallScore >= mixedFloor) overallVerdict = 'mixed';
