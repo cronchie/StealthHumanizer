@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { normalizeText, stripHtml } from "./text-normalization.mjs";
 
 function safeUrl(value) {
@@ -33,13 +33,14 @@ function inferFileType(reference, contentType) {
 }
 
 async function parsePdf(buffer) {
-  const parser = new PDFParse({ data: buffer });
-  try {
-    const result = await parser.getText();
-    return result?.text || "";
-  } finally {
-    await parser.destroy();
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+  let text = "";
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(" ") + "\n";
   }
+  return text.trim();
 }
 
 async function parseDocx(buffer) {
