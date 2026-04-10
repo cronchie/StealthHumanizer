@@ -11,7 +11,7 @@ import { RewriteLevel, StylePreset, TonePreset, HumanizationResult, ModelProvide
 import { TONE_CONFIGS, SAMPLE_AI_TEXT, SAMPLE_TECHNICAL_TEXT } from '@/lib/prompts';
 import { detectAI, getScoreColor, getScoreBarColor } from '@/lib/detector';
 import { getReadabilityLabel } from '@/lib/readability';
-import { countWords, downloadAsTxt, downloadAsDocx } from '@/lib/storage';
+import { countWords, downloadAsTxt, downloadAsDocx, getApiKeys } from '@/lib/storage';
 import { PROVIDERS } from '@/lib/providers';
 
 const REWRITE_LEVELS: { id: RewriteLevel; name: string; desc: string }[] = [
@@ -75,9 +75,10 @@ interface GrammarIssue {
 
 interface HumanizerProps {
   showToast: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
+  onGoToSettings?: () => void;
 }
 
-export default function Humanizer({ showToast }: HumanizerProps) {
+export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps) {
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState<HumanizationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -118,6 +119,7 @@ export default function Humanizer({ showToast }: HumanizerProps) {
   const [preferredModel, setPreferredModel] = useState<ModelProvider>('gemini');
 
   const wordCount = countWords(inputText);
+  const hasAnyApiKey = Object.values(getApiKeys()).some(v => v && v.trim().length > 0);
 
   useEffect(() => {
     const reuse = sessionStorage.getItem('stealthhumanizer_reuse_text');
@@ -226,6 +228,10 @@ export default function Humanizer({ showToast }: HumanizerProps) {
 
   // File upload handler
   const handleFileUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('error', 'File too large. Maximum size is 10MB.');
+      return;
+    }
     setFileUploading(true);
     try {
       const formData = new FormData();
@@ -359,6 +365,23 @@ export default function Humanizer({ showToast }: HumanizerProps) {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      {/* API Key Gate */}
+      {!hasAnyApiKey && (
+        <div className="glass-card rounded-xl p-6 border border-accent-500/30 animate-fade-in">
+          <div className="flex flex-col items-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-accent-500/20 flex items-center justify-center">
+              <Keyboard className="w-7 h-7 text-accent-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Set Up API Key to Get Started</h3>
+            <p className="text-dark-400 text-sm max-w-md">Choose from 13 free and paid AI providers. Your keys stay in your browser — never sent to our servers.</p>
+            <button onClick={onGoToSettings}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-medium text-sm transition-all shadow-lg shadow-accent-500/25">
+              <Keyboard className="w-4 h-4" /> Go to Settings
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

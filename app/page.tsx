@@ -154,7 +154,7 @@ export default function Home() {
           <HeroSection />
           <HowItWorks />
           <main className="container mx-auto px-4 py-6 max-w-7xl" id="humanizer-section">
-            <Humanizer showToast={showToast} />
+            <Humanizer showToast={showToast} onGoToSettings={() => setActiveTab('settings')} />
           </main>
           <TrustIndicators />
         </>
