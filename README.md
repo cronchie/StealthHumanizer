@@ -153,6 +153,12 @@ See [ROADMAP.md](./ROADMAP.md) for release milestones and planned improvements.
 
 Contributions are welcome. Please review [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
 
+## 👨‍💻 Author
+
+**Rudra Sarker** — 3rd-year IPE student at SUST, Bangladesh. Building open-source tools for accessibility, education, and developer productivity.
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-rudra496-blue?logo=github)](https://rudra496.github.io/site) [![GitHub](https://img.shields.io/badge/GitHub-rudra496-181717?logo=github)](https://github.com/rudra496) [![LinkedIn](https://img.shields.io/badge/LinkedIn-Rudra_Sarker-0A66C2?logo=linkedin)](https://www.linkedin.com/in/rudrasarker) [![Twitter/X](https://img.shields.io/badge/X-@Rudra496-000?logo=x)](https://x.com/Rudra496)
+
 ## Security, Support, and License
 
 - Security policy: [SECURITY.md](./SECURITY.md)
