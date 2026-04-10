@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
 
       // Use pdfjs-dist directly (pure JS, no native deps — works on Vercel serverless)
       const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-      const doc = await pdfjs.getDocument({ data: uint8 }).promise;
+      // Disable worker for serverless environments
+      if (pdfjs.GlobalWorkerOptions) {
+        pdfjs.GlobalWorkerOptions.workerSrc = '';
+      }
+      const doc = await pdfjs.getDocument({ data: uint8, useSystemFonts: true }).promise;
 
       let fullText = '';
       for (let i = 1; i <= doc.numPages; i++) {

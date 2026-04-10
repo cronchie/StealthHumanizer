@@ -190,12 +190,13 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
       if (confMsg) showToast('info', `Detector confidence${confMsg}`);
 
       // Auto-continue: if score < 100%, start rehumanize loop automatically
-      if (data.finalScore < 100) {
-        showToast('info', `Score ${data.finalScore}% — auto-refining until 100%...`);
+      if (data.finalScore < 90) {
+        showToast('info', `Score ${data.finalScore}% — auto-refining to 90%+...`);
         // Don't setLoading(false) yet — autoRehumanize will handle it
         await autoRehumanize(data);
       } else {
-        showToast('success', `🎯 100% human on first pass!`);
+        showToast('success', `🎯 90%+ human on first pass!`);
+        navigator.clipboard.writeText(data.fullText).catch(() => {});
         setLoading(false);
         setProgress({ pass: 0, max: 0, message: '' });
       }
@@ -277,9 +278,10 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
     const maxRounds = 8;
 
     try {
-      while (currentScore < 100 && round < maxRounds) {
+      while (currentScore < 90 && round < maxRounds) {
         round++;
-        setPipelineStep(`Refining round ${round}... (${currentScore}% → targeting 100%)`);
+        setPipelineStep(`Refining round ${round}... (${currentScore}% → targeting 90%)`);
+        setProgress({ pass: round, max: maxRounds, message: `Round ${round} — ${currentScore}%` });
         showToast('info', `🔄 Round ${round}... current: ${currentScore}%`);
 
         const detection = detectAI(currentFullText);
@@ -321,8 +323,12 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
       });
       setPipelineStep('');
 
-      if (finalDetection.score >= 100) {
-        showToast('success', `🎯 100% human achieved in ${initialResult.passes + round} total passes!`);
+      navigator.clipboard.writeText(currentFullText).catch(() => {});
+      if (finalDetection.score < 90) {
+        setShowComparison(true);
+      }
+      if (finalDetection.score >= 90) {
+        showToast('success', `🎯 90%+ human achieved in ${initialResult.passes + round} total passes!`);
       } else {
         showToast('info', `Refined ${round} rounds → ${finalDetection.score}% human. Click rehumanize for more.`);
       }
@@ -348,8 +354,9 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
     const maxRounds = 8;
 
     try {
-      while (currentScore < 100 && round < maxRounds) {
+      while (currentScore < 90 && round < maxRounds) {
         round++;
+        setProgress({ pass: round, max: maxRounds, message: `Round ${round} — ${currentScore}%` });
         showToast('info', `Re-humanizing round ${round}... (current: ${currentScore}%)`);
 
         const detection = detectAI(currentFullText);
@@ -394,8 +401,12 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
         wordCount: { ...result.wordCount, output: countWords(currentFullText) },
       });
 
-      if (finalDetection.score >= 100) {
-        showToast('success', `🎯 Perfect! 100% human in ${round} round${round > 1 ? 's' : ''}!`);
+      navigator.clipboard.writeText(currentFullText).catch(() => {});
+      if (finalDetection.score < 90) {
+        setShowComparison(true);
+      }
+      if (finalDetection.score >= 90) {
+        showToast('success', `🎯 90%+ human in ${round} round${round > 1 ? 's' : ''}!`);
       } else if (round >= maxRounds) {
         showToast('info', `Re-humanized ${round} rounds → ${finalDetection.score}% human (max rounds reached)`);
       } else {
@@ -405,6 +416,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
       showToast('error', err.message);
     } finally {
       setRehumanizing(false);
+      setProgress({ pass: 0, max: 0, message: '' });
     }
   };
 
@@ -458,6 +470,20 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
     setGrammarIssues([]);
     setCorrectedText('');
     showToast('success', 'Grammar corrections applied!');
+  };
+
+  const getHighlightedText = (fullText: string, sentences: any[]) => {
+    const sorted = [...sentences]
+      .filter((s: any) => s.text?.trim().length > 0 && s.score < 60)
+      .sort((a: any, b: any) => b.text.length - a.text.length);
+    let html = fullText;
+    for (const sentence of sorted) {
+      const bgStyle = sentence.score < 35
+        ? 'background:rgba(239,68,68,0.2);border-radius:3px;padding:0 2px;'
+        : 'background:rgba(234,179,8,0.2);border-radius:3px;padding:0 2px;';
+      html = html.replace(sentence.text, `<span style="${bgStyle}" title="AI Score: ${sentence.score}%">${sentence.text}</span>`);
+    }
+    return html;
   };
 
   const detection = result ? detectAI(result.fullText) : null;
@@ -859,7 +885,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
                   })}
                 </div>
               ) : (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{result.fullText}</p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: getHighlightedText(result.fullText, detection?.sentences || []) }} />
               )}
             </div>
 
@@ -868,7 +894,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
               <button onClick={handleRehumanize} disabled={rehumanizing || flaggedCount === 0}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <RotateCcw className={`w-4 h-4 ${rehumanizing ? 'animate-spin' : ''}`} />
-                {rehumanizing ? 'Re-humanizing...' : `🔄 Re-Humanize Until 100% (${flaggedCount} flagged)`}
+                {rehumanizing ? 'Re-humanizing...' : `🔄 Re-Humanize to 90%+ (${flaggedCount} flagged)`}
               </button>
               <button onClick={handleGrammarCheck} disabled={grammarChecking}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -944,7 +970,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
               <p className="text-xs text-dark-400">Reading Time</p>
             </div>
           </div>
-          <p className="text-xs text-dark-500 mt-3">ℹ️ Detection scores are estimated using heuristic analysis. For accurate results, use a dedicated AI detection service.</p>
+          <p className="text-xs text-dark-500 mt-3">⚡ Estimated score — real detectors (QuillBot, GPTZero, ZeroGPT) may differ. Ninja level + Character Shield gives best external results.</p>
         </div>
       )}
 

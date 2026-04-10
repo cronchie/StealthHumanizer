@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
           replacementIdx++;
         }
       }
-      const processedText = postprocess(newText, { light: true });
+      const processedText = postprocess(newText);
       return NextResponse.json({ rehumanizedSentences: rehumanized, fullText: processedText });
     }
 
-    return NextResponse.json({ rehumanizedSentences: rehumanized, fullText: postprocess(rehumanized.join(' '), { light: true }) });
+    return NextResponse.json({ rehumanizedSentences: rehumanized, fullText: postprocess(rehumanized.join(' ')) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }
