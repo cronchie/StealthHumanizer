@@ -188,9 +188,19 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
       const confMsg = typeof conf === 'number' ? ` | Confidence: ${conf}%` : '';
       showToast('success', `Done with ${data.modelName} (${data.passes} pass${data.passes > 1 ? 'es' : ''}) — ${scoreMsg}`);
       if (confMsg) showToast('info', `Detector confidence${confMsg}`);
+
+      // Auto-continue: if score < 100%, start rehumanize loop automatically
+      if (data.finalScore < 100) {
+        showToast('info', `Score ${data.finalScore}% — auto-refining until 100%...`);
+        // Don't setLoading(false) yet — autoRehumanize will handle it
+        await autoRehumanize(data);
+      } else {
+        showToast('success', `🎯 100% human on first pass!`);
+        setLoading(false);
+        setProgress({ pass: 0, max: 0, message: '' });
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Something went wrong');
-    } finally {
       setLoading(false);
       setProgress({ pass: 0, max: 0, message: '' });
     }
@@ -255,7 +265,77 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
     if (file) handleFileUpload(file);
   };
 
-  // Re-humanize flagged sentences
+  // Auto-continue rehumanization until 100% (called after initial humanize)
+  const autoRehumanize = async (initialResult: any) => {
+    const { providerId, apiKey } = getApiCredentials();
+    if (!apiKey) return;
+
+    setRehumanizing(true);
+    let currentFullText = initialResult.fullText;
+    let currentScore = initialResult.finalScore;
+    let round = 0;
+    const maxRounds = 8;
+
+    try {
+      while (currentScore < 100 && round < maxRounds) {
+        round++;
+        setPipelineStep(`Refining round ${round}... (${currentScore}% → targeting 100%)`);
+        showToast('info', `🔄 Round ${round}... current: ${currentScore}%`);
+
+        const detection = detectAI(currentFullText);
+        const flagged = detection.sentences.filter((s: any) => s.classification !== 'human').map((s: any) => s.text);
+        if (flagged.length === 0) break;
+
+        const resp = await fetch('/api/rehumanize', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            flaggedSentences: flagged, level: 'ninja', style, tone, customTone,
+            model: providerId, apiKey, fullText: currentFullText,
+          }),
+        });
+        if (!resp.ok) break;
+        const data = await resp.json();
+        currentFullText = data.fullText;
+
+        const newDetection = detectAI(currentFullText);
+        currentScore = newDetection.score;
+      }
+
+      const finalDetection = detectAI(currentFullText);
+      const origSentences = initialResult.sentences.map((s: any) => s.original);
+      const newSentencesSplit = currentFullText.match(/[^.!?]+[.!?]+[\s]*/g)?.map((s: string) => s.trim()).filter((s: string) => s.length > 0) || [currentFullText.trim()];
+      const maxLen = Math.max(origSentences.length, newSentencesSplit.length);
+      const sentences = [];
+      for (let i = 0; i < maxLen; i++) {
+        sentences.push({
+          original: origSentences[i] || '', humanized: newSentencesSplit[i] || '',
+          alternatives: [], index: i, detectionScore: finalDetection.sentences[i]?.score,
+        });
+      }
+
+      setResult({
+        ...initialResult, sentences, fullText: currentFullText,
+        passes: initialResult.passes + round,
+        finalScore: finalDetection.score,
+        wordCount: { ...initialResult.wordCount, output: countWords(currentFullText) },
+      });
+      setPipelineStep('');
+
+      if (finalDetection.score >= 100) {
+        showToast('success', `🎯 100% human achieved in ${initialResult.passes + round} total passes!`);
+      } else {
+        showToast('info', `Refined ${round} rounds → ${finalDetection.score}% human. Click rehumanize for more.`);
+      }
+    } catch (err: any) {
+      showToast('error', err.message);
+    } finally {
+      setRehumanizing(false);
+      setLoading(false);
+      setProgress({ pass: 0, max: 0, message: '' });
+    }
+  };
+
+  // Re-humanize flagged sentences (manual trigger)
   const handleRehumanize = async () => {
     if (!result) return;
     const { providerId, apiKey } = getApiCredentials();
