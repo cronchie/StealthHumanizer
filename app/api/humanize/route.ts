@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RewriteLevel, StylePreset, TonePreset, ModelProvider } from '@/lib/types';
-import { getSystemPrompt, getRehumanizePrompt, getSelfCheckPrompt, getFixPrompt, LEVEL_PARAMS } from '@/lib/prompts';
+import { getSystemPrompt, getRehumanizePrompt, getSelfCheckPrompt, getFixPrompt, getCorpusAwareSystemPrompt, LEVEL_PARAMS } from '@/lib/prompts';
 import { generateWithProvider, getProvider } from '@/lib/providers';
 import { detectAI } from '@/lib/detector';
-import { postprocess } from '@/lib/postprocess';
+import { postprocess, corpusAwarePostprocess } from '@/lib/postprocess';
+import { loadStyleModelAsync, loadStyleModel, hasStyleModel } from '@/lib/style-model';
+import { calibrateWithCorpus } from '@/lib/detector';
 import { chainModels } from '@/lib/chain';
 import {
   appendAuditLog,
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
       text, level, style, tone, customTone, model, apiKey,
       targetScore, language, writingSample,
       // New pipeline parameters
-      postprocess: enablePostprocess = false,
+      postprocess: enablePostprocess = true,
       characterShield: enableCharShield = false,
       chainModels: chainModelIds = [],
       apiKeys: extraApiKeys = {},
@@ -100,8 +102,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Load corpus style model
+    await loadStyleModelAsync();
+    const useCorpus = hasStyleModel();
+
+    // Calibrate detector with corpus
+    if (useCorpus) {
+      const model = loadStyleModel();
+      if (model) calibrateWithCorpus(model);
+    }
+
     const params = LEVEL_PARAMS[level as RewriteLevel];
-    const systemPrompt = getSystemPrompt(level, style, tone, customTone, writingSample, language);
+    const systemPrompt = useCorpus
+      ? getCorpusAwareSystemPrompt(level, style, tone, customTone, writingSample, undefined, language)
+      : getSystemPrompt(level, style, tone, customTone, writingSample, language);
     const providerInfo = getProvider(model);
     const modelId = providerInfo?.defaultModel || model;
 
@@ -183,6 +197,11 @@ export async function POST(request: NextRequest) {
     let currentText = humanizedText;
 
     // ==================== LAYER 2: Post-Processing ====================
+    // Always apply corpus-aware post-processing if model is loaded
+    if (useCorpus) {
+      currentText = corpusAwarePostprocess(currentText);
+    }
+    // Also apply regular post-processing if toggled on
     if (enablePostprocess) {
       currentText = postprocess(currentText, { characterShield: enableCharShield });
     }

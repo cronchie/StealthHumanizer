@@ -211,7 +211,7 @@ function calculateQuantifierOveruse(text: string): number {
 
 function analyzeSentence(sentence: string): SentenceDetectionResult {
   const issues: string[] = [];
-  let score = 65;
+  let score = 50;
 
   const lower = sentence.toLowerCase();
 
@@ -220,75 +220,75 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   AI_PHRASES.forEach(phrase => {
     if (lower.includes(phrase)) { aiPhraseCount++; issues.push(`AI phrase: "${phrase}"`); }
   });
-  score -= aiPhraseCount * 18;
+  score -= aiPhraseCount * 22;
 
   // AI sentence starters
   AI_SENTENCE_STARTERS.forEach(starter => {
     if (lower.startsWith(starter.toLowerCase())) {
-      score -= 8;
+      score -= 12;
       issues.push(`AI-like sentence opener`);
     }
   });
 
   // Sentence length
   const wordCount = sentence.split(/\s+/).length;
-  if (wordCount > 35) { issues.push('Very long sentence'); score -= 12; }
-  if (wordCount > 25) { issues.push('Long sentence (AI tendency)'); score -= 5; }
+  if (wordCount > 35) { issues.push('Very long sentence'); score -= 18; }
+  if (wordCount > 25) { issues.push('Long sentence (AI tendency)'); score -= 8; }
   if (wordCount <= 5 && wordCount >= 2) { score += 5; } // Short sentences are human-like
 
   // Formal vocabulary
   if (/\b(utilize|implement|facilitate|leverage|foster|cultivate|empower)\b/i.test(sentence)) {
-    issues.push('Formal/AI vocabulary'); score -= 10;
+    issues.push('Formal/AI vocabulary'); score -= 15;
   }
 
   // Passive voice
   if (/\b(is|are|was|were|been|being)\s+\w+ed\b/i.test(sentence)) {
-    issues.push('Passive voice'); score -= 6;
+    issues.push('Passive voice'); score -= 8;
   }
 
   // Hedging
   HEDGING_PHRASES.forEach(h => {
-    if (lower.includes(h)) { issues.push('Hedging language'); score -= 8; }
+    if (lower.includes(h)) { issues.push('Hedging language'); score -= 10; }
   });
 
   // Quantifiers
   QUANTIFIERS.forEach(q => {
-    if (lower.includes(q)) { score -= 4; }
+    if (lower.includes(q)) { score -= 6; }
   });
 
   // Human indicators (positive signals)
   let humanSignals = 0;
   HUMAN_INDICATORS.forEach(h => { if (lower.includes(h)) humanSignals++; });
-  score += humanSignals * 6;
+  score += humanSignals * 3;
 
   // Contractions (human signal)
   const contractions = sentence.match(/\w+'(?:t|s|re|ve|ll|d|m)\b/gi);
-  if (contractions) score += contractions.length * 4;
+  if (contractions) score += contractions.length * 2;
 
   // First person (human signal)
-  if (/\b(I|me|my|we|us|our)\b/i.test(sentence)) { score += 7; }
+  if (/\b(I|me|my|we|us|our)\b/i.test(sentence)) { score += 4; }
 
   // Second person
-  if (/\byou\b/i.test(sentence)) { score += 5; }
+  if (/\byou\b/i.test(sentence)) { score += 2; }
 
   // Questions (human signal)
-  if (sentence.endsWith('?')) { score += 6; }
+  if (sentence.endsWith('?')) { score += 3; }
 
   // Exclamation
-  if (sentence.endsWith('!')) { score += 4; }
+  if (sentence.endsWith('!')) { score += 2; }
 
   // Em-dashes (human signal)
-  if (sentence.includes('—') || sentence.includes(' - ')) { score += 4; }
+  if (sentence.includes('—') || sentence.includes(' - ')) { score += 2; }
 
   // Parenthetical asides
-  if (/\([^)]+\)/.test(sentence)) { score += 5; }
+  if (/\([^)]+\)/.test(sentence)) { score += 3; }
 
   // Starts with conjunction
-  if (/^(and|but|so|because|also|plus|or|well|ok|hey)\b/i.test(sentence)) { score += 6; }
+  if (/^(and|but|so|because|also|plus|or|well|ok|hey)\b/i.test(sentence)) { score += 3; }
 
   // Uniform structure penalty
   if (/^(\w+\s+){8,20}\w+[.!?]$/.test(sentence)) {
-    issues.push('Uniform structure'); score -= 12;
+    issues.push('Uniform structure'); score -= 18;
   }
 
   score = Math.max(0, Math.min(100, score));
@@ -363,15 +363,15 @@ export function detectAI(text: string): DetectionResult {
 
   const weights = {
     sentenceAvg: 0.25,
-    perplexity: 0.12,
-    burstiness: 0.12,
-    vocabulary: 0.08,
+    perplexity: 0.15,
+    burstiness: 0.15,
+    vocabulary: 0.05,
     sentenceVariation: 0.08,
     transitions: 0.08,
     passive: 0.05,
-    aiPhrases: 0.07,
+    aiPhrases: 0.12,
     sentenceStart: 0.05,
-    pronoun: 0.05,
+    pronoun: 0.03,
     hedging: 0.03,
     quantifier: 0.02,
   };
