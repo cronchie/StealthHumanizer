@@ -7,22 +7,22 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    if (!file) return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
 
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'File too large. Maximum size is 10MB.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'File too large. Maximum size is 10MB.' }, { status: 400 });
     }
 
     if (file.size === 0) {
-      return NextResponse.json({ error: 'File is empty.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'File is empty.' }, { status: 400 });
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase();
     
     if (ext === 'txt') {
       const text = await file.text();
-      if (!text.trim()) return NextResponse.json({ error: 'File contains no text content.' }, { status: 400 });
-      return NextResponse.json({ text, name: file.name });
+      if (!text.trim()) return NextResponse.json({ success: false, error: 'File contains no text content.' }, { status: 400 });
+      return NextResponse.json({ success: true, text, name: file.name });
     }
 
     if (ext === 'docx') {
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       const result = await mammoth.extractRawText({ buffer });
-      if (!result.value.trim()) return NextResponse.json({ error: 'Document contains no text content.' }, { status: 400 });
-      return NextResponse.json({ text: result.value, name: file.name });
+      if (!result.value.trim()) return NextResponse.json({ success: false, error: 'Document contains no text content.' }, { status: 400 });
+      return NextResponse.json({ success: true, text: result.value, name: file.name });
     }
 
     if (ext === 'pdf') {
@@ -58,12 +58,12 @@ export async function POST(request: NextRequest) {
 
       if (!fullText.trim()) {
         return NextResponse.json(
-          { error: 'PDF contains no extractable text. It may be a scanned/image-based PDF.' },
+          { success: false, error: 'PDF contains no extractable text. It may be a scanned/image-based PDF.' },
           { status: 400 }
         );
       }
 
-      return NextResponse.json({ text: fullText.trim(), name: file.name });
+      return NextResponse.json({ success: true, text: fullText.trim(), name: file.name });
     }
 
     return NextResponse.json(
@@ -72,6 +72,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (err: any) {
     const msg = err?.message || 'Failed to parse file';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
