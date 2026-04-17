@@ -4,12 +4,24 @@ import { postprocess } from '@/lib/postprocess';
 import { getSystemPrompt, LEVEL_PARAMS } from '@/lib/prompts';
 import { generateWithProvider } from '@/lib/providers';
 import { RewriteLevel } from '@/lib/types';
+import { asyncMapConcurrent } from '@/lib/batch';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const MAX_BATCH_COUNT = 20;
 const MAX_TEXT_LENGTH = 5000;
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimit = checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429, headers: { 'X-RateLimit-Remaining': String(rateLimit.remaining) } },
+      );
+    }
+
     const body = await request.json();
     const { texts, level = 'medium', style = 'humanize', tone = 'conversational', model, apiKey } = body;
 
@@ -28,8 +40,10 @@ export async function POST(request: NextRequest) {
     const params = LEVEL_PARAMS[level as RewriteLevel] ?? LEVEL_PARAMS['medium'];
     const systemPrompt = getSystemPrompt(level, style, tone);
 
-    const results = await Promise.all(
-      texts.map(async (text: unknown, index: number) => {
+    // Use concurrency-limited batch processing (max 3 parallel)
+    const results = await asyncMapConcurrent(
+      texts,
+      async (text: unknown, index: number) => {
         if (typeof text !== 'string' || text.trim().length === 0) {
           return { index, error: `Item at index ${index} must be a non-empty string`, input: String(text ?? ''), output: null };
         }
@@ -48,7 +62,8 @@ export async function POST(request: NextRequest) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           return { index, error: message, input: text, output: null };
         }
-      })
+      },
+      3,
     );
 
     const successCount = results.filter(r => r.error === null).length;

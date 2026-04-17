@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const { flaggedSentences, level, style, tone, customTone, model, apiKey, fullText } = await request.json();
     if (!flaggedSentences?.length || !model || !apiKey) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
     const providerInfo = getProvider(model);
@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
         }
       }
       const processedText = postprocess(newText);
-      return NextResponse.json({ rehumanizedSentences: rehumanized, fullText: processedText });
+      return NextResponse.json({ success: true, rehumanizedSentences: rehumanized, fullText: processedText });
     }
 
-    return NextResponse.json({ rehumanizedSentences: rehumanized, fullText: postprocess(rehumanized.join(' ')) });
+    return NextResponse.json({ success: true, rehumanizedSentences: rehumanized, fullText: postprocess(rehumanized.join(' ')) });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Internal error' }, { status: 500 });
   }
 }

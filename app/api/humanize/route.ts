@@ -14,30 +14,11 @@ import {
   enforceSafetyPolicy,
 } from '@/lib/server/humanization-governance';
 import { scoreHumanLikeness } from '@/lib/server/model-runtime';
+import { asyncMapConcurrent } from '@/lib/batch';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { countWords, chunkText } from '@/lib/storage';
 
 const MAX_BATCH_SIZE = 20;
-
-function countWords(text: string): number { return text.trim().split(/\s+/).filter(w => w.length > 0).length; }
-
-function chunkText(text: string, maxWords: number = 2500): string[] {
-  const words = text.split(/\s+/);
-  if (words.length <= maxWords) return [text];
-  const chunks: string[] = [];
-  let current: string[] = [];
-  for (const word of words) {
-    current.push(word);
-    if (current.length >= maxWords) {
-      const ct = current.join(' ');
-      const last = Math.max(ct.lastIndexOf('.'), ct.lastIndexOf('!'), ct.lastIndexOf('?'));
-      if (last > ct.length * 0.5) {
-        chunks.push(ct.slice(0, last + 1));
-        current = ct.slice(last + 1).trim().split(/\s+/);
-      } else { chunks.push(ct); current = []; }
-    }
-  }
-  if (current.length > 0) chunks.push(current.join(' '));
-  return chunks;
-}
 
 function splitSentences(text: string): string[] {
   return text.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(s => s.length > 0) || [text.trim()];
@@ -73,6 +54,16 @@ async function llmSelfCheck(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimit = checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429 },
+      );
+    }
+
     const {
       text, level, style, tone, customTone, model, apiKey,
       targetScore, language, writingSample,
@@ -84,16 +75,17 @@ export async function POST(request: NextRequest) {
       batchTexts = [],
     } = await request.json();
 
-    if (!text || !model || !apiKey) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    if (countWords(text) > 10000) return NextResponse.json({ error: 'Exceeds 10,000 word limit' }, { status: 400 });
+    if (!text || !model || !apiKey) return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    if (countWords(text) > 10000) return NextResponse.json({ success: false, error: 'Exceeds 10,000 word limit' }, { status: 400 });
     if (Array.isArray(batchTexts) && batchTexts.length > MAX_BATCH_SIZE) {
-      return NextResponse.json({ error: `Batch size exceeds limit (${MAX_BATCH_SIZE}).` }, { status: 400 });
+      return NextResponse.json({ success: false, error: `Batch size exceeds limit (${MAX_BATCH_SIZE}).` }, { status: 400 });
     }
 
     const safety = enforceSafetyPolicy(text);
     if (safety.blocked) {
       return NextResponse.json(
         {
+          success: false,
           error: 'Request blocked by safety policy.',
           reasons: safety.reasons,
           safeUseGuidance: safety.safeUseGuidance,
@@ -121,38 +113,28 @@ export async function POST(request: NextRequest) {
 
     if (Array.isArray(batchTexts) && batchTexts.length > 0) {
       const selected = batchTexts.slice(0, MAX_BATCH_SIZE).filter((item: unknown) => typeof item === 'string' && item.trim().length > 0);
-      const batchResults: Array<{
-        index: number;
-        fullText: string;
-        finalScore: number;
-        confidenceReport: ReturnType<typeof buildConfidenceReport>;
-        runtimeModelScore: Awaited<ReturnType<typeof scoreHumanLikeness>>;
-      }> = [];
-
-      for (let i = 0; i < selected.length; i++) {
-        const batchInput = selected[i];
-        const chunks = chunkText(batchInput, 2500);
-        let rewritten = '';
-        for (let j = 0; j < chunks.length; j++) {
-          const out = await generateWithProvider(model, apiKey, systemPrompt, chunks[j], {
-            model: modelId,
-            temperature: params.temperature,
-            topP: params.topP,
-          });
-          rewritten += (j > 0 ? '\n\n' : '') + out;
-        }
-        const final = enablePostprocess ? postprocess(rewritten, { light: true }) : rewritten;
-        const detection = detectAI(final);
-        const confidenceReport = buildConfidenceReport(detection.score);
-        const runtimeModelScore = await scoreHumanLikeness(final);
-        batchResults.push({
-          index: i,
-          fullText: final,
-          finalScore: detection.score,
-          confidenceReport,
-          runtimeModelScore,
-        });
-      }
+      // Use concurrency-limited batch processing
+      const batchResults = await asyncMapConcurrent(
+        selected,
+        async (batchInput: string, i: number) => {
+          const chunks = chunkText(batchInput, 2500);
+          let rewritten = '';
+          for (let j = 0; j < chunks.length; j++) {
+            const out = await generateWithProvider(model, apiKey, systemPrompt, chunks[j], {
+              model: modelId,
+              temperature: params.temperature,
+              topP: params.topP,
+            });
+            rewritten += (j > 0 ? '\n\n' : '') + out;
+          }
+          const final = enablePostprocess ? postprocess(rewritten, { light: true }) : rewritten;
+          const detection = detectAI(final);
+          const confidenceReport = buildConfidenceReport(detection.score);
+          const runtimeModelScore = await scoreHumanLikeness(final);
+          return { index: i, fullText: final, finalScore: detection.score, confidenceReport, runtimeModelScore };
+        },
+        3,
+      );
 
       await appendAuditLog({
         timestamp: new Date().toISOString(),
@@ -163,7 +145,7 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json({
-        mode: 'batch',
+        success: true, mode: 'batch',
         count: batchResults.length,
         results: batchResults,
         model,
@@ -325,8 +307,8 @@ export async function POST(request: NextRequest) {
       batchCount: Array.isArray(batchTexts) ? batchTexts.length : 0,
     });
 
-    return NextResponse.json(responsePayload);
+    return NextResponse.json({ success: true, ...responsePayload });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Internal error' }, { status: 500 });
   }
 }

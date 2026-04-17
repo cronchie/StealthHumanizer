@@ -6,7 +6,7 @@ import { GRAMMAR_CHECK_SYSTEM_PROMPT } from '@/lib/prompts';
 export async function POST(request: NextRequest) {
   try {
     const { text, model, apiKey } = await request.json();
-    if (!text || !model || !apiKey) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!text || !model || !apiKey) return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
 
     const providerInfo = getProvider(model);
     const modelId = providerInfo?.defaultModel || model;
@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
     const jsonMatch = result.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      return NextResponse.json({
+      return NextResponse.json({ success: true,
         issues: parsed.issues || [],
         correctedText: parsed.correctedText || text,
       });
     }
 
-    return NextResponse.json({ error: 'Failed to parse grammar check results' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to parse grammar check results' }, { status: 500 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Internal error' }, { status: 500 });
   }
 }
