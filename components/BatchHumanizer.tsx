@@ -172,11 +172,13 @@ export default function BatchHumanizer({ showToast }: BatchHumanizerProps) {
     });
 
     try {
+      // Only retry failed items to save API credits
+      const failedTexts = failedIndices.map(i => items[i].text);
       const res = await fetch('/api/humanize-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          texts: items.map(i => i.text),
+          texts: failedTexts,
           level,
           model,
           apiKey,
@@ -189,19 +191,26 @@ export default function BatchHumanizer({ showToast }: BatchHumanizerProps) {
         return;
       }
 
-      setResults(data.results ?? []);
+      // Merge retry results back into existing results
+      const mergedResults = [...results];
+      failedIndices.forEach((originalIdx, retryIdx) => {
+        if (data.results?.[retryIdx]) {
+          mergedResults[originalIdx] = { ...data.results[retryIdx], index: originalIdx };
+        }
+      });
+      setResults(mergedResults);
+
       const finalStatuses: Record<string, ItemStatus> = {};
-      items.forEach((item, idx) => {
-        if (!item.text.trim()) return;
-        const result = data.results?.[idx];
-        if (result) {
-          finalStatuses[item.id] = result.error ? 'error' : 'success';
+      mergedResults.forEach((r, idx) => {
+        const item = items[idx];
+        if (item && item.text.trim()) {
+          finalStatuses[item.id] = r.error ? 'error' : 'success';
         }
       });
       setItemStatuses(finalStatuses);
 
-      const newSuccessCount = data.results?.filter((r: BatchResult) => !r.error).length ?? 0;
-      showToast('success', `Retry done! ${newSuccessCount}/${data.count} texts now successful.`);
+      const newSuccessCount = mergedResults.filter(r => !r.error).length ?? 0;
+      showToast('success', `Retry done! ${newSuccessCount}/${mergedResults.length} texts now successful.`);
     } catch {
       showToast('error', 'Network error during retry.');
     } finally {

@@ -12,13 +12,13 @@ export async function detectWithGPTZero(text: string): Promise<GPTZeroResult> {
     throw new Error('GPTZero API key is not configured. Set GPTZERO_API_KEY in your environment.');
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
-
   let lastError: Error | null = null;
   const maxRetries = 1;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+
     try {
       const response = await fetch(GPTZERO_API_URL, {
         method: 'POST',
@@ -29,6 +29,7 @@ export async function detectWithGPTZero(text: string): Promise<GPTZeroResult> {
         body: JSON.stringify({ document: text.trim() }),
         signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         const errorBody = await response.text();
@@ -48,6 +49,7 @@ export async function detectWithGPTZero(text: string): Promise<GPTZeroResult> {
         sentences: doc.sentences ?? [],
       };
     } catch (err: unknown) {
+      clearTimeout(timeout);
       if (err instanceof Error && err.name === 'AbortError') {
         throw new Error('GPTZero API request timed out (15s)');
       }
