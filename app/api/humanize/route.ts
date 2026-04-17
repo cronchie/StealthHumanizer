@@ -113,14 +113,6 @@ export async function POST(request: NextRequest) {
 
     if (Array.isArray(batchTexts) && batchTexts.length > 0) {
       const selected = batchTexts.slice(0, MAX_BATCH_SIZE).filter((item: unknown) => typeof item === 'string' && item.trim().length > 0);
-      const batchResults: Array<{
-        index: number;
-        fullText: string;
-        finalScore: number;
-        confidenceReport: ReturnType<typeof buildConfidenceReport>;
-        runtimeModelScore: Awaited<ReturnType<typeof scoreHumanLikeness>>;
-      }> = [];
-
       // Use concurrency-limited batch processing
       const batchResults = await asyncMapConcurrent(
         selected,

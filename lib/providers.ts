@@ -251,46 +251,6 @@ export function getProviderDisplayName(provider: ModelProvider): string {
   return p?.name || provider;
 }
 
-// ==================== FETCH WITH RETRY ====================
-
-export async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  timeoutMs: number = 30_000,
-  maxRetries: number = 1,
-): Promise<Response> {
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-    try {
-      const response = await fetchWithRetry(url, {
-        ...options,
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (response.status >= 500 && attempt < maxRetries) {
-        lastError = new Error(`Server error: ${response.status}`);
-        continue;
-      }
-      return response;
-    } catch (err: unknown) {
-      clearTimeout(timeout);
-      if (err instanceof Error && err.name === 'AbortError') {
-        lastError = new Error(`Request timed out after ${timeoutMs}ms`);
-      } else {
-        lastError = err instanceof Error ? err : new Error('Unknown fetch error');
-      }
-      if (attempt < maxRetries) continue;
-    }
-  }
-
-  throw lastError || new Error('Request failed after retries');
-}
-
 // ==================== GENERATION FUNCTIONS ====================
 
 interface GenerationOptions {
