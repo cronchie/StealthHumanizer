@@ -14,7 +14,7 @@ import { getReadabilityLabel } from '@/lib/readability';
 import { countWords, downloadAsTxt, downloadAsDocx, getApiKeys } from '@/lib/storage';
 import { PROVIDERS } from '@/lib/providers';
 import dynamic from 'next/dynamic';
-import { BarChart2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart'),
