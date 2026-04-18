@@ -34,7 +34,7 @@ function HeroSection() {
             Transform <span className="hero-gradient">AI Text</span> Into<br />Natural Writing
           </h1>
           <p className="text-lg md:text-xl text-dark-300 max-w-2xl mx-auto mb-8">
-            Free. No login. <strong className="text-dark-200">13 AI providers</strong>. Undetectable.
+            Free. No login. <strong className="text-dark-200">13 AI providers</strong>. Style-aware rewriting.
           </p>
         </div>
 
@@ -67,14 +67,14 @@ function HowItWorks() {
   const steps = [
     { num: '1', icon: <FileText className="w-6 h-6" />, title: 'Paste or Upload', desc: 'Paste your AI-generated text or upload a PDF/DOCX file.' },
     { num: '2', icon: <Sparkles className="w-6 h-6" />, title: 'Choose Style', desc: 'Pick your preferred writing style, tone, and humanization level.' },
-    { num: '3', icon: <ArrowRight className="w-6 h-6" />, title: 'Get Results', desc: 'Receive naturally humanized text in seconds — undetectable.' },
+    { num: '3', icon: <ArrowRight className="w-6 h-6" />, title: 'Get Results', desc: 'Receive naturally humanized text in seconds.' },
   ];
 
   return (
     <section className="py-16">
       <div className="container mx-auto px-4 max-w-7xl">
         <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-3">How It Works</h2>
-        <p className="text-dark-400 text-center mb-10">Three simple steps to undetectable writing</p>
+        <p className="text-dark-400 text-center mb-10">Three simple steps to natural writing</p>
         <div className="grid md:grid-cols-3 gap-6">
           {steps.map((s, i) => (
             <div key={i} className="glass-card rounded-2xl p-6 text-center hover:border-accent-500/30 transition-all duration-300 hover:-translate-y-1">
@@ -96,7 +96,7 @@ function TrustIndicators() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 max-w-7xl text-center">
-        <p className="text-dark-400 text-sm mb-4">Trusted by researchers & writers worldwide</p>
+        <p className="text-dark-400 text-sm mb-4">Built for researchers & writers</p>
         <div className="flex flex-wrap justify-center gap-4 mb-6">
           {[
             { value: '13', label: 'AI Providers' },
@@ -114,7 +114,7 @@ function TrustIndicators() {
           <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🔒 100% Private</span>
           <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">⚡ No Login Required</span>
           <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🌐 Open Source</span>
-          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🆓 Forever Free</span>
+          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🆓 Free & Open Source</span>
         </div>
       </div>
     </section>

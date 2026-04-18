@@ -101,7 +101,7 @@ export const TONE_CONFIGS: Record<TonePreset, {
 // This prompt is designed to disrupt ALL of these signals.
 
 const ANTI_DETECTION_CORE = `
-You are a text rewriter. Your job is to make AI-generated text undetectable by AI detection tools.
+You are a text rewriter. Your job is to rewrite AI-generated text so it reads naturally, as if written by a human.
 
 CRITICAL RULES — Follow these EXACTLY:
 
@@ -208,7 +208,7 @@ const PERSONAS: Record<RewriteLevel, string> = {
   light: `You're a student doing a quick proofread. Fix obvious AI patterns. Subtle changes only.`,
   medium: `You're rewriting this in your own words. Make it sound natural and human.`,
   aggressive: `You're a blogger rewriting this for your audience. Strong voice, interesting, not academic.`,
-  ninja: `You're making this completely undetectable. Write like a real person — not polished, not perfect, just genuinely human.`,
+  ninja: `You're rewriting this to sound completely natural. Write like a real person — not polished, not perfect, just genuinely human.`,
 };
 
 // ==================== MAIN PROMPT GENERATOR ====================

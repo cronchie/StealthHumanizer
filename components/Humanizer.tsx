@@ -586,7 +586,7 @@ export default function Humanizer({ showToast, onGoToSettings }: HumanizerProps)
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-accent-400" /> AI Text Humanizer
           </h2>
-          <p className="text-dark-400 mt-1">Transform AI text into undetectable human writing</p>
+          <p className="text-dark-400 mt-1">Transform AI text into natural, human-like writing</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button onClick={() => setShowShortcuts(!showShortcuts)} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-dark-400 hover:text-white text-sm transition-colors">

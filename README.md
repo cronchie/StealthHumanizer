@@ -6,9 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Deploy](https://img.shields.io/badge/Vercel-Live-black?logo=vercel)](https://stealthhumanizer.vercel.app/)
 
-> 🥷 Free, open-source AI text humanizer — corpus-trained on 10,000 Q1 academic
-> papers. 13 AI providers, 4 rewrite levels, multi-pass ninja mode. No login, no
-> limits, 100% client-side.
+> 🥷 Free, open-source AI text humanizer with style-aware rewriting.
+> 13 AI providers, 4 rewrite levels, multi-pass ninja mode. No login required.
 
 **Live app:** https://stealthhumanizer.vercel.app/ ·
 **Docs:** https://rudra496.github.io/StealthHumanizer/
@@ -16,7 +15,7 @@
 ## Table of Contents
 
 - [Features](#features)
-- [How It Beats AI Detectors](#how-it-beats-ai-detectors)
+- [How It Works](#how-it-works)
 - [Architecture](#architecture)
 - [Installation](#installation)
 - [Quickstart](#quickstart)
@@ -30,8 +29,8 @@
 
 ## Features
 
-- **Corpus-trained humanization engine** built from 10,000 Q1 open-access
-  academic papers spanning 11 domains (2018–2025).
+- **Style-aware humanization engine** with configurable writing patterns
+  calibrated from academic writing statistics.
 - **Dynamic detection thresholds** calibrated against real human writing patterns,
   not guesswork — sentence length, burstiness, vocabulary diversity, and
   transition frequency.
@@ -50,21 +49,20 @@
 - **Browser-first key handling** — all API keys stay on your device.
 - **Dark/light theme** toggle.
 
-## How It Beats AI Detectors
+## How It Works
 
-StealthHumanizer uses a multi-layer approach grounded in real data, not heuristics:
+StealthHumanizer uses a multi-layer rewriting approach:
 
 1. **LLM rewrite** — your chosen provider transforms the text using a
-   corpus-aware prompt injected with statistical targets from 10,000 real Q1
-   papers.
-2. **Corpus-aware post-processing** — an expanded collocation engine replaces
-   150+ known AI-signature phrases with natural alternatives.
-3. **Detection calibration** — the built-in detector scores output against
-   dynamic thresholds derived from real human writing (sentence length mean 20.5,
-   burstiness 0.426, vocabulary diversity 69.4%, passive voice 18.1%).
+   style-aware prompt with statistical targets from academic writing analysis.
+2. **Post-processing** — a collocation engine replaces common AI-signature
+   phrases with natural alternatives.
+3. **Built-in scoring** — the heuristic detector provides feedback on
+   writing patterns (sentence length variation, vocabulary diversity,
+   transition frequency) to help you iterate.
 
-The result is text that doesn't just *avoid* AI patterns — it *matches* human
-writing patterns measured from actual published research.
+> **Note:** Built-in detection scores are heuristic estimates, not a guarantee
+> of passing external AI detectors. Results vary by detector and input.
 
 ## Architecture
 
@@ -73,8 +71,8 @@ High-level architecture:
 1. **UI layer (`components/`, `app/page.tsx`)** — text entry, settings, and
    result rendering.
 2. **API routes (`app/api/`)** — provider orchestration and rewrite workflows.
-3. **Style model layer (`public/corpus-style-model.json`)** — corpus statistics
-   and calibrated thresholds loaded client-side from 10,000 Q1 papers.
+3. **Style model layer (`public/corpus-style-model.json`)** — writing statistics
+   and calibrated thresholds loaded client-side.
 4. **Core logic (`lib/`)** — prompt construction (with corpus-aware injection),
    provider abstraction, detector scoring, and storage helpers.
 5. **Research and evaluation scripts (`scripts/`, `data/`)** — benchmark,

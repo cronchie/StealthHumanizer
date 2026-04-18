@@ -1,12 +1,12 @@
 # Roadmap
 
 This roadmap reflects incremental improvements that preserve existing behavior
-while enhancing the corpus-trained humanization engine and overall user
+while enhancing the style-aware humanization engine and overall user
 experience.
 
 ## Current Focus (v2.1+ corpus engine)
 
-- Validate corpus-trained engine against real-world AI detectors (GPTZero,
+- Validate style-aware engine against real-world AI detectors (GPTZero,
   Originality, Turnitin).
 - Expand corpus coverage with additional academic domains and publication years.
 - Fine-tune collocation database based on detector feedback loops.

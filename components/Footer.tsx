@@ -17,7 +17,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <h3 className="text-lg font-bold text-white mb-2">🥷 StealthHumanizer</h3>
-            <p className="text-dark-400 text-sm leading-relaxed">Free, open-source AI text humanizer. Transform AI-generated content into natural, undetectable writing.</p>
+            <p className="text-dark-400 text-sm leading-relaxed">Free, open-source AI text humanizer. Transform AI-generated content into natural, human-like writing.</p>
           </div>
 
           {/* Quick Links */}

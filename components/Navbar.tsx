@@ -32,7 +32,7 @@ export default function Navbar({ activeTab, setActiveTab, theme, toggleTheme }: 
                 <span className="hero-gradient">Stealth</span><span className="text-white">Humanizer</span>
                 <span className="text-xs ml-1.5 px-1.5 py-0.5 rounded-full bg-accent-500/20 text-accent-400 align-middle">v2</span>
               </h1>
-              <p className="text-xs text-dark-400">World-class AI text humanizer • 100% Free</p>
+              <p className="text-xs text-dark-400">AI text humanizer • Free & Open Source</p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-1 bg-dark-800/50 rounded-xl p-1">

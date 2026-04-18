@@ -6,7 +6,7 @@ const SITE_URL = 'https://stealthhumanizer.vercel.app';
 export const metadata: Metadata = {
   title: 'StealthHumanizer - Free AI Text Humanizer',
   description: 'Free open-source AI text humanizer. Transform AI-generated text into natural, human-like writing with 13 AI providers, 4 rewrite levels, and multi-pass ninja mode. No login required.',
-  keywords: 'AI humanizer, text humanizer, bypass AI detection, AI text converter, humanize AI text, undetectable AI, free AI humanizer',
+  keywords: 'AI humanizer, text humanizer, AI text converter, humanize AI text, free AI humanizer, rewrite AI text',
   authors: [{ name: 'Rudra Sarker', url: 'https://github.com/rudra496' }],
   creator: 'Rudra Sarker',
   metadataBase: new URL(SITE_URL),
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'StealthHumanizer - Free AI Text Humanizer',
-    description: 'Free open-source AI text humanizer. Transform AI-generated text into natural, human-like writing.',
+    description: 'Free open-source AI text humanizer. Transform AI-generated text into natural, human-like writing.',,
     images: [`${SITE_URL}/og-image.png`],
   },
   robots: { index: true, follow: true },

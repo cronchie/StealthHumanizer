@@ -4,9 +4,9 @@ Welcome to the official documentation for StealthHumanizer.
 
 ## What's New in v2.1
 
-StealthHumanizer v2.1 introduces the **corpus-trained humanization engine** —
-built from 10,000 Q1 open-access academic papers. The engine uses real human
-writing statistics (sentence length, burstiness, vocabulary diversity, transition
+StealthHumanizer v2.1 introduces the **style-aware humanization engine** —
+built from analysis of academic writing patterns. The engine uses statistical
+writing metrics (sentence length, burstiness, vocabulary diversity, transition
 frequency) to calibrate rewrite prompts and detection thresholds dynamically.
 
 See [STYLE_ENGINE.md](./STYLE_ENGINE.md) and

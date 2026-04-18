@@ -64,7 +64,7 @@ Input Text
 - **Passes:** 2
 
 ### Ninja 🥷
-- **Goal:** Maximum stealth — indistinguishable from human writing
+- **Goal:** Maximum transformation for natural-sounding output
 - **Techniques:** All aggressive techniques PLUS controlled imperfection, burstiness engineering, anti-pattern avoidance, human voice injection
 - **Passes:** 3 (automatic loop until target score)
 
@@ -91,7 +91,7 @@ Each tone modifies:
 | Analytical | Logical, systematic | Analysis, comparison pieces |
 | Custom | User-defined | Any context |
 
-## Detection Evasion Techniques
+## Writing Style Techniques
 
 ### 1. Burstiness Engineering
 AI text has uniform sentence lengths. We create extreme variation:
