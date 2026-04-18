@@ -60,7 +60,7 @@ export default function Footer() {
           <div className="flex gap-4">
             <span className="flex items-center gap-1">🔒 No data stored on servers</span>
             <span className="flex items-center gap-1">🌍 Privacy first</span>
-            <span className="flex items-center gap-1">⚡ 100% Free</span>
+            <span className="flex items-center gap-1">⚡ Free & Open Source</span>
           </div>
         </div>
       </div>

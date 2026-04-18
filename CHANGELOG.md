@@ -9,8 +9,8 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- Corpus-trained humanization engine built from 10,000 Q1 open-access academic
-  papers (OpenAlex, 11 domains, 2018–2025).
+- Style-aware humanization engine calibrated from academic writing statistics
+  (OpenAlex, 11 domains, 2018–2025).
 - Style model capturing real human writing patterns: sentence length distribution
   (mean 20.5, median 20, stddev 9.4), burstiness (0.426), vocabulary diversity
   (69.4%), passive voice ratio (18.1%), transition word frequencies, and sentence
