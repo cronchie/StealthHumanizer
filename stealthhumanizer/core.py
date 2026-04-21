@@ -1,6 +1,14 @@
 import random
 import re
 import math
+
+# optional imports (safe)
+try:
+    from inference.local_model import LocalRewriter
+    LOCAL_MODEL_AVAILABLE = True
+except Exception:
+    LOCAL_MODEL_AVAILABLE = False
+
 from stealthhumanizer.llm import llm_rewrite
 
 SYNONYMS = {
@@ -79,14 +87,22 @@ def score_text(text):
 
 # -------- HYBRID PIPELINE --------
 
-def humanize(text, passes=2, use_llm=True):
+def humanize(text, passes=2, use_llm=True, use_local=True):
     current = text
 
-    # Step 1: Optional LLM rewrite
-    if use_llm:
+    # Step 1: Local model (highest priority)
+    if use_local and LOCAL_MODEL_AVAILABLE:
+        try:
+            model = LocalRewriter()
+            current = model.rewrite(current)
+        except Exception:
+            pass
+
+    # Step 2: LLM fallback
+    elif use_llm:
         current = llm_rewrite(current)
 
-    # Step 2: Rule-based passes
+    # Step 3: Rule-based refinement
     for _ in range(passes):
         current = vary_words(current)
         current = restructure_sentences(current)
