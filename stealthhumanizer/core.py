@@ -1,6 +1,7 @@
 import random
 import re
 import math
+from stealthhumanizer.llm import llm_rewrite
 
 SYNONYMS = {
     "important": ["crucial","significant","key"],
@@ -76,12 +77,19 @@ def score_text(text):
     }
 
 
-# -------- MULTI-PASS PIPELINE --------
+# -------- HYBRID PIPELINE --------
 
-def humanize(text, passes=2):
+def humanize(text, passes=2, use_llm=True):
     current = text
+
+    # Step 1: Optional LLM rewrite
+    if use_llm:
+        current = llm_rewrite(current)
+
+    # Step 2: Rule-based passes
     for _ in range(passes):
         current = vary_words(current)
         current = restructure_sentences(current)
         current = inject_burstiness(current)
+
     return current
