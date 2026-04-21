@@ -1,40 +1,34 @@
 from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
-from datasets import Dataset
+from datasets import load_dataset
 
-# Example dataset (replace with real dataset)
-data = {
-    "input_text": [
-        "rewrite: This is important research",
-        "rewrite: AI improves many systems"
-    ],
-    "target_text": [
-        "This is crucial research",
-        "AI enhances numerous systems"
-    ]
-}
-
-# Create dataset
-dataset = Dataset.from_dict(data)
+# Load dataset from generated file
+dataset = load_dataset("text", data_files={"train": "dataset.txt"})
 
 tokenizer = T5Tokenizer.from_pretrained("t5-small")
 
 # Preprocessing
 def preprocess(example):
-    inputs = tokenizer(example["input_text"], truncation=True, padding="max_length")
-    targets = tokenizer(example["target_text"], truncation=True, padding="max_length")
+    parts = example["text"].split("\t")
+    if len(parts) != 2:
+        return {}
+
+    inp, tgt = parts
+    inputs = tokenizer(inp, truncation=True, padding="max_length")
+    targets = tokenizer(tgt, truncation=True, padding="max_length")
     inputs["labels"] = targets["input_ids"]
     return inputs
 
-train_dataset = dataset.map(preprocess)
+train_dataset = dataset["train"].map(preprocess)
 
 model = T5ForConditionalGeneration.from_pretrained("t5-small")
 
 training_args = TrainingArguments(
     output_dir="./model",
-    per_device_train_batch_size=2,
-    num_train_epochs=1,
-    logging_steps=1,
-    save_steps=10
+    per_device_train_batch_size=4,
+    num_train_epochs=3,
+    learning_rate=3e-4,
+    logging_steps=10,
+    save_steps=50
 )
 
 trainer = Trainer(
@@ -45,8 +39,7 @@ trainer = Trainer(
 
 trainer.train()
 
-# Save model
 model.save_pretrained("./model")
 tokenizer.save_pretrained("./model")
 
-print("Model training complete and saved to ./model")
+print("Training complete with optimized settings")
