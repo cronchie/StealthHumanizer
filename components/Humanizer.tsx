@@ -121,6 +121,9 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Keyboard shortcut tooltip
+  const [showShortcutTooltip, setShowShortcutTooltip] = useState(false);
+
   // Grammar check
   const [grammarIssues, setGrammarIssues] = useState<GrammarIssue[]>([]);
   const [grammarChecking, setGrammarChecking] = useState(false);
@@ -157,6 +160,8 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   useEffect(() => {
     if (isFirstVisit && !inputText) {
       setInputText(SAMPLE_AI_TEXT);
+      const timer = setTimeout(() => setShowShortcutTooltip(true), 2000);
+      return () => clearTimeout(timer);
     }
   }, [isFirstVisit]);
 
@@ -625,6 +630,27 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
           </button>
         </div>
       </div>
+
+      {/* First-use keyboard shortcut tooltip */}
+      {showShortcutTooltip && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="bg-dark-700 border border-accent-500/30 rounded-xl p-4 shadow-2xl max-w-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-white mb-2">Quick Start</p>
+                <div className="space-y-1 text-xs text-dark-300">
+                  <p><kbd className="bg-dark-600 px-1.5 py-0.5 rounded text-accent-300">Ctrl+Enter</kbd> Humanize text</p>
+                  <p><kbd className="bg-dark-600 px-1.5 py-0.5 rounded text-accent-300">Ctrl+Shift+C</kbd> Copy result</p>
+                  <p><kbd className="bg-dark-600 px-1.5 py-0.5 rounded text-accent-300">Ctrl+1-4</kbd> Switch rewrite level</p>
+                </div>
+              </div>
+              <button onClick={() => setShowShortcutTooltip(false)} className="text-dark-500 hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Keyboard shortcuts */}
       {showShortcuts && (
