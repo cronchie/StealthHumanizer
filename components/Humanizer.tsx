@@ -1068,16 +1068,25 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                     return (
                       <div key={i} className="group">
                         <p className="text-dark-500 text-xs line-through mb-1">{s.original}</p>
-                        <div className={`sentence-highlight cursor-pointer p-1.5 rounded border ${
+                        <div className={`sentence-highlight cursor-pointer p-1.5 rounded border flex items-start justify-between gap-2 ${
                           !isFlagged ? 'border-green-500/30' : score >= 40 ? 'border-yellow-500/30' : 'border-red-500/30'
                         }`} onClick={() => handleGetAlternatives(i)}>
-                          <p className="text-sm text-dark-200">{s.humanized}</p>
-                          {s.detectionScore !== undefined && (
-                            <span className={`text-xs ${s.detectionScore >= 60 ? 'text-green-400' : s.detectionScore >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                              {s.detectionScore}% {isFlagged && '⚠'} •
-                            </span>
-                          )}
-                          <ChevronDown className="w-3 h-3 inline text-dark-500 group-hover:text-accent-400" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-dark-200">{s.humanized}</p>
+                            {s.detectionScore !== undefined && (
+                              <span className={`text-xs ${s.detectionScore >= 60 ? 'text-green-400' : s.detectionScore >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {s.detectionScore}% {isFlagged && '⚠'} •
+                              </span>
+                            )}
+                            <ChevronDown className="w-3 h-3 inline text-dark-500 group-hover:text-accent-400" />
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(s.humanized); showToast('success', 'Sentence copied!'); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-dark-600/50 text-dark-400 hover:text-white transition-all shrink-0"
+                            title="Copy sentence"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
                         </div>
                         {expandedSentence === i && alternatives[i] && (
                           <div className="ml-4 mt-1 space-y-1">
