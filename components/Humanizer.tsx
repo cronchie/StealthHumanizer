@@ -11,7 +11,7 @@ import { RewriteLevel, StylePreset, TonePreset, TextPurpose, HumanizationResult,
 import { TONE_CONFIGS, SAMPLE_AI_TEXT, SAMPLE_TECHNICAL_TEXT, PURPOSE_CONFIGS } from '@/lib/prompts';
 import { detectAI, getScoreColor, getScoreBarColor } from '@/lib/detector';
 import { getReadabilityLabel } from '@/lib/readability';
-import { countWords, downloadAsTxt, downloadAsDocx, getApiKeys } from '@/lib/storage';
+import { countWords, downloadAsTxt, downloadAsDocx, downloadAsMarkdown, getApiKeys } from '@/lib/storage';
 import { PROVIDERS } from '@/lib/providers';
 import dynamic from 'next/dynamic';
 
@@ -241,8 +241,13 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   }, [inputText, level, style, tone, customTone, language, targetScore, showToast, wordCount, preferredModel]);
 
   const handleCopy = () => { if (result) { navigator.clipboard.writeText(result.fullText); showToast('success', 'Copied!'); } };
-  const handleDownload = (format: 'txt' | 'docx') => {
-    if (result) { format === 'txt' ? downloadAsTxt(result.fullText, 'humanized') : downloadAsDocx(result.fullText, 'humanized'); showToast('success', `Downloaded as ${format.toUpperCase()}!`); }
+  const handleDownload = (format: 'txt' | 'docx' | 'md') => {
+    if (result) {
+      if (format === 'txt') downloadAsTxt(result.fullText, 'humanized');
+      else if (format === 'docx') downloadAsDocx(result.fullText, 'humanized');
+      else downloadAsMarkdown(result.fullText, 'humanized');
+      showToast('success', `Downloaded as ${format.toUpperCase()}!`);
+    }
   };
 
   const handleGetAlternatives = async (index: number) => {
@@ -1010,6 +1015,9 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                 </button>
                 <button onClick={() => handleDownload('docx')} className="p-2 rounded-lg hover:bg-dark-700/50 text-dark-400 hover:text-white transition-colors" title="DOCX">
                   <FileDown className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleDownload('md')} className="p-2 rounded-lg hover:bg-dark-700/50 text-dark-400 hover:text-white transition-colors" title="Markdown">
+                  <FileText className="w-4 h-4" />
                 </button>
               </div>
             </div>
