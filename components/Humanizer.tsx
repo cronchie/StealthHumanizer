@@ -646,21 +646,21 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
           <div className="flex gap-2 flex-wrap">
             {REWRITE_LEVELS.map(l => (
               <button key={l.id} onClick={() => setLevel(l.id)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${level === l.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
-                {l.name} <span className="text-xs opacity-70">{l.desc}</span>
+                className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none min-w-0 ${level === l.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                {l.name} <span className="hidden sm:inline text-xs opacity-70">{l.desc}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Style + Purpose + Tone */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-dark-300 mb-2">Writing Style</label>
             <div className="flex gap-2 flex-wrap">
               {STYLES.map(s => (
                 <button key={s.id} onClick={() => setStyle(s.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${style === s.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${style === s.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
                   <span>{s.icon}</span> {s.name}
                 </button>
               ))}
@@ -671,7 +671,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
             <div className="flex gap-2 flex-wrap">
               {PURPOSES.map(p => (
                 <button key={p.id} onClick={() => setPurpose(p.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${purpose === p.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${purpose === p.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
                   {p.name}
                 </button>
               ))}
@@ -1000,7 +1000,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                   </span>
                 )}
               </label>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <button onClick={() => setShowComparison(!showComparison)} className="p-2 rounded-lg hover:bg-dark-700/50 text-dark-400 hover:text-white transition-colors" title="Compare view">
                   <Eye className="w-4 h-4" />
                 </button>
@@ -1207,7 +1207,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
 
       {/* Stats */}
       {result && (
-        <div className="grid grid-cols-2 md:grid-cols-7 gap-3 animate-slide-up">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 animate-slide-up">
           <div className="glass-card rounded-xl p-3 text-center">
             <p className="text-xl font-bold text-accent-400">{result.wordCount.input}</p>
             <p className="text-xs text-dark-400">Input Words</p>
