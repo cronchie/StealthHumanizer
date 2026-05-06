@@ -1,9 +1,9 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
 html {
   scroll-behavior: smooth;
 }
-
-@import "tailwindcss";
-@config "../tailwind.config.ts";
 
 :root {
   --foreground-rgb: 255, 255, 255;
@@ -143,8 +143,7 @@ body {
 /* Focus styles */
 .focus-ring:focus {
   outline: none;
-  ring: 2px;
-  ring-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);
 }
 
 /* Tab transitions */

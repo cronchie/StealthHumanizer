@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
 
     // Calibrate detector with corpus
     if (useCorpus) {
-      const model = loadStyleModel();
-      if (model) calibrateWithCorpus(model);
+      const styleModel = loadStyleModel();
+      if (styleModel) calibrateWithCorpus(styleModel);
     }
 
     const params = LEVEL_PARAMS[level as RewriteLevel];

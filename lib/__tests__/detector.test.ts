@@ -177,11 +177,33 @@ describe('getScoreBarColor', () => {
 describe('calibrateWithCorpus', () => {
   it('returns calibrated thresholds', () => {
     const thresholds = calibrateWithCorpus({
-      burstinessProfile: { mean: 50, median: 45, stdDev: 20 },
+      generatedAt: '2024-01-01',
+      paperCount: 100,
+      global: {
+        avgSentenceLength: 15,
+        avgBurstiness: 0.35,
+        avgVocabularyDiversity: 0.65,
+        avgContractionFrequency: 1.0,
+        avgPassiveVoiceRatio: 15,
+        avgFirstPersonPronouns: 5,
+        avgHedgingFrequency: 8,
+        avgWordsPerParagraph: 80,
+      },
+      byDomain: {},
+      sentenceLengthDistribution: { mean: 20, median: 18, stddev: 8, min: 5, max: 50, p10: 8, p25: 13, p75: 27, p90: 35 },
+      burstinessProfile: { mean: 50, stddev: 20 },
       vocabularyDiversityRange: { mean: 65, min: 40, max: 90 },
       transitionWordFrequency: { 'however': 5, 'therefore': 3, 'moreover': 2 },
-      avgSentenceLength: 15,
-      avgWordLength: 5,
+      aiPhraseFrequency: {},
+      contractionFrequency: { mean: 1.0, stddev: 0.5 },
+      passiveVoiceRatio: { mean: 15, stddev: 5 },
+      sentenceStarters: {},
+      humanWritingExamples: [],
+      punctuation: {
+        emDashPer1000: { mean: 0.5, stddev: 0.3 },
+        semicolonPer1000: { mean: 1.0, stddev: 0.5 },
+        exclamationPer1000: { mean: 0.5, stddev: 0.3 },
+      },
     });
     expect(thresholds.humanScoreMin).toBe(55);
     expect(thresholds.burstinessFloor).toBeDefined();
@@ -198,11 +220,33 @@ describe('getHumanScoreRange', () => {
   });
   it('returns calibrated range after calibration', () => {
     calibrateWithCorpus({
-      burstinessProfile: { mean: 50, median: 45, stdDev: 20 },
+      generatedAt: '2024-01-01',
+      paperCount: 100,
+      global: {
+        avgSentenceLength: 15,
+        avgBurstiness: 0.35,
+        avgVocabularyDiversity: 0.65,
+        avgContractionFrequency: 1.0,
+        avgPassiveVoiceRatio: 15,
+        avgFirstPersonPronouns: 5,
+        avgHedgingFrequency: 8,
+        avgWordsPerParagraph: 80,
+      },
+      byDomain: {},
+      sentenceLengthDistribution: { mean: 20, median: 18, stddev: 8, min: 5, max: 50, p10: 8, p25: 13, p75: 27, p90: 35 },
+      burstinessProfile: { mean: 50, stddev: 20 },
       vocabularyDiversityRange: { mean: 65, min: 40, max: 90 },
       transitionWordFrequency: { 'however': 5 },
-      avgSentenceLength: 15,
-      avgWordLength: 5,
+      aiPhraseFrequency: {},
+      contractionFrequency: { mean: 1.0, stddev: 0.5 },
+      passiveVoiceRatio: { mean: 15, stddev: 5 },
+      sentenceStarters: {},
+      humanWritingExamples: [],
+      punctuation: {
+        emDashPer1000: { mean: 0.5, stddev: 0.3 },
+        semicolonPer1000: { mean: 1.0, stddev: 0.5 },
+        exclamationPer1000: { mean: 0.5, stddev: 0.3 },
+      },
     });
     const range = getHumanScoreRange();
     expect(range.min).toBe(55);

@@ -250,7 +250,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
       setLoading(false);
       setProgress({ pass: 0, max: 0, message: '' });
     }
-  }, [inputText, level, style, tone, customTone, language, targetScore, showToast, wordCount, preferredModel]);
+  }, [inputText, level, style, tone, customTone, language, targetScore, showToast, wordCount, preferredModel, writingSample, purpose, enablePostprocess, enableChain, selectedChainModels, maxOutputWords]);
 
   const handleCopy = () => { if (result) { navigator.clipboard.writeText(result.fullText); showToast('success', 'Copied!'); } };
   const handleDownload = (format: 'txt' | 'docx' | 'md') => {
@@ -560,13 +560,14 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const handleExportPDF = async () => {
     if (!result) return;
     try {
+      const localDetection = detectAI(result.fullText);
       const { generatePDF } = await import('@/lib/pdf');
       await generatePDF({
         title: 'StealthHumanizer — Export',
         originalText: inputText || '(no original text)',
         humanizedText: result.fullText,
         scores: {
-          localScore: detection?.score ?? null,
+          localScore: localDetection.score,
           gptzeroOriginal,
           gptzeroHumanized,
         },
