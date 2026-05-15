@@ -18,6 +18,7 @@
  *   --domain     academic domain hint (optional)
  *   --target     target humanness score 0-100  (default: 80)
  *   --style-guide path to a writing style guide file — sets tone to 'custom'
+ *   --no-aggressive-synonyms  disable the context-blind synonym swap pass
  *   --json       output full JSON result instead of plain text
  *   --help       show this help
  *
@@ -61,6 +62,7 @@ function parseArgs(argv: string[]): {
   language: string;
   domain?: string;
   targetScore: number;
+  aggressiveSynonyms: boolean;
   json: boolean;
   help: boolean;
 } {
@@ -75,6 +77,7 @@ function parseArgs(argv: string[]): {
     language: 'en',
     domain: undefined as string | undefined,
     targetScore: 80,
+    aggressiveSynonyms: true,
     json: false,
     help: false,
   };
@@ -87,6 +90,8 @@ function parseArgs(argv: string[]): {
       opts.help = true;
     } else if (a === '--json') {
       opts.json = true;
+    } else if (a === '--no-aggressive-synonyms') {
+      opts.aggressiveSynonyms = false;
     } else if (a === '--level' || a === '--style' || a === '--tone' || a === '--model' ||
                a === '--language' || a === '--domain' || a === '--target' || a === '--style-guide') {
       const val = args[++i];
@@ -166,6 +171,7 @@ async function main() {
     language: opts.language,
     targetScore: opts.targetScore,
     domain: opts.domain,
+    aggressiveSynonyms: opts.aggressiveSynonyms,
   };
 
   const onProgress = (pass: number, maxPasses: number, message: string) => {

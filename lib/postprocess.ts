@@ -20,10 +20,12 @@ function chance(probability: number): boolean {
 }
 
 function splitSentences(text: string): string[] {
-  // Protect periods inside version numbers, decimals, and IPs (e.g., "Llama 3.x",
-  // "Python 3.11", "0.5", "192.168.1.1") so they aren't treated as sentence boundaries.
+  // Protect periods inside identifiers, file extensions, domains, decimals, version
+  // numbers, and IPs (e.g., "Llama 3.x", "0.5", "192.168.1.1", "file.ext",
+  // "docs.example.com", "tailwind.config.js") so they aren't treated as sentence
+  // boundaries. Match alnum-period-alnum with no whitespace on either side.
   const PERIOD_PLACEHOLDER = '';
-  const protectedText = text.replace(/(\d)\.(?=[a-zA-Z0-9])/g, `$1${PERIOD_PLACEHOLDER}`);
+  const protectedText = text.replace(/([a-zA-Z0-9])\.(?=[a-zA-Z0-9])/g, `$1${PERIOD_PLACEHOLDER}`);
   return protectedText.match(/[^.!?]*[.!?]+[\s]*/g)
     ?.map(s => s.trim().replace(new RegExp(PERIOD_PLACEHOLDER, 'g'), '.'))
     .filter(s => s.length > 0) || [text.trim()];
@@ -685,6 +687,7 @@ export interface PostProcessOptions {
   light?: boolean; // If true, apply lighter version (for Layer 4)
   style?: StylePreset; // Adjust transformations to match writing style
   skipReadabilityGuard?: boolean; // For internal use when re-applying light passes
+  aggressiveSynonyms?: boolean; // If false, skip aggressiveSynonymSwap. Default: true.
 }
 
 /**
@@ -700,8 +703,13 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
   // ALWAYS: Strip em-dashes (strongest AI tell). Numeric ranges preserved.
   result = stripAIDashes(result);
 
-  // ALWAYS: Aggressive AI vocabulary removal (style-aware)
-  result = aggressiveSynonymSwap(result, style);
+  // Aggressive AI vocabulary removal (style-aware). Skippable per-call.
+  // The pass makes context-blind global replacements that occasionally damage
+  // meaning ("first" -> "to start", "deal" -> "address"); turn off when
+  // semantic precision matters more than vocabulary variation.
+  if (options?.aggressiveSynonyms !== false) {
+    result = aggressiveSynonymSwap(result, style);
+  }
 
   // ALWAYS: Collocation replacements
   result = injectPerplexity(result);
@@ -709,7 +717,11 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
   if (light) {
     result = swapSynonyms(result);
     if (chance(0.5)) result = addPunctuationNoise(result);
-    if (chance(0.3)) result = disruptFlow(result, style);
+    // Skip disruptFlow in light mode: it injects emphasis fillers ("Right.",
+    // "Sound familiar?", "Funny enough.") and conjunction starters at fixed
+    // per-paragraph rates, which compounds badly on long inputs and reads as
+    // an AI tic itself. Full mode keeps it for cases that explicitly want
+    // structural disruption.
     return result
       .replace(/,\s*,/g, ',')
       .replace(/\s+,/g, ',')

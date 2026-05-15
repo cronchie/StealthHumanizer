@@ -59,6 +59,10 @@ export interface HumanizationOptions {
   language: string;
   /** Academic domain for corpus-calibrated style matching */
   domain?: string;
+  /** Enable aggressive context-blind synonym swap pass. Default: true.
+   *  Set to false to skip this step (useful for technical content where bad
+   *  swaps like "first" -> "to start" or "deal" -> "address" damage meaning). */
+  aggressiveSynonyms?: boolean;
 }
 
 export interface SentenceResult {
