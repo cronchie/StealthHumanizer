@@ -1,6 +1,6 @@
 # Architecture
 
-StealthHumanizer is a full-stack web application built with Next.js that transforms AI-generated text into natural, human-sounding prose. It supports 12+ AI model providers, features a multi-pass humanization pipeline, and includes a built-in AI detection engine.
+StealthHumanizer is a full-stack web application built with Next.js that transforms AI-generated text into natural, human-sounding prose. It supports 15 AI model providers, features a multi-pass humanization pipeline, and includes a built-in AI detection engine.
 
 ---
 
@@ -34,7 +34,7 @@ StealthHumanizer is a full-stack web application built with Next.js that transfo
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
 │  │  humanizer   │  │  detector    │  │  providers   │          │
-│  │  Multi-pass  │  │  AI Detection│  │  12 Provider │          │
+│  │  Multi-pass  │  │  AI Detection│  │  15 Provider │          │
 │  │  Pipeline    │  │  Engine      │  │  Abstraction │          │
 │  └──────┬───────┘  └──────────────┘  └──────┬───────┘          │
 │         │                                    │                   │
@@ -68,7 +68,7 @@ StealthHumanizer is a full-stack web application built with Next.js that transfo
 
 ### `lib/providers.ts` — Provider Abstraction Layer
 
-The heart of our multi-provider support. Implements a unified interface across 12 AI providers with vastly different APIs:
+The heart of our multi-provider support. Implements a unified interface across 15 AI providers with vastly different APIs:
 
 - **OpenAI-compatible adapters** — Groq, Together, OpenRouter, DeepInfra, Cerebras, Mistral all share the chat completions format
 - **Native adapters** — Gemini (Google's generateContent API), Claude (Anthropic's Messages API), Cohere (chat API), HuggingFace (inference API)
@@ -273,11 +273,11 @@ JSON: { alternatives: string[] }
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| Framework | Next.js 14 (App Router) | Full-stack React framework |
-| Language | TypeScript 5.7 | Type safety |
-| Styling | Tailwind CSS 3.4 | Utility-first CSS |
+| Framework | Next.js 16 (App Router) | Full-stack React framework |
+| Language | TypeScript 6 | Type safety |
+| Styling | Tailwind CSS 4 | Utility-first CSS |
 | Icons | Lucide React | Icon library |
-| AI Providers | 12 providers | Text generation via REST APIs |
+| AI Providers | 15 providers | Text generation via REST APIs |
 | Storage | localStorage | Client-side persistence |
 | Deployment | Vercel (recommended) | Zero-config Next.js hosting |
 
