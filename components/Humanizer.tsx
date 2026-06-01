@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Sparkles, Copy, Download, FileText, RefreshCw, Zap, Eye,
   FileDown, Target, ChevronDown, ChevronUp, Keyboard, ArrowRight,
@@ -619,8 +619,12 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
     return html;
   };
 
-  const detection = result ? detectAI(result.fullText) : null;
-  const originalDetection = result ? detectAI(inputText) : null;
+  const detection = useMemo(() => {
+    return result ? detectAI(result.fullText) : null;
+  }, [result?.fullText]);
+  const originalDetection = useMemo(() => {
+    return inputText ? detectAI(inputText) : null;
+  }, [inputText]);
   const readLabel = detection ? getReadabilityLabel(detection.readability.fleschReadingEase) : null;
   const scoreChange = detection && originalDetection ? detection.score - originalDetection.score : 0;
   const flaggedCount = detection?.sentences.filter(s => s.classification !== 'human').length || 0;
