@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scoreHumanLikeness } from '@/lib/server/model-runtime';
+import { handleApiError } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,8 +9,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing text' }, { status: 400 });
     }
     const result = await scoreHumanLikeness(text);
-    return NextResponse.json(result);
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ success: true, ...result });
+  } catch (err: unknown) {
+    return handleApiError(err);
   }
 }

@@ -312,7 +312,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, ...responsePayload });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message || 'Internal error' }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

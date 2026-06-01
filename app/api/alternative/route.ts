@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateAlternatives } from '@/lib/server/providers-runtime';
 import { isCliOnlyProvider } from '@/lib/providers';
 import { getSystemPrompt } from '@/lib/prompts';
+import { handleApiError } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     const systemPrompt = getSystemPrompt(level, style, tone, customTone);
     const alternatives = await generateAlternatives(model, apiKey, original, current, systemPrompt, 3);
     return NextResponse.json({ success: true, alternatives });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message || 'Error' }, { status: 500 });
+  } catch (err: unknown) {
+    return handleApiError(err);
   }
 }
