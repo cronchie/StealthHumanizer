@@ -18,12 +18,9 @@ import { scoreHumanLikeness } from '@/lib/server/model-runtime';
 import { asyncMapConcurrent } from '@/lib/batch';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { countWords, chunkText } from '@/lib/storage';
+import { splitIntoSentences } from '@/lib/text-utils';
 
 const MAX_BATCH_SIZE = 20;
-
-function splitSentences(text: string): string[] {
-  return text.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(s => s.length > 0) || [text.trim()];
-}
 
 async function llmSelfCheck(
   provider: ModelProvider,
@@ -267,8 +264,8 @@ export async function POST(request: NextRequest) {
     const finalDetection = detectAI(finalText);
     const confidenceReport = buildConfidenceReport(finalDetection.score);
     const runtimeModelScore = await scoreHumanLikeness(finalText);
-    const origSentences = splitSentences(text);
-    const humanizedSentences = splitSentences(finalText);
+    const origSentences = splitIntoSentences(text);
+    const humanizedSentences = splitIntoSentences(finalText);
     const maxLen = Math.max(origSentences.length, humanizedSentences.length);
 
     const sentences = [];

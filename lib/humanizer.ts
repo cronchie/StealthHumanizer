@@ -7,37 +7,10 @@ import { getProvider } from './providers';
 import { generateWithProvider, generateAlternatives } from './server/providers-runtime';
 import { detectAI } from './detector';
 import { postprocess, corpusAwarePostprocess } from './postprocess';
-import { chunkText, countWords, addToHistory } from './storage';
+import { chunkText, addToHistory } from './storage';
+import { countWords } from './text-utils';
 import { extractRegions, restoreRegions, containsPlaceholders } from './protect-regions';
-
-function splitIntoSentences(text: string): string[] {
-  const sentences: string[] = [];
-  let current = '';
-  let i = 0;
-  const abbreviations = ['Mr.', 'Mrs.', 'Dr.', 'Prof.', 'Inc.', 'Ltd.', 'etc.', 'e.g.', 'i.e.', 'vs.', 'al.'];
-  while (i < text.length) {
-    current += text[i];
-    if (['.', '!', '?'].includes(text[i])) {
-      const beforeMatch = text.slice(Math.max(0, i - 5), i + 1);
-      // Period inside an identifier (file.ext, domain.tld, version 3.x, decimal 0.5,
-      // IP 192.168.1.1) is not a sentence end. Detect by alnum-period-alnum with no
-      // whitespace on either side. Subsumes the prior digit-only protection.
-      const isInsideIdentifier = text[i] === '.'
-        && /[a-zA-Z0-9]/.test(text[i - 1] || '')
-        && /[a-zA-Z0-9]/.test(text[i + 1] || '');
-      if (!isInsideIdentifier && !abbreviations.some(abbr => beforeMatch.endsWith(abbr))) {
-        if (text[i + 1] === '"' || text[i + 1] === "'") { current += text[i + 1]; i++; }
-        const trimmed = current.trim();
-        if (trimmed.length > 0) sentences.push(trimmed);
-        current = '';
-      }
-    }
-    i++;
-  }
-  const trimmed = current.trim();
-  if (trimmed.length > 0) sentences.push(trimmed);
-  return sentences;
-}
+import { splitIntoSentences } from './text-utils';
 
 async function humanizeChunk(
   text: string,
