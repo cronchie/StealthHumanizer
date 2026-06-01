@@ -42,7 +42,9 @@
     "pipeline:q1-ready:skip-install": "node scripts/papers/complete-ready-pipeline.mjs --skip-install",
     "test:roadmap": "tsx scripts/tests/roadmap-features.mjs",
     "screenshot": "node scripts/capture-screenshot.mjs",
-    "test:v1-forwarding": "node scripts/tests/v1-forwarding.test.mjs"
+    "test:v1-forwarding": "node scripts/tests/v1-forwarding.test.mjs",
+    "test:security": "tsx scripts/tests/security-hardening.mjs",
+    "test": "npm run test:roadmap && npm run test:v1-forwarding && npm run test:security && npm run test:cli"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

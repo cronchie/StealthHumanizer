@@ -25,11 +25,16 @@ export function getVersionHistory(documentId = 'local-draft'): VersionSnapshot[]
 
 export function saveVersionSnapshot(snapshot: Omit<VersionSnapshot, 'id' | 'createdAt'>): VersionSnapshot | null {
   if (typeof window === 'undefined') return null;
-  const all = JSON.parse(localStorage.getItem(VERSION_HISTORY_KEY) || '[]') as VersionSnapshot[];
-  const saved = { ...snapshot, id: crypto.randomUUID(), createdAt: Date.now() };
-  all.push(saved);
-  localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(all.slice(-200)));
-  return saved;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(VERSION_HISTORY_KEY) || '[]');
+    const all = Array.isArray(parsed) ? parsed as VersionSnapshot[] : [];
+    const saved = { ...snapshot, id: crypto.randomUUID(), createdAt: Date.now() };
+    all.push(saved);
+    localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(all.slice(-200)));
+    return saved;
+  } catch {
+    return null;
+  }
 }
 
 export function saveHumanizationVersion(result: HumanizationResult, documentId = 'local-draft', author = 'local-user'): VersionSnapshot | null {

@@ -123,6 +123,11 @@ export interface HumanizationResult {
     entityRecall: number;
     numberRecall: number;
     negationConsistency: number;
+    urlRecall: number;
+    emailRecall: number;
+    codeRecall: number;
+    markdownRecall: number;
+    protectedTokenRecall: number;
     warnings: string[];
   };
   observability?: {

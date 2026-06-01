@@ -10,6 +10,10 @@ function buildForwardedHeaders(request: NextRequest): Headers {
   return headers;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
 export async function POST(request: NextRequest) {
   const configuredToken = process.env.STEALTHHUMANIZER_API_TOKEN;
   if (configuredToken) {
@@ -19,9 +23,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const payload = await request.json();
-  const providerApiKey = payload.apiKey || process.env.STEALTHHUMANIZER_PROVIDER_API_KEY || process.env.GEMINI_API_KEY;
-  const provider = payload.model || process.env.STEALTHHUMANIZER_PROVIDER || 'gemini';
+  const payload = await request.json().catch(() => null);
+  if (!isRecord(payload)) {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body.' }, { status: 400 });
+  }
+
+  const payloadApiKey = typeof payload.apiKey === 'string' ? payload.apiKey : undefined;
+  const payloadModel = typeof payload.model === 'string' ? payload.model : undefined;
+  const providerApiKey = payloadApiKey || process.env.STEALTHHUMANIZER_PROVIDER_API_KEY || process.env.GEMINI_API_KEY;
+  const provider = payloadModel || process.env.STEALTHHUMANIZER_PROVIDER || 'gemini';
   if (!providerApiKey) {
     return NextResponse.json({ success: false, error: 'No provider API key supplied. Pass apiKey or configure STEALTHHUMANIZER_PROVIDER_API_KEY.' }, { status: 400 });
   }

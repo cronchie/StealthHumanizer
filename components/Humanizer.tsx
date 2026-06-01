@@ -7,7 +7,7 @@ import {
   Type, Languages, Upload, RotateCcw, CheckCircle, AlertTriangle,
   X, FileUp, BarChart2, Shield
 } from 'lucide-react';
-import { RewriteLevel, StylePreset, TonePreset, TextPurpose, HumanizationResult, ModelProvider } from '@/lib/types';
+import { RewriteLevel, StylePreset, TonePreset, TextPurpose, HumanizationResult, ModelProvider, SentenceDetectionResult } from '@/lib/types';
 import { SAMPLE_AI_TEXT, SAMPLE_TECHNICAL_TEXT } from '@/lib/prompts';
 import { detectAI, getScoreColor } from '@/lib/detector';
 import { getReadabilityLabel } from '@/lib/readability';
@@ -698,16 +698,24 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
     }
   };
 
-  const getHighlightedText = (fullText: string, sentences: any[]) => {
+  const escapeHtml = (value: string) => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const getHighlightedText = (fullText: string, sentences: SentenceDetectionResult[]) => {
     const sorted = [...sentences]
-      .filter((s: any) => s.text?.trim().length > 0 && s.score < 60)
-      .sort((a: any, b: any) => b.text.length - a.text.length);
-    let html = fullText;
+      .filter(sentence => sentence.text.trim().length > 0 && sentence.score < 60)
+      .sort((a, b) => b.text.length - a.text.length);
+    let html = escapeHtml(fullText);
     for (const sentence of sorted) {
       const bgStyle = sentence.score < 35
         ? 'background:rgba(239,68,68,0.2);border-radius:3px;padding:0 2px;'
         : 'background:rgba(234,179,8,0.2);border-radius:3px;padding:0 2px;';
-      html = html.replace(sentence.text, `<span style="${bgStyle}" title="AI Score: ${sentence.score}%">${sentence.text}</span>`);
+      const escapedSentence = escapeHtml(sentence.text);
+      html = html.replace(escapedSentence, `<span style="${bgStyle}" title="AI Score: ${sentence.score}%">${escapedSentence}</span>`);
     }
     return html;
   };

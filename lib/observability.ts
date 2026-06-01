@@ -86,11 +86,19 @@ export function addObservabilityEvent(event: Omit<ObservabilityEvent, 'id' | 'ti
     semanticScore: event.semanticScore,
     success: event.success,
   });
-  localStorage.setItem(OBSERVABILITY_KEY, JSON.stringify(events.slice(-500)));
+  try {
+    localStorage.setItem(OBSERVABILITY_KEY, JSON.stringify(events.slice(-500)));
+  } catch {
+    // Observability must never break the humanization flow.
+  }
 }
 
 export function clearObservabilityEvents(): void {
-  if (typeof window !== 'undefined') localStorage.removeItem(OBSERVABILITY_KEY);
+  try {
+    if (typeof window !== 'undefined') localStorage.removeItem(OBSERVABILITY_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
 export function summarizeObservability(events = getObservabilityEvents()): ObservabilitySummary {

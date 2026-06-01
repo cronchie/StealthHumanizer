@@ -11,6 +11,11 @@ export interface SemanticFidelityReport {
   entityRecall: number;
   numberRecall: number;
   negationConsistency: number;
+  urlRecall: number;
+  emailRecall: number;
+  codeRecall: number;
+  markdownRecall: number;
+  protectedTokenRecall: number;
   warnings: string[];
 }
 
@@ -55,6 +60,28 @@ function topKeywords(tokens: string[], limit = 24): string[] {
     .sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)
     .slice(0, limit)
     .map(([token]) => token);
+}
+
+function extractUrls(text: string): string[] {
+  return text.match(/https?:\/\/[^\s)\]}>"']+/gi) ?? [];
+}
+
+function extractEmails(text: string): string[] {
+  return text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
+}
+
+function extractCodeSnippets(text: string): string[] {
+  const fenced = text.match(/```[\s\S]*?```/g) ?? [];
+  const inline = text.match(/`[^`]+`/g) ?? [];
+  return [...fenced, ...inline];
+}
+
+function extractMarkdownMarkers(text: string): string[] {
+  return text.match(/(^|\n)#{1,6}\s+|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|(^|\n)[-*+]\s+/g) ?? [];
+}
+
+function extractProtectedTokens(text: string): string[] {
+  return text.match(/\b(?:sk-[A-Za-z0-9_-]{8,}|[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|[A-Fa-f0-9]{32,})\b/g) ?? [];
 }
 
 function extractNumbers(text: string): string[] {
@@ -102,8 +129,14 @@ export function assessSemanticFidelity(original: string, rewritten: string): Sem
   const originalNegations = negationSignature(original);
   const rewrittenNegations = negationSignature(rewritten);
   const negationConsistencyRaw = originalNegations.length === rewrittenNegations.length ? 1 : Math.max(0, 1 - Math.abs(originalNegations.length - rewrittenNegations.length) / Math.max(originalNegations.length, rewrittenNegations.length, 1));
+  const urlRecallRaw = recall(extractUrls(original), extractUrls(rewritten));
+  const emailRecallRaw = recall(extractEmails(original), extractEmails(rewritten));
+  const codeRecallRaw = recall(extractCodeSnippets(original), extractCodeSnippets(rewritten));
+  const markdownRecallRaw = recall(extractMarkdownMarkers(original), extractMarkdownMarkers(rewritten));
+  const protectedTokenRecallRaw = recall(extractProtectedTokens(original), extractProtectedTokens(rewritten));
+  const protectedRecallRaw = Math.min(urlRecallRaw, emailRecallRaw, codeRecallRaw, markdownRecallRaw, protectedTokenRecallRaw);
 
-  const weightedScore = (unigramCosine * 0.28) + (bigramCosine * 0.14) + (keywordRecall * 0.22) + (lengthRatioRaw * 0.08) + (sentenceAlignment * 0.06) + (entityRecallRaw * 0.10) + (numberRecallRaw * 0.08) + (negationConsistencyRaw * 0.04);
+  const weightedScore = (unigramCosine * 0.28) + (bigramCosine * 0.14) + (keywordRecall * 0.22) + (lengthRatioRaw * 0.08) + (sentenceAlignment * 0.06) + (entityRecallRaw * 0.10) + (numberRecallRaw * 0.08) + (negationConsistencyRaw * 0.04) - ((1 - protectedRecallRaw) * 0.12);
   const warnings: string[] = [];
   if (keywordRecall < 0.55) warnings.push('Important keywords may have been dropped.');
   if (lengthRatioRaw < 0.55) warnings.push('Output length changed substantially; review for omissions or additions.');
@@ -112,6 +145,11 @@ export function assessSemanticFidelity(original: string, rewritten: string): Sem
   if (entityRecallRaw < 0.8) warnings.push('Some named entities may have changed or disappeared.');
   if (numberRecallRaw < 1) warnings.push('A number, percentage, date, or measurement may have changed or disappeared.');
   if (negationConsistencyRaw < 1) warnings.push('Negation count changed; verify that the meaning was not inverted.');
+  if (urlRecallRaw < 1) warnings.push('A URL may have changed or disappeared.');
+  if (emailRecallRaw < 1) warnings.push('An email address may have changed or disappeared.');
+  if (codeRecallRaw < 1) warnings.push('A code snippet may have changed or disappeared.');
+  if (markdownRecallRaw < 1) warnings.push('Markdown structure may have changed or disappeared.');
+  if (protectedTokenRecallRaw < 1) warnings.push('A protected token/API-key-like value may have changed or disappeared.');
 
   const score = clampPercent(weightedScore);
   return {
@@ -124,6 +162,11 @@ export function assessSemanticFidelity(original: string, rewritten: string): Sem
     entityRecall: clampPercent(entityRecallRaw),
     numberRecall: clampPercent(numberRecallRaw),
     negationConsistency: clampPercent(negationConsistencyRaw),
+    urlRecall: clampPercent(urlRecallRaw),
+    emailRecall: clampPercent(emailRecallRaw),
+    codeRecall: clampPercent(codeRecallRaw),
+    markdownRecall: clampPercent(markdownRecallRaw),
+    protectedTokenRecall: clampPercent(protectedTokenRecallRaw),
     warnings,
   };
 }

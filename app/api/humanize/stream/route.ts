@@ -32,6 +32,10 @@ function emit(controller: ReadableStreamDefaultController<Uint8Array>, name: Str
   controller.enqueue(event(name, data));
 }
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) throw new Error('Request aborted by client.');
+}
+
 function buildSentenceResults(originalText: string, finalText: string, finalDetection: ReturnType<typeof detectAI>) {
   const originalSentences = splitIntoSentences(originalText);
   const humanizedSentences = splitIntoSentences(finalText);
@@ -52,6 +56,7 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
+        throwIfAborted(request.signal);
         emit(controller, 'progress', { step: 'accepted', message: 'Request accepted' });
         if (!body || typeof body !== 'object') {
           emit(controller, 'error', { error: 'Invalid JSON body.' });
@@ -101,8 +106,10 @@ export async function POST(request: NextRequest) {
           return;
         }
 
+        throwIfAborted(request.signal);
         emit(controller, 'progress', { step: 'style-model', message: 'Loading corpus calibration' });
         await loadStyleModelAsync();
+        throwIfAborted(request.signal);
         const useCorpus = hasStyleModel();
         if (useCorpus) {
           const styleModel = loadStyleModel();
@@ -123,6 +130,7 @@ export async function POST(request: NextRequest) {
         let currentText = '';
         const chunks = chunkText(text, 2500);
         for (let index = 0; index < chunks.length; index++) {
+          throwIfAborted(request.signal);
           emit(controller, 'progress', { step: 'rewrite', chunk: index + 1, totalChunks: chunks.length, message: `Rewriting chunk ${index + 1}/${chunks.length}` });
           const chunkPrompt = chunks[index] + ((language && language !== 'en' && language !== 'auto' && language !== 'zh-CN' && language !== 'zh-TW')
             ? '\n\nIMPORTANT: The text is in a language other than English. Rewrite it in the SAME language. Do NOT translate.'
@@ -132,6 +140,7 @@ export async function POST(request: NextRequest) {
             temperature: params.temperature,
             topP: params.topP,
           });
+          throwIfAborted(request.signal);
           currentText += (index > 0 ? '\n\n' : '') + rewrittenChunk;
           emit(controller, 'chunk', { index, text: rewrittenChunk });
         }
@@ -142,6 +151,7 @@ export async function POST(request: NextRequest) {
         if (enablePostprocess) currentText = postprocess(currentText, { style: stylePreset });
 
         if (chainIds.length > 0) {
+          throwIfAborted(request.signal);
           emit(controller, 'progress', { step: 'chain', message: 'Running configured model chain' });
           const allApiKeys = { ...(extraApiKeys as Record<string, string | undefined>), [model]: apiKey };
           const chainConfig = chainIds
@@ -156,11 +166,13 @@ export async function POST(request: NextRequest) {
               tone: tonePreset,
               customTone: customTone as string | undefined,
             });
+            throwIfAborted(request.signal);
             currentText = chainResult.text;
             passes += chainResult.passes.length;
           }
         }
 
+        throwIfAborted(request.signal);
         if (enablePostprocess) currentText = postprocess(currentText, { light: true });
         emit(controller, 'progress', { step: 'validate', message: 'Scoring semantic fidelity and detector confidence' });
         const guard = applyRewriteRegressionGuard({ originalText: text, candidateText: currentText, fallbackText: rawRewrite });
@@ -168,6 +180,7 @@ export async function POST(request: NextRequest) {
         const finalDetection = detectAI(finalText);
         const confidenceReport = buildConfidenceReport(finalDetection.score);
         const runtimeModelScore = await scoreHumanLikeness(finalText);
+        throwIfAborted(request.signal);
         const semanticFidelity = assessSemanticFidelity(text, finalText);
         const sentences = buildSentenceResults(text, finalText, finalDetection);
 
@@ -215,9 +228,9 @@ export async function POST(request: NextRequest) {
 
         emit(controller, 'result', responsePayload);
       } catch (error) {
-        emit(controller, 'error', { error: error instanceof Error ? error.message : 'Stream failed' });
+        if (!request.signal.aborted) emit(controller, 'error', { error: error instanceof Error ? error.message : 'Stream failed' });
       } finally {
-        emit(controller, 'done', { ok: true });
+        if (!request.signal.aborted) emit(controller, 'done', { ok: true });
         controller.close();
       }
     },
