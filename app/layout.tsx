@@ -79,7 +79,7 @@ const jsonLd = {
     url: SITE_URL,
   },
   featureList: [
-    '35 AI provider integrations (Gemini, Google Antigravity, Google Gemini OAuth, OpenAI, Claude, Groq, Mistral, Codebuff, Command Code, Ollama, LM Studio, vLLM, and more)',
+    '35 AI provider integrations (Gemini, Google Gemini OAuth, OpenAI, Claude, Groq, Mistral, Codebuff, Command Code, Ollama, LM Studio, vLLM, and more)',
     '4 rewrite levels: Light, Medium, Aggressive, Ninja',
     'Multi-pass ninja mode with auto-refinement to 90%+ human score',
     'Style-aware rewriting: Academic, Professional, Casual, Creative, Technical',
@@ -129,7 +129,7 @@ const faqJsonLd = {
       name: 'Which AI providers are supported?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '35 providers are supported: Google Gemini (free), Google Antigravity (OAuth, free), Google Gemini (OAuth, free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI, Codebuff (free), Command Code, Kiro, OpenCode Zen (free), OpenCode Zen Anthropic (free), OpenCode Go, OpenCode Go Anthropic, Crof.ai, Ocenza, MiMo (Xiaomi), NVIDIA NIM, Kilo.ai Gateway, Nous Research (free), Perplexity, Fireworks AI, OpenAdapter (free), Z.ai Coding, Ollama (local, free), LM Studio (local, free), and vLLM (local, free).',
+        text: '35 providers are supported: Google Gemini (free), Google Gemini (OAuth, free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI, Codebuff (free), Command Code, OpenCode Zen (free), OpenCode Zen Anthropic (free), OpenCode Go, OpenCode Go Anthropic, Crof.ai, Ocenza, MiMo (Xiaomi), NVIDIA NIM, Kilo.ai Gateway, Nous Research (free), Perplexity, Fireworks AI, OpenAdapter (free), Z.ai Coding, Ollama (local, free), LM Studio (local, free), and vLLM (local, free).',
       },
     },
     {

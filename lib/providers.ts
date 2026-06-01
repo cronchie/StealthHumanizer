@@ -244,23 +244,23 @@ export const PROVIDERS: Provider[] = [
     getApiKeyUrl: 'https://docs.claude.com/en/docs/claude-code/overview',
     docsUrl: 'https://docs.claude.com/en/docs/claude-code/cli-reference',
     // 'opus' / 'sonnet' / 'haiku' are aliases the claude CLI resolves to the
-    // latest version in each family (currently Opus 4.7, Sonnet 4.6, Haiku 4.5).
+    // latest version in each family.
     // Prefer aliases so this default stays correct as Anthropic ships new
     // versions without requiring a registry bump.
     defaultModel: 'opus',
-    models: ['opus', 'sonnet', 'haiku', 'claude-opus-4-7', 'claude-sonnet-4-6', 'claude-haiku-4-5'],
+    models: ['opus', 'sonnet', 'haiku', 'claude-3-opus-20240229', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022'],
     placeholder: '',
   },
   {
     id: 'codebuff',
     name: 'Codebuff (Freebuff)',
-    description: 'Access free AI models like DeepSeek V4 and Kimi K2.6 via Codebuff integration.',
+    description: 'Access free AI models like DeepSeek V3 and Kimi K2.5 via Codebuff integration.',
     free: true,
     apiUrl: 'https://www.codebuff.com/api/v1/chat/completions',
     getApiKeyUrl: 'https://www.codebuff.com',
     docsUrl: 'https://www.codebuff.com',
-    defaultModel: 'deepseek/deepseek-v4-flash',
-    models: ['deepseek/deepseek-v4-flash', 'deepseek/deepseek-v4-pro', 'moonshotai/kimi-k2.6', 'minimax/minimax-m2.7'],
+    defaultModel: 'deepseek/deepseek-chat',
+    models: ['deepseek/deepseek-chat', 'deepseek/deepseek-coder', 'moonshotai/kimi-k2.5', 'minimax/minimax-m2.5'],
     placeholder: 'cb_...',
   },
   {
@@ -271,29 +271,16 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://api.commandcode.ai/alpha/generate',
     getApiKeyUrl: 'https://api.commandcode.ai',
     docsUrl: 'https://api.commandcode.ai',
-    defaultModel: 'deepseek/deepseek-v4-flash',
+    defaultModel: 'deepseek/deepseek-chat',
     models: [
-      'deepseek/deepseek-v4-flash',
-      'deepseek/deepseek-v4-pro',
-      'moonshotai/Kimi-K2.6',
-      'zai-org/GLM-5.1',
-      'MiniMaxAI/MiniMax-M2.7',
-      'Qwen/Qwen3.6-Plus',
+      'deepseek/deepseek-chat',
+      'deepseek/deepseek-coder',
+      'moonshotai/Kimi-K2.5',
+      'zai-org/GLM-5',
+      'MiniMaxAI/MiniMax-M2.5',
+      'Qwen/Qwen2.5-Plus',
     ],
     placeholder: 'cc_...',
-  },
-  {
-    id: 'kiro',
-    name: 'Kiro (CLI)',
-    description: 'Runs Kiro (AWS CodeWhisperer) dynamic backend integration. Requires active AWS/Kiro login on the server. CLI/Node only.',
-    free: true,
-    cliOnly: true,
-    apiUrl: '',
-    getApiKeyUrl: 'https://codewhisperer.us-east-1.amazonaws.com',
-    docsUrl: 'https://aws.amazon.com/codewhisperer/',
-    defaultModel: 'default',
-    models: ['default'],
-    placeholder: '',
   },
   {
     id: 'opencode-zen',
@@ -303,8 +290,8 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://opencode.ai/zen/v1/chat/completions',
     getApiKeyUrl: 'https://opencode.ai',
     docsUrl: 'https://opencode.ai',
-    defaultModel: 'gemini-3.5-flash',
-    models: ['glm-5.1', 'glm-5', 'kimi-k2.6', 'minimax-m2.7', 'gemini-3.5-flash', 'gemini-3.1-pro'],
+    defaultModel: 'gemini-2.5-flash',
+    models: ['glm-5', 'glm-5-turbo', 'kimi-k2.5', 'minimax-m2.5', 'gemini-2.5-flash', 'gemini-2.5-pro'],
     placeholder: 'zen_...',
   },
   {
@@ -315,8 +302,8 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://opencode.ai/zen/go/v1/chat/completions',
     getApiKeyUrl: 'https://opencode.ai',
     docsUrl: 'https://opencode.ai',
-    defaultModel: 'deepseek-v4-flash',
-    models: ['glm-5.1', 'mimo-v2-omni', 'qwen3.7-max', 'deepseek-v4-pro', 'deepseek-v4-flash'],
+    defaultModel: 'deepseek-chat',
+    models: ['glm-5', 'mimo-v2-omni', 'qwen-max', 'deepseek-coder', 'deepseek-chat'],
     placeholder: 'go_...',
   },
   {
@@ -340,7 +327,7 @@ export const PROVIDERS: Provider[] = [
     getApiKeyUrl: 'https://global.ocenza.com',
     docsUrl: 'https://global.ocenza.com',
     defaultModel: 'gpt-oss-120b',
-    models: ['gpt-oss-120b', 'mimo-v2-pro', 'mimo-v2.5'],
+    models: ['gpt-oss-120b', 'mimo-v2-pro', 'mimo-v2-omni'],
     placeholder: 'oc_...',
   },
   {
@@ -352,7 +339,7 @@ export const PROVIDERS: Provider[] = [
     getApiKeyUrl: 'https://xiaomimimo.com',
     docsUrl: 'https://xiaomimimo.com',
     defaultModel: 'mimo-v2-omni',
-    models: ['mimo-v2-omni', 'mimo-v2-pro', 'mimo-v2.5', 'mimo-v2.5-pro'],
+    models: ['mimo-v2-omni', 'mimo-v2-pro'],
     placeholder: 'mimo_...',
   },
   {
@@ -387,8 +374,8 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://inference-api.nousresearch.com/v1/chat/completions',
     getApiKeyUrl: 'https://nousresearch.com',
     docsUrl: 'https://nousresearch.com',
-    defaultModel: 'stepfun/step-3.7-flash:free',
-    models: ['stepfun/step-3.7-flash:free'],
+    defaultModel: 'nousresearch/hermes-3-llama-3.1-70b',
+    models: ['nousresearch/hermes-3-llama-3.1-70b'],
     placeholder: 'nous_...',
   },
   {
@@ -423,8 +410,8 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://api.openadapter.in/v1/chat/completions',
     getApiKeyUrl: 'https://api.openadapter.in',
     docsUrl: 'https://api.openadapter.in',
-    defaultModel: '0G-DeepSeek-v4-Pro',
-    models: ['0G-DeepSeek-V3', '0G-DeepSeek-v4-Pro', '0G-GLM-5.1', '0G-Qwen3.6'],
+    defaultModel: '0G-DeepSeek-V3',
+    models: ['0G-DeepSeek-V3', '0G-GLM-5', '0G-Qwen-Plus'],
     placeholder: 'oa_...',
   },
   {
@@ -435,31 +422,9 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://api.z.ai/api/coding/paas/v4/chat/completions',
     getApiKeyUrl: 'https://z.ai',
     docsUrl: 'https://z.ai',
-    defaultModel: 'glm-5.1',
-    models: ['glm-5.1', 'glm-4.7', 'GLM-4-Plus'],
+    defaultModel: 'glm-5',
+    models: ['glm-5', 'GLM-4-Plus', 'glm-4-flash'],
     placeholder: 'zai_...',
-  },
-  {
-    id: 'google-antigravity',
-    name: 'Google Antigravity (OAuth)',
-    description: 'Google Antigravity internal gateway with OAuth access token authentication.',
-    free: true,
-    apiUrl: 'https://cloudcode-pa.googleapis.com/v1internal:generateContent',
-    getApiKeyUrl: 'https://aistudio.google.com/apikey',
-    defaultModel: 'antigravity-gemini-3.1-pro',
-    models: [
-      'antigravity-gemini-3-flash',
-      'antigravity-gemini-3-pro',
-      'antigravity-gemini-3.1-pro',
-      'antigravity-claude-sonnet-4-6',
-      'antigravity-claude-opus-4-6-thinking',
-      'gemini-2.5-flash',
-      'gemini-2.5-pro',
-      'gemini-3-flash-preview',
-      'gemini-3-pro-preview',
-      'gemini-3.1-pro-preview',
-    ],
-    placeholder: 'ya29....',
   },
   {
     id: 'google-gemini-oauth',
@@ -512,16 +477,11 @@ export const PROVIDERS: Provider[] = [
     free: true,
     apiUrl: 'https://opencode.ai/zen/v1/messages',
     getApiKeyUrl: 'https://opencode.ai',
-    defaultModel: 'claude-sonnet-4-6',
+    defaultModel: 'claude-3-5-sonnet-20241022',
     models: [
-      'claude-opus-4-7',
-      'claude-opus-4-6',
-      'claude-opus-4-5',
-      'claude-opus-4-1',
-      'claude-sonnet-4-6',
-      'claude-sonnet-4-5',
-      'claude-sonnet-4',
-      'claude-haiku-4-5',
+      'claude-3-opus-20240229',
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-haiku-20241022',
     ],
     placeholder: 'zen_...',
   },
@@ -573,7 +533,7 @@ export function getAvailableProvider(keys: Record<string, string | undefined>): 
     'opencode-zen', 'opencode-go', 'crof', 'ocenza', 'mimo',
     'nvidia-nim', 'kilo-gateway', 'nous-research', 'perplexity',
     'fireworks', 'openadapter', 'zai-coding',
-    'google-antigravity', 'google-gemini-oauth', 'ollama', 'lm-studio',
+    'google-gemini-oauth', 'ollama', 'lm-studio',
     'vllm', 'opencode-zen-anthropic', 'opencode-go-anthropic',
     'openai', 'claude'
   ];
@@ -789,13 +749,12 @@ async function claudeGenerate(
   return anthropicCompatibleGenerate('https://api.anthropic.com/v1/messages', apiKey, systemPrompt, userPrompt, model, options);
 }
 
-// Google CloudCode/Antigravity OAuth API
+// Google Gemini OAuth API
 async function googleOAuthGenerate(
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
   model: string,
-  isAntigravity: boolean,
   options: GenerationOptions = {}
 ): Promise<string> {
   const url = 'https://cloudcode-pa.googleapis.com/v1internal:generateContent';
@@ -829,27 +788,13 @@ async function googleOAuthGenerate(
     request: requestBody,
   };
   
-  if (isAntigravity) {
-    wrapped.requestType = 'agent';
-    wrapped.userAgent = 'antigravity';
-    wrapped.requestId = `agent-${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 12) : Math.random().toString(36).substring(2)}`;
-  }
-  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${apiKey}`,
+    'User-Agent': 'google-api-nodejs-client/9.15.1',
+    'X-Goog-Api-Client': 'gl-node/22.17.0',
+    'Client-Metadata': 'ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI',
   };
-  
-  if (isAntigravity) {
-    headers['User-Agent'] = 'antigravity/3.0.0 windows/x64';
-    headers['X-Client-Name'] = 'antigravity';
-    headers['X-Client-Version'] = '3.0.0';
-    headers['x-goog-api-client'] = 'gl-node/18.18.2 fire/0.8.6 grpc/1.10.x';
-  } else {
-    headers['User-Agent'] = 'google-api-nodejs-client/9.15.1';
-    headers['X-Goog-Api-Client'] = 'gl-node/22.17.0';
-    headers['Client-Metadata'] = 'ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI';
-  }
 
   const response = await fetchWithRetry(url, {
     method: 'POST',
@@ -884,19 +829,7 @@ async function commandCodeGenerate(
       'x-command-code-version': '0.26.8',
     },
     body: JSON.stringify({
-      config: {
-        workingDir: '',
-        date: new Date().toISOString().slice(0, 10),
-        environment: 'linux',
-        shell: 'bash',
-        files: [],
-        structure: [],
-        isGitRepo: false,
-        currentBranch: '',
-        mainBranch: '',
-        gitStatus: '',
-        recentCommits: [],
-      },
+      config: {},
       memory: '',
       taste: '',
       skills: '',
@@ -1116,14 +1049,9 @@ export async function generateWithProvider(
         apiKey, systemPrompt, fullUserPrompt, model, options
       );
 
-    case 'google-antigravity':
-      return googleOAuthGenerate(
-        apiKey, systemPrompt, fullUserPrompt, model, true, options
-      );
-
     case 'google-gemini-oauth':
       return googleOAuthGenerate(
-        apiKey, systemPrompt, fullUserPrompt, model, false, options
+        apiKey, systemPrompt, fullUserPrompt, model, options
       );
 
     case 'ollama':
@@ -1156,7 +1084,6 @@ export async function generateWithProvider(
         apiKey, systemPrompt, fullUserPrompt, model, options
       );
 
-    case 'kiro':
     case 'claude-code':
     case 'codex':
       throw new Error(CLI_RUNTIME_REQUIRED_MESSAGE);

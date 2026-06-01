@@ -40,11 +40,6 @@ export async function generateWithProvider(
     const fullUserPrompt = `Text to humanize:\n\n${userPrompt}`;
     return codexGenerate(systemPrompt, fullUserPrompt, { model: options.model });
   }
-  if (provider === 'kiro') {
-    throw new Error(
-      'Kiro integration requires active AWS Builder ID or AWS IAM Identity Center authentication configured on the server host.'
-    );
-  }
   return generateHttpProvider(provider, apiKey, systemPrompt, userPrompt, options);
 }
 
