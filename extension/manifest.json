@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "StealthHumanizer Companion",
+  "version": "0.1.0",
+  "description": "Send selected text to a local or hosted StealthHumanizer instance.",
+  "permissions": ["contextMenus", "storage"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "StealthHumanizer" }
+}
