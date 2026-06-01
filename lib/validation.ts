@@ -17,6 +17,11 @@ export function validateModel(model: unknown): string | null {
     'gemini', 'openai', 'claude', 'groq', 'mistral', 'cohere',
     'together', 'openrouter', 'cerebras', 'deepinfra', 'huggingface',
     'cloudflare', 'zai', 'codebuff', 'command-code', 'kiro',
+    'opencode-zen', 'opencode-go', 'crof', 'ocenza',
+    'mimo', 'nvidia-nim', 'kilo-gateway', 'nous-research',
+    'perplexity', 'fireworks', 'openadapter', 'zai-coding',
+    'google-antigravity', 'google-gemini-oauth', 'ollama', 'lm-studio',
+    'vllm', 'opencode-zen-anthropic', 'opencode-go-anthropic',
   ];
   if (typeof model !== 'string' || !validModels.includes(model)) {
     return 'Invalid model provider';
