@@ -41,7 +41,7 @@ AI detectors (GPTZero, Originality.ai, Turnitin) catch AI text through statistic
 
 | Feature | Description |
 |---------|-------------|
-| **13 AI Providers** | Gemini (free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI |
+| **35 AI Providers** | Gemini (free), Google Gemini OAuth, OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI, Codebuff (free), Command Code, OpenCode Zen, OpenCode Go, Ollama, LM Studio, vLLM, and more |
 | **4 Rewrite Levels** | Light (subtle fixes), Medium (natural rewrite), Aggressive (complete rewrite), Ninja (maximum stealth) |
 | **6 Writing Styles** | Humanize, Academic, Professional, Casual, Creative, Technical |
 | **9 Text Purposes** | Essay, Article, Blog, Email, Marketing, Report, Story, Social Media, General |
@@ -55,6 +55,46 @@ AI detectors (GPTZero, Originality.ai, Turnitin) catch AI text through statistic
 | **Batch Processing** | Humanize multiple texts at once |
 | **Export** | Download as TXT, DOCX, or PDF |
 | **100% Private** | API keys stored in your browser only. No server-side data storage. |
+
+---
+
+## Supported Providers Matrix
+
+StealthHumanizer fully integrates the following AI providers, matching the provider and capability matrix of the Codex Launcher:
+
+| Provider | API | Works with Codex? |
+|----------|-----|-------------------|
+| OpenAI | Responses API | ✅ |
+| Gemini CLI OAuth | Code Assist | ✅ |
+| Z.AI | Chat Completions | ✅ |
+| OpenCode | Chat Completions | ✅ |
+| Anthropic | Messages API | ✅ |
+| Command Code | Custom /alpha/generate | ✅ |
+| Ollama | Chat Completions | ✅ |
+| OpenRouter | Chat Completions | ✅ |
+| NVIDIA NIM | Chat Completions | ✅ |
+| Crof.ai | Chat Completions | ✅ |
+| Nous Research | Chat Completions | ✅ |
+| Ocenza | Chat Completions | ✅ |
+| MiMo | Chat Completions | ✅ |
+| Perplexity | Chat Completions | ✅ |
+| Cohere | Chat Completions | ✅ |
+| Hugging Face | Chat Completions | ✅ |
+| Together AI | Chat Completions | ✅ |
+| Groq | Chat Completions | ✅ |
+| Fireworks AI | Chat Completions | ✅ |
+| OpenAdapter | Chat Completions | ✅ |
+| Kilo.ai Gateway | Chat Completions | ✅ |
+| Freebuff (Free DeepSeek/Kimi) | Freebuff API | ✅ |
+| LM Studio (local) | Chat Completions | ✅ |
+| vLLM (self-hosted) | Chat Completions | ✅ |
+| Google Gemini (API Key) | Chat Completions / SDK | ✅ |
+| Mistral AI | Chat Completions | ✅ |
+| Cerebras | Chat Completions | ✅ |
+| DeepInfra | Chat Completions | ✅ |
+| Cloudflare Workers AI | Chat Completions | ✅ |
+| Claude Code (CLI) | Claude Code CLI | ✅ |
+| OpenAI Codex (CLI) | Codex CLI | ✅ |
 
 ---
 
@@ -228,7 +268,7 @@ This walkthrough is specifically for the **Groq (Free)** provider flow.
 |---|:---:|:---:|:---:|:---:|
 | Price | **Free** | $9.99/mo | $19/mo | $14.99/mo |
 | Open Source | **Yes (MIT)** | No | No | No |
-| AI Providers | **13** | 1 | 1 | 1 |
+| AI Providers | **35** | 1 | 1 | 1 |
 | No Login Required | **Yes** | No | No | No |
 | Data Privacy | **Browser-only keys** | Server-side | Server-side | Server-side |
 | Multi-Language | **16+** | Limited | English only | English only |
@@ -261,7 +301,7 @@ stealthhumanizer/
 │   ├── detector.ts         # 12-metric AI detection engine
 │   ├── prompts.ts          # Anti-detection prompt system (EN + ZH)
 │   ├── postprocess.ts      # Non-LLM post-processing engine
-│   ├── providers.ts        # 13 AI provider integrations
+│   ├── providers.ts        # 35 AI provider integrations
 │   ├── readability.ts      # Flesch, Kincaid, Coleman-Liau metrics
 │   └── server/             # Server-side modules
 │       ├── humanization-governance.ts  # Safety + regression guard

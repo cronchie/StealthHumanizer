@@ -35,7 +35,7 @@ function HeroSection() {
             Transform <span className="hero-gradient">AI Text</span> Into<br />Natural Writing
           </h1>
           <p className="text-lg md:text-xl text-dark-300 max-w-2xl mx-auto mb-8">
-            Free. No login. <strong className="text-dark-200">13 AI providers</strong>. Style-aware rewriting.
+            Free. No login. <strong className="text-dark-200">35 AI providers</strong>. Style-aware rewriting.
           </p>
         </div>
 
@@ -144,7 +144,7 @@ function TrustIndicators() {
         <p className="text-dark-400 text-sm mb-4">Built for researchers & writers</p>
         <div className="flex flex-wrap justify-center gap-4 mb-6">
           {[
-            { value: '13', label: 'AI Providers' },
+            { value: '35', label: 'AI Providers' },
             { value: '4', label: 'Rewrite Levels' },
             { value: '13', label: 'Tones' },
             { value: '16+', label: 'Languages' },

@@ -252,6 +252,256 @@ export const PROVIDERS: Provider[] = [
     placeholder: '',
   },
   {
+    id: 'codebuff',
+    name: 'Codebuff (Freebuff)',
+    description: 'Access free AI models like DeepSeek V4 and Kimi K2.6 via Codebuff integration.',
+    free: true,
+    apiUrl: 'https://www.codebuff.com/api/v1/chat/completions',
+    getApiKeyUrl: 'https://www.codebuff.com',
+    docsUrl: 'https://www.codebuff.com',
+    defaultModel: 'deepseek/deepseek-v4-flash',
+    models: ['deepseek/deepseek-v4-flash', 'deepseek/deepseek-v4-pro', 'moonshotai/kimi-k2.6', 'minimax/minimax-m2.7'],
+    placeholder: 'cb_...',
+  },
+  {
+    id: 'command-code',
+    name: 'Command Code',
+    description: 'Use the Command Code /alpha/generate engine for custom agentic humanization.',
+    free: false,
+    apiUrl: 'https://api.commandcode.ai/alpha/generate',
+    getApiKeyUrl: 'https://api.commandcode.ai',
+    docsUrl: 'https://api.commandcode.ai',
+    defaultModel: 'deepseek/deepseek-v4-flash',
+    models: [
+      'deepseek/deepseek-v4-flash',
+      'deepseek/deepseek-v4-pro',
+      'moonshotai/Kimi-K2.6',
+      'zai-org/GLM-5.1',
+      'MiniMaxAI/MiniMax-M2.7',
+      'Qwen/Qwen3.6-Plus',
+    ],
+    placeholder: 'cc_...',
+  },
+  {
+    id: 'opencode-zen',
+    name: 'OpenCode Zen',
+    description: 'Free AI model inference via OpenCode Zen gateway.',
+    free: true,
+    apiUrl: 'https://opencode.ai/zen/v1/chat/completions',
+    getApiKeyUrl: 'https://opencode.ai',
+    docsUrl: 'https://opencode.ai',
+    defaultModel: 'gemini-3.5-flash',
+    models: ['glm-5.1', 'glm-5', 'kimi-k2.6', 'minimax-m2.7', 'gemini-3.5-flash', 'gemini-3.1-pro'],
+    placeholder: 'zen_...',
+  },
+  {
+    id: 'opencode-go',
+    name: 'OpenCode Go',
+    description: 'Paid/dedicated OpenCode Go gateway.',
+    free: false,
+    apiUrl: 'https://opencode.ai/zen/go/v1/chat/completions',
+    getApiKeyUrl: 'https://opencode.ai',
+    docsUrl: 'https://opencode.ai',
+    defaultModel: 'deepseek-v4-flash',
+    models: ['glm-5.1', 'mimo-v2-omni', 'qwen3.7-max', 'deepseek-v4-pro', 'deepseek-v4-flash'],
+    placeholder: 'go_...',
+  },
+  {
+    id: 'crof',
+    name: 'Crof.ai',
+    description: 'Enterprise AI assistant gateway via Crof.ai.',
+    free: false,
+    apiUrl: 'https://crof.ai/v1/chat/completions',
+    getApiKeyUrl: 'https://crof.ai',
+    docsUrl: 'https://crof.ai',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: 'crof_...',
+  },
+  {
+    id: 'ocenza',
+    name: 'Ocenza',
+    description: 'High-capacity AI orchestration platform.',
+    free: false,
+    apiUrl: 'https://global.ocenza.com/v1/chat/completions',
+    getApiKeyUrl: 'https://global.ocenza.com',
+    docsUrl: 'https://global.ocenza.com',
+    defaultModel: 'gpt-oss-120b',
+    models: ['gpt-oss-120b', 'mimo-v2-pro', 'mimo-v2.5', 'mimo-v2.5-pro'],
+    placeholder: 'oc_...',
+  },
+  {
+    id: 'mimo',
+    name: 'MiMo (Xiaomi)',
+    description: 'Edge inference platform by Xiaomi MiMo.',
+    free: false,
+    apiUrl: 'https://token-plan-sgp.xiaomimimo.com/v1/chat/completions',
+    getApiKeyUrl: 'https://xiaomimimo.com',
+    docsUrl: 'https://xiaomimimo.com',
+    defaultModel: 'mimo-v2-omni',
+    models: ['mimo-v2-omni', 'mimo-v2-pro', 'mimo-v2.5', 'mimo-v2.5-pro'],
+    placeholder: 'mimo_...',
+  },
+  {
+    id: 'nvidia-nim',
+    name: 'NVIDIA NIM',
+    description: 'High-performance NVIDIA NIM inference API.',
+    free: false,
+    apiUrl: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    getApiKeyUrl: 'https://integrate.api.nvidia.com',
+    docsUrl: 'https://integrate.api.nvidia.com',
+    defaultModel: 'meta/llama3-70b-instruct',
+    models: ['meta/llama3-70b-instruct'],
+    placeholder: 'nv_...',
+  },
+  {
+    id: 'kilo-gateway',
+    name: 'Kilo.ai Gateway',
+    description: 'Developer-focused AI gateway from Kilo.ai.',
+    free: false,
+    apiUrl: 'https://api.kilo.ai/api/gateway/chat/completions',
+    getApiKeyUrl: 'https://api.kilo.ai',
+    docsUrl: 'https://api.kilo.ai',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: 'kilo_...',
+  },
+  {
+    id: 'nous-research',
+    name: 'Nous Research',
+    description: 'State-of-the-art open-source models from Nous Research.',
+    free: true,
+    apiUrl: 'https://inference-api.nousresearch.com/v1/chat/completions',
+    getApiKeyUrl: 'https://nousresearch.com',
+    docsUrl: 'https://nousresearch.com',
+    defaultModel: 'stepfun/step-3.7-flash:free',
+    models: ['stepfun/step-3.7-flash:free'],
+    placeholder: 'nous_...',
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity',
+    description: 'Conversational search and language models from Perplexity.',
+    free: false,
+    apiUrl: 'https://api.perplexity.ai/chat/completions',
+    getApiKeyUrl: 'https://api.perplexity.ai',
+    docsUrl: 'https://api.perplexity.ai',
+    defaultModel: 'sonar',
+    models: ['sonar', 'sonar-pro', 'sonar-reasoning-pro'],
+    placeholder: 'pplx_...',
+  },
+  {
+    id: 'fireworks',
+    name: 'Fireworks AI',
+    description: 'Ultra-fast inference platform for open models.',
+    free: false,
+    apiUrl: 'https://api.fireworks.ai/inference/v1/chat/completions',
+    getApiKeyUrl: 'https://api.fireworks.ai',
+    docsUrl: 'https://api.fireworks.ai',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: 'fw_...',
+  },
+  {
+    id: 'openadapter',
+    name: 'OpenAdapter',
+    description: 'Multi-model unified inference API from OpenAdapter.',
+    free: true,
+    apiUrl: 'https://api.openadapter.in/v1/chat/completions',
+    getApiKeyUrl: 'https://api.openadapter.in',
+    docsUrl: 'https://api.openadapter.in',
+    defaultModel: '0G-DeepSeek-v4-Pro',
+    models: ['0G-DeepSeek-V3', '0G-DeepSeek-v4-Pro', '0G-GLM-5.1', '0G-Qwen3.6'],
+    placeholder: 'oa_...',
+  },
+  {
+    id: 'zai-coding',
+    name: 'Z.ai Coding',
+    description: 'Z.ai Coding API for advanced programming assistants.',
+    free: false,
+    apiUrl: 'https://api.z.ai/api/coding/paas/v4/chat/completions',
+    getApiKeyUrl: 'https://z.ai',
+    docsUrl: 'https://z.ai',
+    defaultModel: 'glm-5.1',
+    models: ['glm-5.1', 'glm-4.7', 'GLM-4-Plus'],
+    placeholder: 'zai_...',
+  },
+  {
+    id: 'google-gemini-oauth',
+    name: 'Google Gemini (OAuth)',
+    description: 'Standard Google Gemini API gateway utilizing OAuth access token authentication.',
+    free: true,
+    apiUrl: 'https://cloudcode-pa.googleapis.com/v1internal:generateContent',
+    getApiKeyUrl: 'https://aistudio.google.com/apikey',
+    defaultModel: 'gemini-2.5-flash',
+    models: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+    placeholder: 'ya29....',
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama (Local)',
+    description: 'Standard local Ollama instance (default: http://localhost:11434/v1).',
+    free: true,
+    apiUrl: 'http://localhost:11434/v1/chat/completions',
+    getApiKeyUrl: 'http://localhost:11434',
+    defaultModel: 'llama3.3',
+    models: ['llama3.3', 'llama3.1', 'mistral', 'phi3', 'gemma2', 'deepseek-coder'],
+    placeholder: 'ollama',
+  },
+  {
+    id: 'lm-studio',
+    name: 'LM Studio (Local)',
+    description: 'Standard local LM Studio instance (default: http://127.0.0.1:1234/v1).',
+    free: true,
+    apiUrl: 'http://127.0.0.1:1234/v1/chat/completions',
+    getApiKeyUrl: 'http://127.0.0.1:1234',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: 'lm-studio',
+  },
+  {
+    id: 'vllm',
+    name: 'vLLM (Local/Self-hosted)',
+    description: 'Standard self-hosted vLLM or OpenAI-compatible instance (default: http://localhost:8000/v1).',
+    free: true,
+    apiUrl: 'http://localhost:8000/v1/chat/completions',
+    getApiKeyUrl: 'http://localhost:8000',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: 'vllm',
+  },
+  {
+    id: 'opencode-zen-anthropic',
+    name: 'OpenCode Zen (Anthropic)',
+    description: 'Anthropic-compatible endpoint for OpenCode Zen.',
+    free: true,
+    apiUrl: 'https://opencode.ai/zen/v1/messages',
+    getApiKeyUrl: 'https://opencode.ai',
+    defaultModel: 'claude-sonnet-4-6',
+    models: [
+      'claude-opus-4-7',
+      'claude-opus-4-6',
+      'claude-opus-4-5',
+      'claude-opus-4-1',
+      'claude-sonnet-4-6',
+      'claude-sonnet-4-5',
+      'claude-sonnet-4',
+      'claude-haiku-4-5',
+    ],
+    placeholder: 'zen_...',
+  },
+  {
+    id: 'opencode-go-anthropic',
+    name: 'OpenCode Go (Anthropic)',
+    description: 'Anthropic-compatible paid gateway for OpenCode Go.',
+    free: false,
+    apiUrl: 'https://opencode.ai/zen/go/v1/messages',
+    getApiKeyUrl: 'https://opencode.ai',
+    defaultModel: 'minimax-m2.7',
+    models: ['minimax-m2.7', 'minimax-m2.5'],
+    placeholder: 'go_...',
+  },
+  {
     id: 'codex',
     name: 'OpenAI Codex (CLI)',
     description: 'Runs your local Codex CLI as a subprocess. Uses your existing OpenAI subscription — no API key required. CLI/Node only.',
@@ -284,6 +534,12 @@ export function getAvailableProvider(keys: Record<string, string | undefined>): 
   const priority: ModelProvider[] = [
     'gemini', 'groq', 'openrouter', 'together', 'cerebras', 'zai',
     'mistral', 'cohere', 'deepinfra', 'huggingface', 'cloudflare',
+    'codebuff', 'command-code',
+    'opencode-zen', 'opencode-go', 'crof', 'ocenza', 'mimo',
+    'nvidia-nim', 'kilo-gateway', 'nous-research', 'perplexity',
+    'fireworks', 'openadapter', 'zai-coding',
+    'google-gemini-oauth', 'ollama', 'lm-studio',
+    'vllm', 'opencode-zen-anthropic', 'opencode-go-anthropic',
     'openai', 'claude'
   ];
 
@@ -451,15 +707,16 @@ async function huggingfaceGenerate(
   return Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
 }
 
-// Claude API
-async function claudeGenerate(
+// Anthropic-compatible Inference API
+async function anthropicCompatibleGenerate(
+  apiUrl: string,
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
-  model: string = 'claude-sonnet-4-20250514',
+  model: string,
   options: GenerationOptions = {}
 ): Promise<string> {
-  const response = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
+  const response = await fetchWithRetry(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -478,12 +735,149 @@ async function claudeGenerate(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `Claude API error: ${response.status}`);
+    throw new Error(error.error?.message || `Anthropic-compatible API error: ${response.status}`);
   }
 
   const data = await response.json();
   const textBlock = data.content?.find((b: { type?: string; text?: string }) => b.type === 'text');
   return textBlock?.text || '';
+}
+
+// Claude API
+async function claudeGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'claude-sonnet-4-20250514',
+  options: GenerationOptions = {}
+): Promise<string> {
+  return anthropicCompatibleGenerate('https://api.anthropic.com/v1/messages', apiKey, systemPrompt, userPrompt, model, options);
+}
+
+// Google Gemini OAuth API
+async function googleOAuthGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string,
+  options: GenerationOptions = {}
+): Promise<string> {
+  const url = 'https://cloudcode-pa.googleapis.com/v1internal:generateContent';
+  
+  const contents = [
+    {
+      role: 'user',
+      parts: [{ text: userPrompt }]
+    }
+  ];
+  
+  const systemInstruction = {
+    parts: [{ text: systemPrompt }]
+  };
+  
+  const requestBody: any = {
+    contents,
+    systemInstruction,
+  };
+  
+  if (options.temperature !== undefined || options.topP !== undefined || options.maxTokens !== undefined) {
+    requestBody.generationConfig = {
+      ...(options.temperature !== undefined && { temperature: options.temperature }),
+      ...(options.topP !== undefined && { topP: options.topP }),
+      ...(options.maxTokens !== undefined && { maxOutputTokens: options.maxTokens }),
+    };
+  }
+  
+  const wrapped: any = {
+    model,
+    request: requestBody,
+  };
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+    'User-Agent': 'google-api-nodejs-client/9.15.1',
+    'X-Goog-Api-Client': 'gl-node/22.17.0',
+    'Client-Metadata': 'ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI',
+  };
+
+  const response = await fetchWithRetry(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(wrapped),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Google OAuth API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const candidates = data.response?.candidates || data.candidates;
+  return candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// Command Code custom generation using /alpha/generate
+async function commandCodeGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'deepseek/deepseek-v4-flash',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const url = 'https://api.commandcode.ai/alpha/generate';
+  const response = await fetchWithRetry(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'x-command-code-version': '0.26.8',
+    },
+    body: JSON.stringify({
+      config: {},
+      memory: '',
+      taste: '',
+      skills: '',
+      params: {
+        stream: false,
+        max_tokens: options.maxTokens ?? 4096,
+        temperature: options.temperature ?? 0.3,
+        messages: [
+          { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+        ],
+        model,
+        tools: [],
+      },
+      threadId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Command Code API error: ${response.status}`);
+  }
+
+  const rawText = await response.text();
+  let text = '';
+  const lines = rawText.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let dataStr = trimmed;
+    if (trimmed.startsWith('data: ')) {
+      dataStr = trimmed.slice(6);
+    } else if (trimmed.startsWith('data:')) {
+      dataStr = trimmed.slice(5);
+    }
+    if (dataStr === '[DONE]') continue;
+    try {
+      const d = JSON.parse(dataStr);
+      if (d.type === 'text-delta' && d.text) {
+        text += d.text;
+      }
+    } catch {}
+  }
+  return text;
 }
 
 // ==================== MAIN GENERATION FUNCTION ====================
@@ -578,6 +972,124 @@ export async function generateWithProvider(
     case 'zai':
       return openAICompatibleGenerate(
         'https://api.z.ai/api/paas/v4/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'opencode-zen':
+      return openAICompatibleGenerate(
+        'https://opencode.ai/zen/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'opencode-go':
+      return openAICompatibleGenerate(
+        'https://opencode.ai/zen/go/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'crof':
+      return openAICompatibleGenerate(
+        'https://crof.ai/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'ocenza':
+      return openAICompatibleGenerate(
+        'https://global.ocenza.com/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'mimo':
+      return openAICompatibleGenerate(
+        'https://token-plan-sgp.xiaomimimo.com/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'nvidia-nim':
+      return openAICompatibleGenerate(
+        'https://integrate.api.nvidia.com/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'kilo-gateway':
+      return openAICompatibleGenerate(
+        'https://api.kilo.ai/api/gateway/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'nous-research':
+      return openAICompatibleGenerate(
+        'https://inference-api.nousresearch.com/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'perplexity':
+      return openAICompatibleGenerate(
+        'https://api.perplexity.ai/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'fireworks':
+      return openAICompatibleGenerate(
+        'https://api.fireworks.ai/inference/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'openadapter':
+      return openAICompatibleGenerate(
+        'https://api.openadapter.in/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'zai-coding':
+      return openAICompatibleGenerate(
+        'https://api.z.ai/api/coding/paas/v4/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'codebuff':
+      return openAICompatibleGenerate(
+        'https://www.codebuff.com/api/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'command-code':
+      return commandCodeGenerate(
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'google-gemini-oauth':
+      return googleOAuthGenerate(
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'ollama':
+      return openAICompatibleGenerate(
+        'http://localhost:11434/v1/chat/completions',
+        apiKey || 'ollama', systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'lm-studio':
+      return openAICompatibleGenerate(
+        'http://127.0.0.1:1234/v1/chat/completions',
+        apiKey || 'lm-studio', systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'vllm':
+      return openAICompatibleGenerate(
+        'http://localhost:8000/v1/chat/completions',
+        apiKey || 'vllm', systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'opencode-zen-anthropic':
+      return anthropicCompatibleGenerate(
+        'https://opencode.ai/zen/v1/messages',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'opencode-go-anthropic':
+      return anthropicCompatibleGenerate(
+        'https://opencode.ai/zen/go/v1/messages',
         apiKey, systemPrompt, fullUserPrompt, model, options
       );
 

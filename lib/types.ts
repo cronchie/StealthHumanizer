@@ -7,7 +7,12 @@ export type ModelProvider =
   | 'groq' | 'mistral' | 'cohere'
   | 'together' | 'openrouter' | 'cerebras'
   | 'deepinfra' | 'huggingface' | 'cloudflare' | 'zai'
-  | 'claude-code' | 'codex';
+  | 'claude-code' | 'codex'
+  | 'codebuff' | 'command-code'
+  | 'opencode-zen' | 'opencode-go' | 'crof' | 'ocenza'
+  | 'mimo' | 'nvidia-nim' | 'kilo-gateway' | 'nous-research'
+  | 'perplexity' | 'fireworks' | 'openadapter' | 'zai-coding'
+  | 'google-gemini-oauth' | 'ollama' | 'lm-studio' | 'vllm' | 'opencode-zen-anthropic' | 'opencode-go-anthropic';
 
 export interface Provider {
   id: ModelProvider;
