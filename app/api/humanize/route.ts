@@ -24,6 +24,8 @@ import { estimateRunCost } from '@/lib/observability';
 
 const MAX_BATCH_SIZE = 20;
 
+// Reserved for future self-check integration
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function llmSelfCheck(
   provider: ModelProvider,
   apiKey: string,
@@ -64,6 +66,12 @@ export async function POST(request: NextRequest) {
         { error: 'Rate limit exceeded. Please try again later.' },
         { status: 429 },
       );
+    }
+
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
     }
 
     const {
@@ -163,7 +171,9 @@ export async function POST(request: NextRequest) {
     }
 
     const maxPasses = level === 'ninja' ? 3 : level === 'aggressive' ? 2 : level === 'medium' ? 2 : 1;
+    void maxPasses;
     const target = targetScore || 80;
+    void target;
     const chunks = chunkText(text, 2500);
 
     // Language note for non-English/non-Chinese text (Chinese is handled by getSystemPrompt)
