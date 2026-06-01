@@ -3,6 +3,7 @@
 import { DetectionResult, SentenceDetectionResult, DetailedDetectionReport } from './types';
 import { calculateReadability } from './readability';
 import type { CorpusStyleModel, CalibratedThresholds } from './style-model';
+import { splitIntoSentences } from './text-utils';
 
 // ==================== PATTERN DATABASES ====================
 
@@ -97,30 +98,6 @@ const AR_TRANSITION_WORDS = [
 ];
 
 // ==================== CORE ANALYSIS FUNCTIONS ====================
-
-function splitIntoSentences(text: string): string[] {
-  const sentences: string[] = [];
-  let current = '';
-  let i = 0;
-  const abbreviations = ['Mr.', 'Mrs.', 'Dr.', 'Prof.', 'Inc.', 'Ltd.', 'etc.', 'e.g.', 'i.e.', 'vs.', 'al.'];
-
-  while (i < text.length) {
-    current += text[i];
-    if (['.', '!', '?'].includes(text[i])) {
-      const beforeMatch = text.slice(Math.max(0, i - 5), i + 1);
-      if (!abbreviations.some(abbr => beforeMatch.endsWith(abbr))) {
-        if (text[i + 1] === '"' || text[i + 1] === "'") { current += text[i + 1]; i++; }
-        const trimmed = current.trim();
-        if (trimmed.length > 0) sentences.push(trimmed);
-        current = '';
-      }
-    }
-    i++;
-  }
-  const trimmed = current.trim();
-  if (trimmed.length > 0) sentences.push(trimmed);
-  return sentences;
-}
 
 function calculatePerplexity(text: string): number {
   const words = text.toLowerCase().split(/\s+/);
