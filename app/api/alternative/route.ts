@@ -17,6 +17,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const { original, current, level, style, tone, customTone, model, apiKey } = await request.json();
     if (!original || !model || !apiKey) return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
     if (isCliOnlyProvider(model)) return NextResponse.json({ success: false, error: `Provider "${model}" is a local CLI runner and is not available over the web API. Use the stealthhumanizer CLI.` }, { status: 400 });
@@ -25,6 +31,6 @@ export async function POST(request: NextRequest) {
     const alternatives = await generateAlternatives(model, apiKey, original, current, systemPrompt, 3);
     return NextResponse.json({ success: true, alternatives });
   } catch (err: unknown) {
-    return handleApiError(err);
+    return handleApiError(err, true);
   }
 }

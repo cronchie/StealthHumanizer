@@ -11,8 +11,9 @@ export function errorResponse(error: string, status: number = 500, extra?: Recor
 /**
  * Handle unknown errors consistently across all API routes.
  * Replaces `catch (err: any) { err.message }` pattern.
+ * When `sanitize` is true, internal error details are hidden in production.
  */
-export function handleApiError(err: unknown): NextResponse {
+export function handleApiError(err: unknown, sanitize?: boolean): NextResponse {
   const message = err instanceof Error ? err.message : 'An unexpected error occurred';
-  return NextResponse.json({ success: false, error: message }, { status: 500 });
+  return NextResponse.json({ success: false, error: (!sanitize || process.env.NODE_ENV === 'development') ? message : 'Internal error' }, { status: 500 });
 }

@@ -69,6 +69,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard (15MB for file uploads)
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 15_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     
@@ -133,6 +139,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Failed to parse file';
-    return NextResponse.json({ success: false, error: msg }, { status: 500 });
+    return NextResponse.json({ success: false, error: process.env.NODE_ENV === 'development' ? msg : 'Internal error' }, { status: 500 });
   }
 }

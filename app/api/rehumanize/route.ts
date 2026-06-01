@@ -24,6 +24,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const { flaggedSentences, level, style, tone, customTone, model, apiKey, fullText, purpose } = await request.json();
 
     // Input validation
@@ -131,6 +137,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json({ success: false, error: process.env.NODE_ENV === 'development' ? message : 'Internal error' }, { status: 500 });
   }
 }

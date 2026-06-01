@@ -15,6 +15,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const { text } = await request.json();
     if (!text || typeof text !== 'string') {
       return NextResponse.json({ success: false, error: 'Missing text' }, { status: 400 });
@@ -22,6 +28,6 @@ export async function POST(request: NextRequest) {
     const result = await scoreHumanLikeness(text);
     return NextResponse.json({ success: true, ...result });
   } catch (err: unknown) {
-    return handleApiError(err);
+    return handleApiError(err, true);
   }
 }

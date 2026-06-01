@@ -23,6 +23,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const body = await request.json();
     const { texts, level = 'medium', style = 'humanize', tone = 'conversational', model, apiKey } = body;
 
@@ -73,6 +79,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: { results, count: results.length, successCount } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json({ success: false, error: process.env.NODE_ENV === 'development' ? message : 'Internal error' }, { status: 500 });
   }
 }

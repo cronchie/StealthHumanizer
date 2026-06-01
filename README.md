@@ -349,11 +349,11 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) for full guidelines.
 
 ## Roadmap
 
-- [ ] Browser extension (Chrome/Firefox)
+- [x] Browser extension (Chrome/Firefox)
 - [x] CLI tool (`stealthhumanizer`, initial local/package binary)
 - [ ] Fine-tuned local models for offline use
-- [ ] Real detector benchmarking dashboard
-- [ ] API service layer for programmatic access
+- [x] Real detector benchmarking dashboard
+- [x] API service layer for programmatic access
 - [ ] Collaborative editing with version history
 
 ---

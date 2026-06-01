@@ -18,6 +18,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Body size guard
+    const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+    if (contentLength > 2_000_000) {
+      return NextResponse.json({ success: false, error: 'Request body too large.' }, { status: 413 });
+    }
+
     const { text, model, apiKey } = await request.json();
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json({ success: false, error: 'text is required' }, { status: 400 });
@@ -61,6 +67,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, ...local, warning: 'Could not parse LLM grammar JSON; used local fallback.' });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json({ success: false, error: process.env.NODE_ENV === 'development' ? message : 'Internal error' }, { status: 500 });
   }
 }

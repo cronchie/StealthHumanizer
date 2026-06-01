@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Sparkles, FileText, ArrowRight } from 'lucide-react';
+import { Sparkles, FileText, ArrowRight, Zap, Shield, Globe, ChevronDown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Humanizer from '@/components/Humanizer';
 import BatchHumanizer from '@/components/BatchHumanizer';
@@ -21,45 +21,54 @@ function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-24">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent-500/10 rounded-full blur-3xl" />
-      </div>
+    <section className="relative overflow-hidden py-20 md:py-28">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none bg-grid" />
+      <div className="absolute inset-0 pointer-events-none noise-overlay" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent-500/8 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent-600/5 rounded-full blur-[80px]" />
 
       <div className="relative container mx-auto px-4 max-w-7xl text-center">
         <div className="animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-400 text-sm mb-6">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-400 text-sm mb-8 backdrop-blur-sm">
             <Sparkles className="w-4 h-4" /> Free & Open Source — No Login Required
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
-            Transform <span className="hero-gradient">AI Text</span> Into<br />Natural Writing
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-[1.1] tracking-tight">
+            Transform <span className="hero-gradient">AI Text</span> Into<br />
+            <span className="hero-gradient">Natural</span> Writing
           </h1>
-          <p className="text-lg md:text-xl text-dark-300 max-w-2xl mx-auto mb-8">
-            Free. No login. <strong className="text-dark-200">35 AI providers</strong>. Style-aware rewriting.
+          <p className="text-lg md:text-xl text-dark-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Free. No login. <strong className="text-dark-200">35 AI providers</strong>. Style-aware rewriting with multi-pass ninja mode.
           </p>
         </div>
 
-        {/* Feature highlights */}
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-10 animate-fade-in-up-delay">
+        {/* Feature pills */}
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-12 stagger-children animate-fade-in-up-delay">
           {[
-            { icon: '⚡', label: 'Instant Humanization' },
-            { icon: '🥷', label: 'Ninja Mode' },
-            { icon: '📄', label: 'Upload PDF/DOCX' },
+            { icon: <Zap className="w-4 h-4" />, label: 'Instant Humanization' },
+            { icon: <Shield className="w-4 h-4" />, label: 'Ninja Mode' },
+            { icon: <FileText className="w-4 h-4" />, label: 'Upload PDF/DOCX' },
             { icon: '🔄', label: 'Multi-Pass' },
             { icon: '📝', label: 'Grammar Check' },
-            { icon: '🌍', label: 'Multi-Language' },
+            { icon: <Globe className="w-4 h-4" />, label: '16+ Languages' },
           ].map(f => (
-            <div key={f.label} className="glass-card rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-dark-200 hover:border-accent-500/40 transition-colors">
-              <span className="text-lg">{f.icon}</span> {f.label}
+            <div key={f.label} className="glass-card rounded-xl px-4 py-2.5 flex items-center gap-2.5 text-sm text-dark-200 hover:border-accent-500/40 hover-lift cursor-default">
+              <span className="text-accent-400">{f.icon}</span> {f.label}
             </div>
           ))}
         </div>
 
         <button onClick={scrollToHumanizer}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-semibold text-lg shadow-xl shadow-accent-500/25 hover:shadow-accent-500/40 transition-all duration-300 hover:scale-105 animate-fade-in-up-delay-2">
+          className="inline-flex items-center gap-2.5 px-10 py-4 rounded-2xl bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white font-semibold text-lg shadow-2xl shadow-accent-500/25 transition-all duration-300 hover:scale-[1.03] glow-pulse animate-fade-in-up-delay-2">
           Start Humanizing <ArrowRight className="w-5 h-5" />
         </button>
+
+        {/* Scroll indicator */}
+        <div className="mt-12 animate-fade-in-up-delay-2">
+          <button onClick={scrollToHumanizer} className="text-dark-500 hover:text-dark-300 transition-colors" aria-label="Scroll down">
+            <ChevronDown className="w-6 h-6 mx-auto animate-float" />
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -67,27 +76,75 @@ function HeroSection() {
 
 function HowItWorks() {
   const steps = [
-    { num: '1', icon: <FileText className="w-6 h-6" />, title: 'Paste or Upload', desc: 'Paste your AI-generated text or upload a PDF/DOCX file.' },
-    { num: '2', icon: <Sparkles className="w-6 h-6" />, title: 'Choose Style', desc: 'Pick your preferred writing style, tone, and humanization level.' },
-    { num: '3', icon: <ArrowRight className="w-6 h-6" />, title: 'Get Results', desc: 'Receive naturally humanized text in seconds.' },
+    { num: '1', icon: <FileText className="w-7 h-7" />, title: 'Paste or Upload', desc: 'Paste your AI-generated text or upload a PDF/DOCX file directly.' },
+    { num: '2', icon: <Sparkles className="w-7 h-7" />, title: 'Choose Style', desc: 'Pick your preferred writing style, tone, and humanization level.' },
+    { num: '3', icon: <ArrowRight className="w-7 h-7" />, title: 'Get Results', desc: 'Receive naturally humanized text with detection scores in seconds.' },
   ];
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-3">How It Works</h2>
-        <p className="text-dark-400 text-center mb-10">Three simple steps to natural writing</p>
-        <div className="grid md:grid-cols-3 gap-6">
+    <section className="py-20 relative">
+      <div className="absolute inset-0 pointer-events-none bg-grid opacity-50" />
+      <div className="relative container mx-auto px-4 max-w-7xl">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">How It Works</h2>
+          <p className="text-dark-400 text-lg">Three simple steps to natural writing</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
           {steps.map((s, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 text-center hover:border-accent-500/30 transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-accent-500/20 text-accent-400 flex items-center justify-center mx-auto mb-4">
-                {s.icon}
+            <div key={i} className="glass-card rounded-2xl p-8 text-center hover:border-accent-500/30 hover-lift group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-accent-500/5 rounded-full blur-2xl group-hover:bg-accent-500/10 transition-all duration-500" />
+              <div className="relative">
+                <div className="w-14 h-14 rounded-2xl bg-accent-500/15 text-accent-400 flex items-center justify-center mx-auto mb-5 group-hover:bg-accent-500/25 transition-colors duration-300">
+                  {s.icon}
+                </div>
+                <div className="text-xs text-accent-500/80 font-bold uppercase tracking-widest mb-3">Step {s.num}</div>
+                <h3 className="text-xl font-semibold text-white mb-3">{s.title}</h3>
+                <p className="text-dark-400 text-sm leading-relaxed">{s.desc}</p>
               </div>
-              <div className="text-xs text-accent-500 font-bold uppercase tracking-wider mb-2">Step {s.num}</div>
-              <h3 className="text-lg font-semibold text-white mb-2">{s.title}</h3>
-              <p className="text-dark-400 text-sm">{s.desc}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsBar() {
+  const stats = [
+    { value: '35', label: 'AI Providers' },
+    { value: '4', label: 'Rewrite Levels' },
+    { value: '13', label: 'Tone Presets' },
+    { value: '16+', label: 'Languages' },
+  ];
+
+  return (
+    <section className="py-16 relative">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="glass-card rounded-2xl p-8 md:p-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {stats.map((s, i) => (
+              <div key={s.label} className="text-center">
+                <p className="text-4xl md:text-5xl font-extrabold hero-gradient animate-count" style={{ animationDelay: `${i * 0.1}s` }}>{s.value}</p>
+                <p className="text-dark-400 text-sm mt-2">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TrustBadges() {
+  return (
+    <section className="py-8">
+      <div className="container mx-auto px-4 max-w-7xl text-center">
+        <div className="flex flex-wrap justify-center gap-3 text-xs text-dark-500">
+          <span className="px-4 py-2 rounded-full glass-card hover:border-accent-500/30 transition-colors">&#x1f512; 100% Private</span>
+          <span className="px-4 py-2 rounded-full glass-card hover:border-accent-500/30 transition-colors">&#x26a1; No Login Required</span>
+          <span className="px-4 py-2 rounded-full glass-card hover:border-accent-500/30 transition-colors">&#x1f310; Open Source (MIT)</span>
+          <span className="px-4 py-2 rounded-full glass-card hover:border-accent-500/30 transition-colors">&#x1f4e6; Self-Hostable</span>
+          <span className="px-4 py-2 rounded-full glass-card hover:border-accent-500/30 transition-colors">&#x1f916; Chrome Extension</span>
         </div>
       </div>
     </section>
@@ -96,7 +153,7 @@ function HowItWorks() {
 
 function GroqFreeGuide() {
   const steps = [
-    { num: '1', title: 'Open Settings and clear old keys', desc: 'Go to Settings → Danger Zone → Clear All API Keys (optional reset).', image: '/steps/1.jpg', width: 611, height: 1280 },
+    { num: '1', title: 'Open Settings and clear old keys', desc: 'Go to Settings > Danger Zone > Clear All API Keys (optional reset).', image: '/steps/1.jpg', width: 611, height: 1280 },
     { num: '2', title: 'Choose Groq (FREE)', desc: 'In Free Providers, select Groq (FREE).', image: '/steps/2.jpg', width: 608, height: 1280 },
     { num: '3', title: 'Click Get API Key', desc: 'Open Groq provider settings and click Get API Key.', image: '/steps/3.jpg', width: 653, height: 1280 },
     { num: '4', title: 'Create key in Groq Console', desc: 'Set a key name and expiration preference, then create key.', image: '/steps/4.jpg', width: 659, height: 1280 },
@@ -105,23 +162,25 @@ function GroqFreeGuide() {
     { num: '7', title: 'Test key', desc: 'Click Test Key and confirm the key is valid.', image: '/steps/7.jpg', width: 655, height: 1280 },
     { num: '8', title: 'Keep Groq (FREE) active', desc: 'Return to provider selection and ensure Groq (FREE) is selected.', image: '/steps/8.jpg', width: 606, height: 1280 },
     { num: '9', title: 'Set humanizer preferences', desc: 'Configure rewrite level, style, tone, target score, and max words.', image: '/steps/9.jpg', width: 656, height: 1280 },
-    { num: '10', title: 'Run the pipeline', desc: 'Paste/upload text and run rewrite → post-process → polish.', image: '/steps/10.jpg', width: 601, height: 1280 },
+    { num: '10', title: 'Run the pipeline', desc: 'Paste/upload text and run rewrite > post-process > polish.', image: '/steps/10.jpg', width: 601, height: 1280 },
     { num: '11', title: 'Review and export', desc: 'Review output, re-humanize if needed, then export.', image: '/steps/11.jpg', width: 608, height: 1280 },
   ];
 
   return (
-    <section className="py-16">
+    <section className="py-20 relative">
       <div className="container mx-auto px-4 max-w-7xl">
-        <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-3">Groq (Free) Setup Walkthrough</h2>
-        <p className="text-dark-400 text-center mb-10 max-w-3xl mx-auto">
-          This guide is specifically for <strong className="text-dark-200">Groq (Free)</strong> setup and usage.
-        </p>
+        <div className="text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Get Started Free in 60 Seconds</h2>
+          <p className="text-dark-400 text-lg">Follow this walkthrough for <strong className="text-dark-200">Groq (Free)</strong> setup</p>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {steps.map((step) => (
-            <article key={step.num} className="glass-card rounded-2xl p-5 border border-dark-700/40">
-              <p className="text-xs text-accent-500 font-bold uppercase tracking-wider mb-2">Step {step.num}</p>
-              <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
+            <article key={step.num} className="glass-card rounded-2xl p-5 border border-dark-700/40 hover:border-accent-500/20 hover-lift">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="w-8 h-8 rounded-lg bg-accent-500/15 text-accent-400 flex items-center justify-center text-sm font-bold">{step.num}</span>
+                <h3 className="text-base font-semibold text-white">{step.title}</h3>
+              </div>
               <p className="text-dark-400 text-sm mb-4">{step.desc}</p>
               <Image src={step.image} alt={`Groq (Free) step ${step.num}: ${step.title}`} width={step.width} height={step.height} className="w-full h-auto rounded-xl border border-dark-700/40" />
             </article>
@@ -130,37 +189,8 @@ function GroqFreeGuide() {
 
         <div className="glass-card rounded-2xl p-5 mt-8 border border-red-500/30">
           <p className="text-sm text-dark-200">
-            <strong className="text-red-400">Safety:</strong> Never share API keys in public messages or screenshots. If you need to remove saved keys, use <strong>Settings → Danger Zone → Clear All API Keys</strong>.
+            <strong className="text-red-400">Safety:</strong> Never share API keys in public messages or screenshots. Use <strong>Settings &gt; Danger Zone &gt; Clear All API Keys</strong> to remove saved keys.
           </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TrustIndicators() {
-  return (
-    <section className="py-12">
-      <div className="container mx-auto px-4 max-w-7xl text-center">
-        <p className="text-dark-400 text-sm mb-4">Built for researchers & writers</p>
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          {[
-            { value: '35', label: 'AI Providers' },
-            { value: '4', label: 'Rewrite Levels' },
-            { value: '13', label: 'Tones' },
-            { value: '16+', label: 'Languages' },
-          ].map(s => (
-            <div key={s.label} className="glass-card rounded-xl px-6 py-3 text-center min-w-[120px]">
-              <p className="text-2xl font-bold hero-gradient">{s.value}</p>
-              <p className="text-xs text-dark-400">{s.label}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-3 text-xs text-dark-500">
-          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🔒 100% Private</span>
-          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">⚡ No Login Required</span>
-          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🌐 Open Source</span>
-          <span className="px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/30">🆓 Free & Open Source</span>
         </div>
       </div>
     </section>
@@ -204,12 +234,13 @@ export default function Home() {
       {activeTab === 'humanizer' && (
         <>
           {!isReturningUser && <HeroSection />}
+          {!isReturningUser && <StatsBar />}
           {!isReturningUser && <HowItWorks />}
-          {!isReturningUser && <GroqFreeGuide />}
           <main className={`container mx-auto px-4 py-6 max-w-7xl ${isReturningUser ? 'pt-24' : ''}`} id="humanizer-section">
             <Humanizer showToast={showToast} onGoToSettings={() => setActiveTab('settings')} isFirstVisit={!isReturningUser} />
           </main>
-          {!isReturningUser && <TrustIndicators />}
+          {!isReturningUser && <GroqFreeGuide />}
+          {!isReturningUser && <TrustBadges />}
         </>
       )}
 

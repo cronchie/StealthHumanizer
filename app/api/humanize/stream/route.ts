@@ -70,6 +70,13 @@ export async function POST(request: NextRequest) {
           return;
         }
 
+        // Body size guard
+        const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+        if (contentLength > 2_000_000) {
+          emit(controller, 'error', { error: 'Request body too large.', status: 413 });
+          return;
+        }
+
         const {
           text,
           level = 'medium',
@@ -228,7 +235,10 @@ export async function POST(request: NextRequest) {
 
         emit(controller, 'result', responsePayload);
       } catch (error) {
-        if (!request.signal.aborted) emit(controller, 'error', { error: error instanceof Error ? error.message : 'Stream failed' });
+        if (!request.signal.aborted) {
+          const streamMsg = error instanceof Error ? error.message : 'Stream failed';
+          emit(controller, 'error', { error: process.env.NODE_ENV === 'development' ? streamMsg : 'Internal error' });
+        }
       } finally {
         if (!request.signal.aborted) emit(controller, 'done', { ok: true });
         controller.close();
