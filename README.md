@@ -41,7 +41,7 @@ AI detectors (GPTZero, Originality.ai, Turnitin) catch AI text through statistic
 
 | Feature | Description |
 |---------|-------------|
-| **13 AI Providers** | Gemini (free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI |
+| **16 AI Providers** | Gemini (free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI, Codebuff (free), Command Code, Kiro |
 | **4 Rewrite Levels** | Light (subtle fixes), Medium (natural rewrite), Aggressive (complete rewrite), Ninja (maximum stealth) |
 | **6 Writing Styles** | Humanize, Academic, Professional, Casual, Creative, Technical |
 | **9 Text Purposes** | Essay, Article, Blog, Email, Marketing, Report, Story, Social Media, General |
@@ -228,7 +228,7 @@ This walkthrough is specifically for the **Groq (Free)** provider flow.
 |---|:---:|:---:|:---:|:---:|
 | Price | **Free** | $9.99/mo | $19/mo | $14.99/mo |
 | Open Source | **Yes (MIT)** | No | No | No |
-| AI Providers | **13** | 1 | 1 | 1 |
+| AI Providers | **16** | 1 | 1 | 1 |
 | No Login Required | **Yes** | No | No | No |
 | Data Privacy | **Browser-only keys** | Server-side | Server-side | Server-side |
 | Multi-Language | **16+** | Limited | English only | English only |
@@ -261,7 +261,7 @@ stealthhumanizer/
 │   ├── detector.ts         # 12-metric AI detection engine
 │   ├── prompts.ts          # Anti-detection prompt system (EN + ZH)
 │   ├── postprocess.ts      # Non-LLM post-processing engine
-│   ├── providers.ts        # 13 AI provider integrations
+│   ├── providers.ts        # 16 AI provider integrations
 │   ├── readability.ts      # Flesch, Kincaid, Coleman-Liau metrics
 │   └── server/             # Server-side modules
 │       ├── humanization-governance.ts  # Safety + regression guard

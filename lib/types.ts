@@ -7,7 +7,8 @@ export type ModelProvider =
   | 'groq' | 'mistral' | 'cohere'
   | 'together' | 'openrouter' | 'cerebras'
   | 'deepinfra' | 'huggingface' | 'cloudflare' | 'zai'
-  | 'claude-code' | 'codex';
+  | 'claude-code' | 'codex'
+  | 'codebuff' | 'command-code' | 'kiro';
 
 export interface Provider {
   id: ModelProvider;

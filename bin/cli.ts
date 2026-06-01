@@ -52,6 +52,9 @@ const API_KEY_ENV: Record<ModelProvider, string> = {
   huggingface: 'HUGGINGFACE_API_KEY',
   cloudflare: 'CLOUDFLARE_API_KEY',
   zai: 'ZAI_API_KEY',
+  codebuff: 'CODEBUFF_API_KEY',
+  'command-code': 'COMMAND_CODE_API_KEY',
+  kiro: '',
   // CLI-runner providers handle auth via their own login state — no env var.
   'claude-code': '',
   codex: '',

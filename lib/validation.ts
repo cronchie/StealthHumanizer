@@ -16,7 +16,7 @@ export function validateModel(model: unknown): string | null {
   const validModels = [
     'gemini', 'openai', 'claude', 'groq', 'mistral', 'cohere',
     'together', 'openrouter', 'cerebras', 'deepinfra', 'huggingface',
-    'cloudflare', 'zai',
+    'cloudflare', 'zai', 'codebuff', 'command-code', 'kiro',
   ];
   if (typeof model !== 'string' || !validModels.includes(model)) {
     return 'Invalid model provider';

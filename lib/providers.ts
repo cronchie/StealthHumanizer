@@ -252,6 +252,50 @@ export const PROVIDERS: Provider[] = [
     placeholder: '',
   },
   {
+    id: 'codebuff',
+    name: 'Codebuff (Freebuff)',
+    description: 'Access free AI models like DeepSeek V4 and Kimi K2.6 via Codebuff integration.',
+    free: true,
+    apiUrl: 'https://www.codebuff.com/api/v1/chat/completions',
+    getApiKeyUrl: 'https://www.codebuff.com',
+    docsUrl: 'https://www.codebuff.com',
+    defaultModel: 'deepseek/deepseek-v4-flash',
+    models: ['deepseek/deepseek-v4-flash', 'deepseek/deepseek-v4-pro', 'moonshotai/kimi-k2.6', 'minimax/minimax-m2.7'],
+    placeholder: 'cb_...',
+  },
+  {
+    id: 'command-code',
+    name: 'Command Code',
+    description: 'Use the Command Code /alpha/generate engine for custom agentic humanization.',
+    free: false,
+    apiUrl: 'https://api.commandcode.ai/alpha/generate',
+    getApiKeyUrl: 'https://api.commandcode.ai',
+    docsUrl: 'https://api.commandcode.ai',
+    defaultModel: 'deepseek/deepseek-v4-flash',
+    models: [
+      'deepseek/deepseek-v4-flash',
+      'deepseek/deepseek-v4-pro',
+      'moonshotai/Kimi-K2.6',
+      'zai-org/GLM-5.1',
+      'MiniMaxAI/MiniMax-M2.7',
+      'Qwen/Qwen3.6-Plus',
+    ],
+    placeholder: 'cc_...',
+  },
+  {
+    id: 'kiro',
+    name: 'Kiro (CLI)',
+    description: 'Runs Kiro (AWS CodeWhisperer) dynamic backend integration. Requires active AWS/Kiro login on the server. CLI/Node only.',
+    free: true,
+    cliOnly: true,
+    apiUrl: '',
+    getApiKeyUrl: 'https://codewhisperer.us-east-1.amazonaws.com',
+    docsUrl: 'https://aws.amazon.com/codewhisperer/',
+    defaultModel: 'default',
+    models: ['default'],
+    placeholder: '',
+  },
+  {
     id: 'codex',
     name: 'OpenAI Codex (CLI)',
     description: 'Runs your local Codex CLI as a subprocess. Uses your existing OpenAI subscription — no API key required. CLI/Node only.',
@@ -284,6 +328,7 @@ export function getAvailableProvider(keys: Record<string, string | undefined>): 
   const priority: ModelProvider[] = [
     'gemini', 'groq', 'openrouter', 'together', 'cerebras', 'zai',
     'mistral', 'cohere', 'deepinfra', 'huggingface', 'cloudflare',
+    'codebuff', 'command-code',
     'openai', 'claude'
   ];
 
@@ -486,6 +531,81 @@ async function claudeGenerate(
   return textBlock?.text || '';
 }
 
+// Command Code custom generation using /alpha/generate
+async function commandCodeGenerate(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = 'deepseek/deepseek-v4-flash',
+  options: GenerationOptions = {}
+): Promise<string> {
+  const url = 'https://api.commandcode.ai/alpha/generate';
+  const response = await fetchWithRetry(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'x-command-code-version': '0.26.8',
+    },
+    body: JSON.stringify({
+      config: {
+        workingDir: '',
+        date: new Date().toISOString().slice(0, 10),
+        environment: 'linux',
+        shell: 'bash',
+        files: [],
+        structure: [],
+        isGitRepo: false,
+        currentBranch: '',
+        mainBranch: '',
+        gitStatus: '',
+        recentCommits: [],
+      },
+      memory: '',
+      taste: '',
+      skills: '',
+      params: {
+        stream: false,
+        max_tokens: options.maxTokens ?? 4096,
+        temperature: options.temperature ?? 0.3,
+        messages: [
+          { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+        ],
+        model,
+        tools: [],
+      },
+      threadId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Command Code API error: ${response.status}`);
+  }
+
+  const rawText = await response.text();
+  let text = '';
+  const lines = rawText.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let dataStr = trimmed;
+    if (trimmed.startsWith('data: ')) {
+      dataStr = trimmed.slice(6);
+    } else if (trimmed.startsWith('data:')) {
+      dataStr = trimmed.slice(5);
+    }
+    if (dataStr === '[DONE]') continue;
+    try {
+      const d = JSON.parse(dataStr);
+      if (d.type === 'text-delta' && d.text) {
+        text += d.text;
+      }
+    } catch {}
+  }
+  return text;
+}
+
 // ==================== MAIN GENERATION FUNCTION ====================
 
 const CLI_RUNTIME_REQUIRED_MESSAGE =
@@ -577,6 +697,18 @@ export async function generateWithProvider(
         apiKey, systemPrompt, fullUserPrompt, model, options
       );
 
+    case 'codebuff':
+      return openAICompatibleGenerate(
+        'https://www.codebuff.com/api/v1/chat/completions',
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'command-code':
+      return commandCodeGenerate(
+        apiKey, systemPrompt, fullUserPrompt, model, options
+      );
+
+    case 'kiro':
     case 'claude-code':
     case 'codex':
       throw new Error(CLI_RUNTIME_REQUIRED_MESSAGE);

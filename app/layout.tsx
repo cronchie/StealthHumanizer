@@ -4,9 +4,9 @@ import './globals.css';
 const SITE_URL = 'https://stealthhumanizer.vercel.app';
 
 export const metadata: Metadata = {
-  title: 'StealthHumanizer — Free AI Text Humanizer | Bypass GPTZero & Turnitin | 13 Providers',
+  title: 'StealthHumanizer — Free AI Text Humanizer | Bypass GPTZero & Turnitin | 16 Providers',
   description:
-    'Transform AI-generated text into natural, human-like writing. Free, open-source, no login required. Bypass GPTZero, Turnitin, and AI detectors with 13 AI providers, 4 rewrite levels, multi-pass ninja mode, grammar check, and 16+ languages.',
+    'Transform AI-generated text into natural, human-like writing. Free, open-source, no login required. Bypass GPTZero, Turnitin, and AI detectors with 16 AI providers, 4 rewrite levels, multi-pass ninja mode, grammar check, and 16+ languages.',
   keywords: [
     'AI humanizer', 'text humanizer', 'humanize AI text', 'AI text converter',
     'bypass AI detection', 'undetectable AI', 'AI detector bypass', 'humanize ChatGPT',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'StealthHumanizer — Free AI Text Humanizer | Bypass GPTZero & Turnitin',
     description:
-      'Transform AI text into natural writing. Bypass GPTZero, Turnitin & AI detectors. 13 providers, ninja mode, grammar check, 16+ languages. 100% free & open-source. No login.',
+      'Transform AI text into natural writing. Bypass GPTZero, Turnitin & AI detectors. 16 providers, ninja mode, grammar check, 16+ languages. 100% free & open-source. No login.',
     url: SITE_URL,
     siteName: 'StealthHumanizer',
     type: 'website',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'StealthHumanizer — Free AI Text Humanizer | Bypass GPTZero & Turnitin',
     description:
-      'Transform AI text into natural writing. 13 providers, ninja mode, 100% free. Bypass GPTZero & Turnitin. No login required.',
+      'Transform AI text into natural writing. 16 providers, ninja mode, 100% free. Bypass GPTZero & Turnitin. No login required.',
     images: [`${SITE_URL}/og-image.png`],
     creator: '@rudra496',
   },
@@ -68,7 +68,7 @@ const jsonLd = {
   name: 'StealthHumanizer',
   url: SITE_URL,
   description:
-    'Free open-source AI text humanizer. Transform AI-generated text into natural, human-like writing. Bypass GPTZero, Turnitin, and AI detectors with 13 AI providers, 4 rewrite levels, and multi-pass ninja mode.',
+    'Free open-source AI text humanizer. Transform AI-generated text into natural, human-like writing. Bypass GPTZero, Turnitin, and AI detectors with 16 AI providers, 4 rewrite levels, and multi-pass ninja mode.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Web',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
@@ -79,7 +79,7 @@ const jsonLd = {
     url: SITE_URL,
   },
   featureList: [
-    '13 AI provider integrations (Gemini, OpenAI, Claude, Groq, Mistral, and more)',
+    '16 AI provider integrations (Gemini, OpenAI, Claude, Groq, Mistral, Codebuff, Command Code, and more)',
     '4 rewrite levels: Light, Medium, Aggressive, Ninja',
     'Multi-pass ninja mode with auto-refinement to 90%+ human score',
     'Style-aware rewriting: Academic, Professional, Casual, Creative, Technical',
@@ -129,7 +129,7 @@ const faqJsonLd = {
       name: 'Which AI providers are supported?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '13 providers are supported: Google Gemini (free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, and ZAI.',
+        text: '16 providers are supported: Google Gemini (free), OpenAI, Claude, Groq (free), Mistral, Cohere, Together, OpenRouter, Cerebras, DeepInfra, HuggingFace, Cloudflare, ZAI, Codebuff (free), Command Code, and Kiro.',
       },
     },
     {
