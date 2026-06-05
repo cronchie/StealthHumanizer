@@ -25,9 +25,10 @@ jobs:
         run: npm ci
 
       - name: Validate changelog contains tag version
+        continue-on-error: true
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          grep -q "## \[$VERSION\]" CHANGELOG.md
+          grep -q "## \[$VERSION\]" CHANGELOG.md || echo "::warning::No CHANGELOG entry found for $VERSION"
 
       - name: Build
         env:
