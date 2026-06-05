@@ -419,3 +419,11 @@ QuillBot alternative, Undetectable.ai alternative, StealthWriter alternative, Hi
 - **Browser extension starter:** `extension/` contains a Manifest V3 Chrome/Firefox-compatible companion that sends selected page text to a local or hosted StealthHumanizer instance.
 - **Detector benchmarking dashboard:** the Dashboard tab includes a built-in benchmark runner that compares detector scores before and after the offline privacy rewrite.
 - **Screenshot without Playwright download:** use `npm run screenshot -- http://localhost:3000 /tmp/stealthhumanizer-dashboard.png` after starting the dev server; it uses an installed Chrome/Chromium binary and avoids registry downloads.
+
+## Connect
+
+- [![GitHub](https://img.shields.io/badge/GitHub-rudra496-181717?logo=github)](https://github.com/rudra496)
+- [![LinkedIn](https://img.shields.io/badge/LinkedIn-rudrasarker-0A66C2?logo=linkedin)](https://www.linkedin.com/in/rudrasarker)
+- [![X/Twitter](https://img.shields.io/badge/X-@Rudra496-000000?logo=x)](https://x.com/Rudra496)
+- [![YouTube](https://img.shields.io/badge/YouTube-@rudrasarker9732-FF0000?logo=youtube)](https://youtube.com/@rudrasarker9732)
+- [![Dev.to](https://img.shields.io/badge/Dev.to-rudra__sarker-000000?logo=devdotto)](https://dev.to/rudra_sarker)
