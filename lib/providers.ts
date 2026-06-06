@@ -33,6 +33,16 @@ function sanitizeUrl(input: string): string {
   return parsed.href;
 }
 
+function sanitizeGeminiModel(model: string): string {
+  const trimmed = model.trim();
+  // Gemini model IDs are expected to be simple identifiers like "gemini-1.5-flash".
+  // Restrict to safe characters so user input cannot alter URL structure.
+  if (!/^[A-Za-z0-9._-]+$/.test(trimmed)) {
+    throw new Error('Invalid Gemini model identifier');
+  }
+  return trimmed;
+}
+
 export async function fetchWithRetry(
   rawUrl: string,
   options: RequestInit = {},
@@ -633,7 +643,8 @@ async function geminiGenerate(
   model: string = 'gemini-1.5-flash',
   options: GenerationOptions = {}
 ): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const safeModel = encodeURIComponent(sanitizeGeminiModel(model));
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:generateContent?key=${apiKey}`;
 
   const response = await fetchWithRetry(url, {
     method: 'POST',
