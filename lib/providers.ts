@@ -43,6 +43,25 @@ function sanitizeGeminiModel(model: string): string {
   return trimmed;
 }
 
+function sanitizeHuggingFaceModel(model: string): string {
+  const trimmed = model.trim();
+  // Expected HuggingFace model IDs look like "org/model-name".
+  // Allow only safe path characters and reject traversal/URL delimiters.
+  if (!/^[A-Za-z0-9._/-]+$/.test(trimmed)) {
+    throw new Error('Invalid HuggingFace model identifier');
+  }
+  if (
+    trimmed.length === 0 ||
+    trimmed.includes('..') ||
+    trimmed.startsWith('/') ||
+    trimmed.endsWith('/') ||
+    trimmed.includes('\\')
+  ) {
+    throw new Error('Invalid HuggingFace model identifier');
+  }
+  return trimmed;
+}
+
 export async function fetchWithRetry(
   rawUrl: string,
   options: RequestInit = {},
@@ -712,7 +731,8 @@ async function huggingfaceGenerate(
   model: string = 'meta-llama/Meta-Llama-3-8B-Instruct',
   options: GenerationOptions = {}
 ): Promise<string> {
-  const url = `https://api-inference.huggingface.co/models/${model}`;
+  const safeModel = sanitizeHuggingFaceModel(model);
+  const url = `https://api-inference.huggingface.co/models/${safeModel}`;
 
   const response = await fetchWithRetry(url, {
     method: 'POST',
