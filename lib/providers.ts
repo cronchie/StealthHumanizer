@@ -15,31 +15,31 @@ export type { ModelProvider, Provider };
 
 // ==================== FETCH WITH TIMEOUT + RETRY ====================
 
-const ALLOWED_HOSTS = [
+const ALLOWED_HOSTS = new Set([
   'api.openai.com', 'api.anthropic.com', 'generativelanguage.googleapis.com',
   'api.mistral.ai', 'api.cohere.ai', 'api.groq.com', 'api.together.xyz',
   'openrouter.ai', 'api.deepinfra.com', 'api.cloudflare.com',
   'api.gptzero.me', 'api.z.ai',
-] as const;
+]);
 
-function validateUrl(url: string): URL {
-  const parsed = new URL(url);
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    throw new Error(`Blocked disallowed URL scheme: ${parsed.protocol}`);
+function sanitizeUrl(input: string): string {
+  const parsed = new URL(input);
+  if (parsed.protocol !== 'https:') {
+    throw new Error(`Only HTTPS is allowed, got: ${parsed.protocol}`);
   }
-  if (!ALLOWED_HOSTS.some(host => parsed.hostname === host || parsed.hostname.endsWith('.' + host))) {
-    throw new Error(`Blocked disallowed host: ${parsed.hostname}`);
+  if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+    throw new Error(`Host not in allowlist: ${parsed.hostname}`);
   }
-  return parsed;
+  return parsed.href;
 }
 
 export async function fetchWithRetry(
-  url: string,
+  rawUrl: string,
   options: RequestInit = {},
   timeoutMs: number = 30_000,
   maxRetries: number = 1,
 ): Promise<Response> {
-  validateUrl(url);
+  const url = sanitizeUrl(rawUrl);
 
   let lastError: Error | null = null;
 
