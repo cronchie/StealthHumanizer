@@ -19,13 +19,7 @@ export function normalizeText(rawText) {
 
 export function stripHtml(html) {
   if (!html) return "";
-  // Use a single pass to remove all tags, avoiding regex-based HTML parsing
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, "\"")
-    .replace(/&#0*39;/gi, "'");
+  const entities = { "&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'" };
+  const stripped = html.replace(/<[^>]*>/g, " ");
+  return stripped.replace(/&(?:nbsp|amp|lt|gt|quot|#0*39);/gi, (m) => entities[m.toLowerCase()] || m);
 }

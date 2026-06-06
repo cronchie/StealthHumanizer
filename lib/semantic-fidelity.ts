@@ -67,7 +67,7 @@ function extractUrls(text: string): string[] {
 }
 
 function extractEmails(text: string): string[] {
-  return text.match(/[A-Z0-9][A-Z0-9._%-]*@[A-Z0-9][A-Z0-9.-]*\.[A-Z]{2,}/gi) ?? [];
+  return text.match(/[A-Z0-9][A-Z0-9._%-]{0,30}@[A-Z0-9][A-Z0-9.-]{0,30}\.[A-Z]{2,10}/gi) ?? [];
 }
 
 function extractCodeSnippets(text: string): string[] {

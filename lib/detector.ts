@@ -300,8 +300,8 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   HUMAN_INDICATORS.forEach(h => { if (lower.includes(h)) humanSignals++; });
   score += humanSignals * 0.5;
 
-  // Contractions (human signal)
-  const contractions = sentence.match(/[a-zA-Z]+'(?:t|s|re|ve|ll|d|m)\b/gi);
+  // Contractions (human signal) — length-limited to prevent ReDoS
+  const contractions = sentence.match(/[a-zA-Z]{1,15}'(?:t|s|re|ve|ll|d|m)\b/gi);
   if (contractions) score += contractions.length * 0.5;
 
   // First person (human signal)
