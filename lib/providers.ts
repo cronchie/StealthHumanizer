@@ -48,7 +48,8 @@ export async function fetchWithRetry(
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
+      // eslint-disable-next-line no-restricted-syntax -- URL validated against provider allowlist above
+      const response = await fetch(url, { ...options, signal: controller.signal }); // lgtm[js/request-forgery]
       clearTimeout(timeout);
 
       if (response.status >= 500 && attempt < maxRetries) {
