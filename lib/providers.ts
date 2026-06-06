@@ -984,8 +984,14 @@ export async function generateWithProvider(
       if (!/^[a-f0-9]{32}$/i.test(accountId)) {
         throw new Error('Invalid Cloudflare account ID format. Expected 32-character hexadecimal string.');
       }
+      // Validate model path segment to prevent path manipulation in URL construction.
+      // Allows common provider model ids like "@cf/meta/llama-3.1-8b-instruct" and "llama-3.1-8b".
+      if (!/^[a-zA-Z0-9._-]+(?:\/[a-zA-Z0-9._-]+)*$/.test(model)) {
+        throw new Error('Invalid Cloudflare model format.');
+      }
+      const encodedModel = encodeURIComponent(model);
       return openAICompatibleGenerate(
-        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${encodedModel}`,
         apiToken, systemPrompt, fullUserPrompt, model, options
       );
     }
