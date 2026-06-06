@@ -301,7 +301,7 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   score += humanSignals * 0.5;
 
   // Contractions (human signal)
-  const contractions = sentence.match(/\w+'(?:t|s|re|ve|ll|d|m)\b/gi);
+  const contractions = sentence.match(/[a-zA-Z]+'(?:t|s|re|ve|ll|d|m)\b/gi);
   if (contractions) score += contractions.length * 0.5;
 
   // First person (human signal)
@@ -320,13 +320,14 @@ function analyzeSentence(sentence: string): SentenceDetectionResult {
   if (sentence.includes('—') || sentence.includes(' - ')) { score += 1; }
 
   // Parenthetical asides
-  if (/\([^)]+\)/.test(sentence)) { score += 1; }
+  if (sentence.includes('(') && sentence.includes(')')) { score += 1; }
 
   // Starts with conjunction
   if (/^(and|but|so|because|also|plus|or|well|ok|hey)\b/i.test(sentence)) { score += 1; }
 
   // Uniform structure penalty
-  if (/^(\w+\s+){8,20}\w+[.!?]$/.test(sentence)) {
+  const words = sentence.split(/\s+/);
+  if (words.length >= 10 && words.length <= 25 && words.every(w => /^[\w,.!?]+$/.test(w)) && /[.!?]$/.test(sentence)) {
     issues.push('Uniform structure'); score -= 18;
   }
 

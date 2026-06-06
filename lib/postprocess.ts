@@ -493,7 +493,7 @@ function adjustTransitionFrequency(text: string, model: CorpusStyleModel): strin
     let toRemove = Math.floor(currentTransitions * 0.3);
     for (const w of transitionWords) {
       if (toRemove <= 0) break;
-      const regex = new RegExp(`\\b${w}\\b[,]?\s*`, 'gi');
+      const regex = new RegExp(`\\b${w}\\b[,]?\\s*`, 'gi');
       result = result.replace(regex, (match) => {
         if (toRemove > 0) { toRemove--; return ''; }
         return match;

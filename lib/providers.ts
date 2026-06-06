@@ -15,12 +15,25 @@ export type { ModelProvider, Provider };
 
 // ==================== FETCH WITH TIMEOUT + RETRY ====================
 
+function isAllowedUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchWithRetry(
   url: string,
   options: RequestInit = {},
   timeoutMs: number = 30_000,
   maxRetries: number = 1,
 ): Promise<Response> {
+  if (!isAllowedUrl(url)) {
+    throw new Error(`Blocked disallowed URL scheme: ${url}`);
+  }
+
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {

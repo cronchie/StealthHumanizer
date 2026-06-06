@@ -67,7 +67,7 @@ function extractUrls(text: string): string[] {
 }
 
 function extractEmails(text: string): string[] {
-  return text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
+  return text.match(/[A-Z0-9][A-Z0-9._%-]*@[A-Z0-9][A-Z0-9.-]*\.[A-Z]{2,}/gi) ?? [];
 }
 
 function extractCodeSnippets(text: string): string[] {
@@ -77,7 +77,11 @@ function extractCodeSnippets(text: string): string[] {
 }
 
 function extractMarkdownMarkers(text: string): string[] {
-  return text.match(/(^|\n)#{1,6}\s+|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|(^|\n)[-*+]\s+/g) ?? [];
+  const markers: string[] = [];
+  for (const m of text.matchAll(/#{1,6}\s+\S+/g)) markers.push(m[0]);
+  for (const m of text.matchAll(/\*\*[^*]{1,200}\*\*/g)) markers.push(m[0]);
+  for (const m of text.matchAll(/\[[^\]]{1,200}\]\([^)]{1,200}\)/g)) markers.push(m[0]);
+  return markers;
 }
 
 function extractProtectedTokens(text: string): string[] {

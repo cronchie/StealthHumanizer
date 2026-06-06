@@ -8,12 +8,26 @@ const KEYS = {
   VISITED: 'stealthhumanizer_visited',
 };
 
+function encode(data: string): string {
+  return btoa(unescape(encodeURIComponent(data)));
+}
+
+function decode(data: string): string {
+  return decodeURIComponent(escape(atob(data)));
+}
+
 // API Keys
 export function getApiKeys(): ApiKeys {
   if (typeof window === 'undefined') return {};
   try {
     const stored = localStorage.getItem(KEYS.API_KEYS);
-    return stored ? JSON.parse(stored) : {};
+    if (!stored) return {};
+    // Support both legacy plain JSON and new encoded format
+    try {
+      return JSON.parse(decode(stored));
+    } catch {
+      return JSON.parse(stored);
+    }
   } catch {
     return {};
   }
@@ -21,7 +35,7 @@ export function getApiKeys(): ApiKeys {
 
 export function setApiKeys(keys: ApiKeys): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(KEYS.API_KEYS, JSON.stringify(keys));
+  localStorage.setItem(KEYS.API_KEYS, encode(JSON.stringify(keys)));
 }
 
 export function clearApiKeys(): void {

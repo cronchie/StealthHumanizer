@@ -18,15 +18,14 @@ export function normalizeText(rawText) {
 }
 
 export function stripHtml(html) {
-  return (html || "")
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ")
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
-    .replace(/<\/?(p|div|section|article|h[1-6]|li|ul|ol|br|tr|td|th|table)\b[^>]*>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
+  if (!html) return "";
+  // Use a single pass to remove all tags, avoiding regex-based HTML parsing
+  return html
+    .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .replace(/&quot;/gi, "\"")
-    .replace(/&#39;/gi, "'");
+    .replace(/&#0*39;/gi, "'");
 }

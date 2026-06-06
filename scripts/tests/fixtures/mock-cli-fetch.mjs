@@ -5,13 +5,15 @@ const jsonResponse = (body, init = {}) =>
   });
 
 globalThis.fetch = async (url, init = {}) => {
-  const href = String(url);
+  let parsedUrl;
+  try { parsedUrl = new URL(String(url)); } catch { parsedUrl = new URL("http://localhost"); }
+  const href = parsedUrl.href;
 
-  if (href.includes("corpus-style-model.json")) {
+  if (parsedUrl.pathname.endsWith("corpus-style-model.json")) {
     return new Response("not found", { status: 404 });
   }
 
-  if (href.includes("generativelanguage.googleapis.com")) {
+  if (parsedUrl.hostname === "generativelanguage.googleapis.com") {
     const body = typeof init.body === "string" ? JSON.parse(init.body) : {};
     const prompt = body?.contents?.[0]?.parts?.[0]?.text || "";
 
