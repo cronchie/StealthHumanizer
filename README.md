@@ -420,6 +420,50 @@ QuillBot alternative, Undetectable.ai alternative, StealthWriter alternative, Hi
 - **Detector benchmarking dashboard:** the Dashboard tab includes a built-in benchmark runner that compares detector scores before and after the offline privacy rewrite.
 - **Screenshot without Playwright download:** use `npm run screenshot -- http://localhost:3000 /tmp/stealthhumanizer-dashboard.png` after starting the dev server; it uses an installed Chrome/Chromium binary and avoids registry downloads.
 
+## More Projects
+<table>
+<tr>
+<td width="50%" align="center">
+
+### 🗺️ DevRoadmaps
+**Free developer roadmaps**
+20 career paths, 870+ topics, 1,880+ free resources.
+
+[⭐ Star](https://github.com/rudra496/devroadmaps) · [🌐 Live](https://rudra496.github.io/devroadmaps)
+
+</td>
+<td width="50%" align="center">
+
+### 🧠 EdgeBrain
+**Edge AI inference engine**
+Run ML models locally with sub-100ms latency.
+
+[⭐ Star](https://github.com/rudra496/EdgeBrain)
+
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+
+### 🤖 awesome-ai-humanizers
+**Curated AI humanizer list**
+Tools, detectors, research papers & resources.
+
+[⭐ Star](https://github.com/rudra496/awesome-ai-humanizers)
+
+</td>
+<td width="50%" align="center">
+
+### 🔬 ScienceLab 3D
+**Virtual STEM experiments**
+40+ interactive physics, chemistry & biology labs.
+
+[⭐ Star](https://github.com/rudra496/sciencelab3d) · [🌐 Live](https://sciencelab-two.vercel.app)
+
+</td>
+</tr>
+</table>
+
 ## Connect
 
 - [![GitHub](https://img.shields.io/badge/GitHub-rudra496-181717?logo=github)](https://github.com/rudra496)
