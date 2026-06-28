@@ -272,11 +272,15 @@ export async function POST(request: NextRequest) {
     */
 
     const guard = applyRewriteRegressionGuard({
-      originalText: text,
+      // Compare the postprocessed candidate against the RAW LLM output, not the
+      // user's original input. The guard's job is to catch POSTPROCESSING
+      // damage (synonym/collocation swaps mangling the text), not to penalize
+      // the LLM for rewriting — comparing against the original input made every
+      // aggressive rewrite "fail" and revert, silently discarding all the
+      // deterministic AI-footprint reduction. Baseline = raw LLM; revert only
+      // if postprocessing drifts far from what the LLM itself produced.
+      originalText: humanizedText,
       candidateText: currentText,
-      // Clean the raw LLM output (strip em-dashes, fix casing) so that if the
-      // guard reverts to it, the user still gets polished text instead of the
-      // un-postprocessed LLM output with em-dashes and AI tells intact.
       fallbackText: safeClean(humanizedText),
     });
     const finalText = guard.text;
