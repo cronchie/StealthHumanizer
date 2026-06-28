@@ -117,14 +117,14 @@ export const PROVIDERS: Provider[] = [
   },
   {
     id: 'openai',
-    name: 'OpenAI GPT-4',
+    name: 'OpenAI',
     description: 'Industry-leading AI, excellent quality for complex texts',
     free: false,
     apiUrl: 'https://api.openai.com/v1/chat/completions',
     getApiKeyUrl: 'https://platform.openai.com/api-keys',
     docsUrl: 'https://platform.openai.com/docs',
-    defaultModel: 'gpt-4o',
-    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    defaultModel: 'gpt-5.5',
+    models: ['gpt-5.5', 'gpt-4o', 'gpt-4o-mini'],
     placeholder: 'sk-...',
   },
   {
@@ -135,8 +135,8 @@ export const PROVIDERS: Provider[] = [
     apiUrl: 'https://api.anthropic.com/v1/messages',
     getApiKeyUrl: 'https://console.anthropic.com/',
     docsUrl: 'https://docs.anthropic.com',
-    defaultModel: 'claude-sonnet-4-20250514',
-    models: ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307'],
+    defaultModel: 'claude-sonnet-4-6',
+    models: ['claude-sonnet-4-6', 'claude-opus-4-7', 'claude-haiku-4-5-20251001', 'claude-3-5-sonnet-20241022'],
     placeholder: 'sk-ant-...',
   },
   {
@@ -633,16 +633,25 @@ async function openAICompatibleGenerate(
       'Authorization': `Bearer ${apiKey}`,
       ...(apiUrl.includes('openrouter') && { 'HTTP-Referer': 'https://stealthhumanizer.app' }),
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: options.temperature ?? 0.9,
-      top_p: options.topP ?? 0.95,
-      max_tokens: options.maxTokens ?? 4096,
-    }),
+    body: JSON.stringify((() => {
+      const isRealOpenAI = apiUrl.includes('api.openai.com');
+      // o-series and gpt-5+ only accept default temperature and use max_completion_tokens
+      const isRestrictedModel = isRealOpenAI && /^(o\d|gpt-5)/.test(model);
+      return {
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        ...(isRestrictedModel ? {} : {
+          temperature: options.temperature ?? 0.9,
+          top_p: options.topP ?? 0.95,
+        }),
+        ...(isRealOpenAI
+          ? { max_completion_tokens: options.maxTokens ?? 4096 }
+          : { max_tokens: options.maxTokens ?? 4096 }),
+      };
+    })()),
   });
 
   if (!response.ok) {
@@ -800,7 +809,7 @@ async function claudeGenerate(
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
-  model: string = 'claude-sonnet-4-20250514',
+  model: string = 'claude-sonnet-4-6',
   options: GenerationOptions = {}
 ): Promise<string> {
   return anthropicCompatibleGenerate('https://api.anthropic.com/v1/messages', apiKey, systemPrompt, userPrompt, model, options);
