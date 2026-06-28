@@ -159,7 +159,23 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const [privacyMode, setPrivacyMode] = useState(false);
 
   const wordCount = countWords(inputText);
-  const hasAnyApiKey = Object.values(getApiKeys()).some(v => v && v.trim().length > 0);
+  const [mounted, setMounted] = useState(false);
+  // Optimistic default true: avoids SSR/hydration mismatch (localStorage unavailable server-side)
+  const hasAnyApiKey = !mounted || Object.values(getApiKeys()).some(v => v && v.trim().length > 0);
+
+  useEffect(() => {
+    setMounted(true);
+    fetch('/api/prompt-profiles')
+      .then(r => r.json())
+      .then(d => {
+        if (!d.defaults) return;
+        if (d.defaults.model) setPreferredModel(d.defaults.model as ModelProvider);
+        if (d.defaults.level) setLevel(d.defaults.level as RewriteLevel);
+        if (d.defaults.style) setStyle(d.defaults.style as StylePreset);
+        if (d.defaults.tone) setTone(d.defaults.tone as TonePreset);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const queryText = new URLSearchParams(window.location.search).get('text');
