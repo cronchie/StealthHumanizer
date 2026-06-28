@@ -697,6 +697,26 @@ export interface PostProcessOptions {
  * Each transformation is randomized, so the same input produces different output each time.
  * Style-aware: academic/professional gets milder transformations than casual/creative.
  */
+/**
+ * Pure cleanup that never changes meaning: strip AI em-dashes, collapse
+ * whitespace, fix double punctuation, and restore sentence-start capitals.
+ * Used for the rewrite-regression fallback so that when the guard reverts to
+ * the raw LLM output, the text is still polished (no em-dashes / bad casing)
+ * without re-introducing the drift that triggered the revert.
+ */
+export function safeClean(text: string): string {
+  let r = stripAIDashes(text);
+  r = r
+    .replace(/,\s*,/g, ',')
+    .replace(/\s+,/g, ',')
+    .replace(/\.\s*\./g, '.')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return capitalizeSentenceStarts(r);
+}
+
 export function postprocess(text: string, options?: PostProcessOptions): string {
   const light = options?.light ?? false;
   const style = options?.style;

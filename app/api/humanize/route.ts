@@ -4,7 +4,7 @@ import { getSystemPrompt, getSelfCheckPrompt, getCorpusAwareSystemPrompt, LEVEL_
 import { getProvider, isCliOnlyProvider } from '@/lib/providers';
 import { generateWithProvider } from '@/lib/server/providers-runtime';
 import { detectAI } from '@/lib/detector';
-import { postprocess, corpusAwarePostprocess } from '@/lib/postprocess';
+import { postprocess, corpusAwarePostprocess, safeClean } from '@/lib/postprocess';
 import { loadStyleModelAsync, loadStyleModel, hasStyleModel } from '@/lib/style-model';
 import { calibrateWithCorpus } from '@/lib/detector';
 import { chainModels } from '@/lib/chain';
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       apiKeys: extraApiKeys = {},
       batchTexts = [],
       freezeWords = '',
-      synonymIntensity = 25,
+      synonymIntensity = 15,
     } = await request.json();
 
     if (!text || !model || !apiKey) return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
@@ -274,7 +274,10 @@ export async function POST(request: NextRequest) {
     const guard = applyRewriteRegressionGuard({
       originalText: text,
       candidateText: currentText,
-      fallbackText: humanizedText,
+      // Clean the raw LLM output (strip em-dashes, fix casing) so that if the
+      // guard reverts to it, the user still gets polished text instead of the
+      // un-postprocessed LLM output with em-dashes and AI tells intact.
+      fallbackText: safeClean(humanizedText),
     });
     const finalText = guard.text;
     const finalDetection = detectAI(finalText);
