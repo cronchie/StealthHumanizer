@@ -31,7 +31,7 @@ export default function Navbar({ activeTab, setActiveTab, theme, toggleTheme }: 
             <div>
               <h1 className="text-xl font-bold text-white leading-tight">
                 <span className="hero-gradient">Stealth</span><span className="text-white">Humanizer</span>
-                <span className="text-xs ml-1.5 px-1.5 py-0.5 rounded-full bg-accent-500/20 text-accent-400 align-middle font-medium">v2.2</span>
+                <span className="text-xs ml-1.5 px-1.5 py-0.5 rounded-full bg-accent-500/20 text-accent-400 align-middle font-medium">v2.3</span>
               </h1>
               <p className="text-xs text-dark-400">AI text humanizer &bull; Free & Open Source</p>
             </div>

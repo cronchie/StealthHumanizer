@@ -139,6 +139,12 @@ CRITICAL RULES — Follow these EXACTLY:
    - Punctuation must be correct. No stray commas, no broken punctuation, no mid-sentence em-dashes left dangling.
    - Keep the same paragraph breaks as the original.
 
+7. POLISH & PRECISION (for a natural, well-edited result):
+   - Write polished, precise prose — the quality of a carefully edited article or report.
+   - Avoid slang, clichés, and informal "tic" phrases ("game-changer", "making waves", "a whole lot", "turned things on their head").
+   - Preserve all proper nouns, technical terms, acronyms, names, citations, and numbers exactly.
+   - Do not pad or over-explain; keep the rewrite close to the original length.
+
 OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
 // ==================== LEVEL-SPECIFIC INSTRUCTIONS ====================
@@ -350,20 +356,22 @@ export function getRehumanizePrompt(
     ? PURPOSE_CONFIGS[purpose].promptOverlay
     : 'Purpose: preserve the original use case and meaning.';
 
-  return `These sentences were flagged as AI-generated. Rewrite each one so it reads like clear, natural human writing.
+  return `These sentences were flagged as AI-generated. Rewrite each one so it reads like clear, polished, natural human writing — the kind you would find in a well-edited article or report.
 
 ${toneNote}
 ${purposeNote}
 
 RULES FOR EACH SENTENCE (follow strictly):
-- Keep the SAME meaning, facts, and details. Do not add, drop, or invent information.
+- Keep the SAME meaning, facts, arguments, numbers, and details. Do not add, drop, or invent information.
+- Preserve all proper nouns, technical terms, acronyms, names, citations, and quantities exactly.
 - Each rewritten sentence MUST be a complete, grammatically correct sentence on its own.
 - NEVER produce a sentence fragment. NEVER leave a sentence unfinished or dangling.
-- NEVER add a disconnected interjection like "Honestly?", "Right.", "But wait,", "Look," as its own line — these read as broken. If you use an opener, weave it into the sentence so it is grammatically complete.
+- NEVER add a disconnected interjection ("Honestly?", "Right.", "But wait,", "Look,") as its own line. If you use an opener, weave it into a complete sentence. Do NOT prepend the same opener to multiple sentences.
+- Write in polished, precise prose. Avoid slang, clichés, filler, and informal "tic" phrases ("game-changer", "making waves", "turning things on their head", "a whole lot").
 - Vary sentence structure and length naturally — but every sentence must stand on its own.
-- Use natural contractions where they fit (it's, don't, can't, we're).
-- Replace AI-sounding vocabulary (significantly, notably, remarkably, particularly, essentially, fundamentally, ultimately, demonstrates, facilitates, leverages, utilizes, comprehensive, innovative, unprecedented, furthermore, moreover) with plain, natural wording.
-- Match the register of the original: formal stays formal, casual stays casual.
+- Use natural contractions only where they fit the register (it's, don't, can't).
+- Replace AI-sounding vocabulary (significantly, notably, remarkably, particularly, essentially, fundamentally, ultimately, demonstrates, facilitates, leverages, utilizes, comprehensive, innovative, unprecedented, furthermore, moreover) with plain, accurate wording.
+- Match the register of the original: formal/academic text stays formal; do not inject casual language into formal prose.
 - Do NOT use em-dashes (—). Use commas, periods, or semicolons instead.
 - Output exactly ONE rewritten sentence per input sentence, in the same order.
 
@@ -371,7 +379,7 @@ SENTENCES TO REWRITE:
 ${flaggedSentences.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
 Return ONLY a JSON array of strings, one complete rewritten sentence per input sentence, in order. No markdown, no commentary.
-Example: ["AI has changed how a lot of businesses get their daily work done.", "Teams that adopt these tools tend to move faster and make fewer routine errors."]`;
+Example: ["Artificial intelligence has reshaped how many businesses operate today.", "Companies that adopt these tools can often streamline routine work and respond to customers more quickly."]`;
 }
 
 // ==================== ENHANCEMENT PROMPTS ====================

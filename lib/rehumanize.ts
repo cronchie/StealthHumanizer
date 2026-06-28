@@ -1,31 +1,35 @@
 import { detectAI } from './detector';
 
+// Conservative AI-phrase replacements for the offline re-humanize fallback.
+// Each maps to a clean, grammatical replacement (never an empty string, which
+// left dangling commas / lowercase sentence starts). Word-boundary safe.
 const AI_PHRASE_REPLACEMENTS: Array<[RegExp, string]> = [
-  [/\bFurthermore,?\s*/gi, ''],
+  [/\bFurthermore,?\s*/gi, 'Also, '],
   [/\bMoreover,?\s*/gi, 'Plus, '],
-  [/\bAdditionally,?\s*/gi, 'And '],
+  [/\bAdditionally,?\s*/gi, 'Also, '],
   [/\bConsequently,?\s*/gi, 'So '],
   [/\bTherefore,?\s*/gi, 'So '],
-  [/\bIn conclusion,?\s*/gi, 'The takeaway is '],
-  [/\bIt is important to note that\s*/gi, 'Worth noting: '],
+  [/\bIn conclusion,?\s*/gi, 'Overall, '],
+  [/\bIt is important to note that\s*/gi, 'Notably, '],
+  [/\bIt is worth noting that\s*/gi, 'Notably, '],
   [/\bplays? a (?:crucial|vital|significant|key) role in\b/gi, 'matters for'],
   [/\bfacilitates?\b/gi, 'helps'],
   [/\butilizes?\b/gi, 'uses'],
   [/\bleverages?\b/gi, 'uses'],
-  [/\boptimi[sz]e\b/gi, 'improve'],
+  [/\boptimi[sz]e[ds]?\b/gi, 'improve'],
   [/\bcomprehensive\b/gi, 'thorough'],
-  [/\bsignificant(?:ly)?\b/gi, 'real'],
-  [/\bsubstantial(?:ly)?\b/gi, 'big'],
+  [/\bsignificant(?:ly)?\b/gi, 'notable'],
+  [/\bsubstantial(?:ly)?\b/gi, 'considerable'],
   [/\bvarious\b/gi, 'different'],
   [/\bnumerous\b/gi, 'many'],
   [/\brealm of\b/gi, 'area of'],
   [/\bdomain of\b/gi, 'area of'],
-  [/\bwith remarkable efficiency\b/gi, 'pretty efficiently'],
+  [/\bwith remarkable efficiency\b/gi, 'efficiently'],
   [/\bhas demonstrated\b/gi, 'has shown'],
   [/\bare able to\b/gi, 'can'],
+  [/\bdemonstrates?\b/gi, 'shows'],
+  [/\bin the modern era\b/gi, 'today'],
 ];
-
-const OPENERS = ['Honestly,', 'Look,', 'The thing is,', 'In practice,', 'For me,'];
 
 export function splitIntoSentencesStable(text: string): string[] {
   return text.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(Boolean) || (text.trim() ? [text.trim()] : []);
@@ -55,43 +59,46 @@ function preserveEnding(original: string, rewritten: string): string {
   return `${clean}${end}`;
 }
 
-function varySentenceShape(sentence: string, index: number): string {
-  const words = sentence.trim().split(/\s+/).filter(Boolean);
-  if (words.length > 24) {
-    const cut = Math.max(8, Math.min(words.length - 6, Math.round(words.length * 0.55)));
-    const first = words.slice(0, cut).join(' ');
-    const second = words.slice(cut).join(' ');
-    return `${first}. ${OPENERS[index % OPENERS.length].toLowerCase()} ${second}`;
-  }
-
-  if (words.length < 10 && !/[,—()]/.test(sentence)) {
-    return `${OPENERS[index % OPENERS.length]} ${sentence.replace(/^./, c => c.toLowerCase())}`;
-  }
-
-  if (!/\b(?:I|we|you|honestly|look|basically|actually)\b/i.test(sentence)) {
-    return `${OPENERS[index % OPENERS.length]} ${sentence.replace(/^./, c => c.toLowerCase())}`;
-  }
-
-  return sentence;
+// Capitalize the first alphabetic character of a sentence.
+function capitalizeStart(s: string): string {
+  return s.replace(/^\s*([a-z])/, (_, c: string) => c.toUpperCase());
 }
 
-export function localRehumanizeSentence(sentence: string, index = 0): string {
+// Split an overly long sentence at a natural conjunction boundary. Never
+// injects openers; capitalizes the new sentence correctly.
+function splitLongSentence(sentence: string): string {
+  const words = sentence.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= 28) return sentence;
+  const joined = sentence.trim();
+  const match = joined.match(/^(.{60,}?)[,;]\s+(and|but|while|whereas|which|so|because|therefore)\s+(.{20,})$/i);
+  if (!match) return sentence;
+  const first = match[1].replace(/[,;:]$/, '').trim();
+  const tail = match[3].trim();
+  return `${first}. ${capitalizeStart(tail)}`;
+}
+
+export function localRehumanizeSentence(sentence: string, _index = 0): string {
   let rewritten = sentence.trim();
   for (const [pattern, replacement] of AI_PHRASE_REPLACEMENTS) {
     rewritten = rewritten.replace(pattern, replacement);
   }
   rewritten = rewritten
-    .replace(/\bThis (?:capability|development|approach|process)\b/gi, 'That')
-    .replace(/\bThe (implementation|utilization|integration) of\b/gi, 'Using')
+    .replace(/\bThis (?:capability|development|approach|process)\b/gi, 'This')
+    .replace(/\bThe (?:implementation|utilization|integration) of\b/gi, 'using')
     .replace(/\s+/g, ' ')
     .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/,\s*,/g, ',')
+    .replace(/,\s+([.!?])/g, '$1')
     .trim();
 
-  rewritten = varySentenceShape(rewritten, index);
-  rewritten = rewritten.replace(/^(Honestly,|Look,|The thing is,|In practice,|For me,)\s+([a-z])/, (_match, opener: string, letter: string) => `${opener} ${letter.toLowerCase()}`);
-  rewritten = rewritten.replace(/,\s*,/g, ',').replace(/,\s+([.!?])/g, '$1');
-  rewritten = rewritten.replace(/\b(can|will|should) not\b/gi, "$1n't");
-  rewritten = rewritten.replace(/\bdo not\b/gi, "don't").replace(/\bdoes not\b/gi, "doesn't");
+  rewritten = splitLongSentence(rewritten);
+  rewritten = capitalizeStart(rewritten);
+
+  // Fragment guard: if the rewrite collapsed to something too short or empty,
+  // fall back to the original sentence rather than emit a broken one.
+  if (rewritten.split(/\s+/).filter(Boolean).length < 4) {
+    return preserveEnding(sentence, sentence);
+  }
   return preserveEnding(sentence, rewritten);
 }
 
@@ -103,9 +110,15 @@ function scoreSentence(text: string): number {
   return detectAI(text).sentences[0]?.score ?? detectAI(text).score;
 }
 
+/**
+ * Choose the better of the LLM rewrite and the local fallback for a sentence.
+ * Prefers the LLM rewrite on near-ties (it reads more naturally), and never
+ * returns a candidate that is identical to the original or a fragment.
+ */
 export function chooseImprovedRewrite(original: string, llmRewrite: string | undefined, index = 0): string {
   const fallback = localRehumanizeSentence(original, index);
   const originalScore = scoreSentence(original);
+
   const candidates = [llmRewrite, fallback]
     .filter((candidate): candidate is string => Boolean(candidate && candidate.trim().length > 8))
     .map(candidate => preserveEnding(original, candidate.trim()))
@@ -113,14 +126,18 @@ export function chooseImprovedRewrite(original: string, llmRewrite: string | und
 
   if (candidates.length === 0) return fallback;
 
-  return candidates
-    .map(candidate => ({ candidate, score: scoreSentence(candidate) }))
-    .sort((a, b) => {
-      const aGain = a.score - originalScore;
-      const bGain = b.score - originalScore;
-      if (bGain !== aGain) return bGain - aGain;
-      return b.score - a.score;
-    })[0].candidate;
+  const scored = candidates.map(candidate => ({ candidate, score: scoreSentence(candidate) }));
+  scored.sort((a, b) => {
+    const aGain = a.score - originalScore;
+    const bGain = b.score - originalScore;
+    if (bGain !== aGain) return bGain - aGain;
+    // Tie-break: prefer the candidate that is NOT the local fallback (i.e. the
+    // LLM rewrite), which reads more naturally and avoids heuristic-driven
+    // over-rewriting.
+    return a.candidate === fallback ? 1 : b.candidate === fallback ? -1 : b.score - a.score;
+  });
+
+  return scored[0].candidate;
 }
 
 export function replaceSentencesInText(fullText: string, replacements: Array<{ original: string; replacement: string }>): string {

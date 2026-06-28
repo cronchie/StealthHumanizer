@@ -25,7 +25,7 @@ Transform AI-generated text into natural, human-like writing using multi-pass re
 
 ---
 
-### ✨ What's new in 2.3
+## What's new in 2.3
 
 A focused quality + reliability pass. The headline change: **the output no longer breaks.**
 
