@@ -18,7 +18,6 @@ import { localHumanizeText } from '@/lib/local-humanizer';
 import { addCostEntry } from '@/lib/cost-tracker';
 import { addObservabilityEvent, estimateRunCost } from '@/lib/observability';
 import { saveHumanizationVersion } from '@/lib/version-history';
-import { consumeHumanizeStream } from '@/lib/streaming-client';
 import dynamic from 'next/dynamic';
 
 const ComparisonChart = dynamic(
@@ -164,7 +163,9 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
 
   // Roadmap features
   const [privacyMode, setPrivacyMode] = useState(false);
-  const [streamingMode, setStreamingMode] = useState(false);
+  const [freezeWords, setFreezeWords] = useState('');
+  const [synonymIntensity, setSynonymIntensity] = useState(25);
+  const [showSettings, setShowSettings] = useState(false);
 
   const wordCount = countWords(inputText);
   const hasAnyApiKey = Object.values(getApiKeys()).some(v => v && v.trim().length > 0);
@@ -279,7 +280,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         Object.entries(getApiKeys()).map(([provider, key]) => [provider, key?.trim()])
       );
 
-      const response = await fetch(streamingMode ? '/api/humanize/stream' : '/api/humanize', {
+      const response = await fetch('/api/humanize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -289,22 +290,12 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
           postprocess: enablePostprocess,
           chainModels: enableChain ? selectedChainModels : [],
           apiKeys: allApiKeys,
+          freezeWords,
+          synonymIntensity
         }),
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || 'Failed'); }
-      let data: HumanizationResult & { success?: boolean };
-      if (streamingMode) {
-        data = await consumeHumanizeStream(response, event => {
-          if (event.type === 'progress') {
-            setPipelineStep(event.data.message || event.data.step || 'Streaming...');
-            if (event.data.chunk && event.data.totalChunks) {
-              setProgress({ pass: event.data.chunk, max: event.data.totalChunks, message: event.data.message || 'Streaming rewrite' });
-            }
-          }
-        });
-      } else {
-        data = await response.json();
-      }
+      const data: HumanizationResult & { success?: boolean } = await response.json();
       setResult(data);
       saveHumanizationVersion(data);
       setPipelineStep('');
@@ -319,7 +310,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
       const observedCost = data.observability?.estimatedCostUsd ?? estimateRunCost(data.wordCount.input, data.wordCount.output, providerId);
       addCostEntry({ date: new Date().toISOString().slice(0, 10), provider: providerId, model: data.modelName, tokens: Math.ceil((data.wordCount.input + data.wordCount.output) * 1.35), costUsd: observedCost });
       addObservabilityEvent({
-        type: streamingMode ? 'stream' : 'humanize', provider: providerId, model: data.modelName,
+        type: 'humanize', provider: providerId, model: data.modelName,
         inputWords: data.wordCount.input, outputWords: data.wordCount.output, latencyMs: observedLatency,
         costUsd: observedCost, finalScore: data.finalScore, semanticScore: data.semanticFidelity?.score, success: true,
       });
@@ -731,24 +722,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const flaggedCount = detection?.sentences.filter(s => s.classification !== 'human').length || 0;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* API Key Gate */}
-      {!hasAnyApiKey && (
-        <div className="glass-card rounded-xl p-6 border border-accent-500/30 animate-fade-in">
-          <div className="flex flex-col items-center text-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-accent-500/20 flex items-center justify-center">
-              <Keyboard className="w-7 h-7 text-accent-400" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Set Up API Key to Get Started</h3>
-            <p className="text-dark-400 text-sm max-w-md">Choose from 35 free and paid AI providers. Your keys stay in your browser — never sent to our servers.</p>
-            <button onClick={onGoToSettings}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-medium text-sm transition-all shadow-lg shadow-accent-500/25">
-              <Keyboard className="w-4 h-4" /> Go to Settings
-            </button>
-          </div>
-        </div>
-      )}
-
+    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in-up">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -803,67 +777,44 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         </div>
       )}
 
-      {/* Controls */}
-      <div className="space-y-4">
-        {/* Rewrite Level */}
-        <div>
-          <label className="block text-sm font-medium text-dark-300 mb-2">Rewrite Level</label>
-          <div className="flex gap-2 flex-wrap">
-            {REWRITE_LEVELS.map(l => (
-              <button key={l.id} onClick={() => setLevel(l.id)}
-                className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none min-w-0 ${level === l.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
-                {l.name} <span className="hidden sm:inline text-xs opacity-70">{l.desc}</span>
-              </button>
-            ))}
+      
+      {/* Mobile Header & Settings Toggle */}
+      <div className="lg:hidden flex justify-between items-center bg-dark-800 p-4 rounded-xl mb-4">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-accent-400" /> StealthHumanizer
+        </h2>
+        <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded bg-dark-700 text-white">
+          <Settings className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Settings Sidebar (Left) */}
+      <div className={`w-full lg:w-80 flex-shrink-0 space-y-4 ${showSettings ? 'block' : 'hidden lg:block'}`}>
+        {/* API Key Gate */}
+      {!hasAnyApiKey && (
+        <div className="glass-card rounded-xl p-6 border border-accent-500/30 animate-fade-in">
+          <div className="flex flex-col items-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-accent-500/20 flex items-center justify-center">
+              <Keyboard className="w-7 h-7 text-accent-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Set Up API Key to Get Started</h3>
+            <p className="text-dark-400 text-sm max-w-md">Choose from 35 free and paid AI providers. Your keys stay in your browser — never sent to our servers.</p>
+            <button onClick={onGoToSettings}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-medium text-sm transition-all shadow-lg shadow-accent-500/25">
+              <Keyboard className="w-4 h-4" /> Go to Settings
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Style + Purpose + Tone */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-2">Writing Style</label>
-            <div className="flex gap-2 flex-wrap">
-              {STYLES.map(s => (
-                <button key={s.id} onClick={() => setStyle(s.id)}
-                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${style === s.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
-                  <span>{s.icon}</span> {s.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-2">Purpose</label>
-            <div className="flex gap-2 flex-wrap">
-              {PURPOSES.map(p => (
-                <button key={p.id} onClick={() => setPurpose(p.id)}
-                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${purpose === p.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
-                  {p.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-2">Tone</label>
-            <select value={tone} onChange={e => setTone(e.target.value as TonePreset)}
-              className="w-full px-3 py-2 bg-dark-800 border border-dark-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50">
-              {TONES.map(t => <option key={t.id} value={t.id}>{t.emoji} {t.name}</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Custom Tone */}
-        {tone === 'custom' && (
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-2">Custom Tone Description</label>
-            <input type="text" value={customTone} onChange={e => setCustomTone(e.target.value)}
-              placeholder="e.g., Write like a tired grad student at 3am..."
-              className="w-full px-4 py-2 bg-dark-800 border border-dark-700/50 rounded-lg text-white placeholder-dark-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50" />
-          </div>
-        )}
-
-        {/* Advanced Options */}
+      
+        
+        <div className="glass-card rounded-xl p-4 border border-dark-700/50">
+          <h3 className="text-lg font-bold text-white mb-4">Settings</h3>
+          <div className="space-y-4">
+            {/* Advanced Options */}
         <div>
-          <button onClick={() => setShowAdvanced(!showAdvanced)}
+          <button onClick={() => setShowAdvanced(!showAdvanced)} className="hidden"
             className="flex items-center gap-2 text-sm text-dark-400 hover:text-white transition-colors">
             {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Advanced Options
@@ -916,6 +867,29 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                 <p className="text-xs text-dark-500 mt-1">When provided, the humanized output will match your personal writing style</p>
               </div>
 
+              
+              {/* Synonym Intensity & Freeze Words */}
+              <div className="border-t border-dark-700/30 pt-4 space-y-4">
+                <h4 className="text-sm font-medium text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-accent-400" /> Humanization Controls
+                </h4>
+                <div>
+                  <label className="flex items-center justify-between text-sm font-medium text-dark-300 mb-2">
+                    <span>Synonym Intensity: {synonymIntensity}%</span>
+                  </label>
+                  <input type="range" min="0" max="100" step="5" value={synonymIntensity} onChange={e => setSynonymIntensity(Number(e.target.value))}
+                    className="w-full accent-accent-500" />
+                  <p className="text-xs text-dark-500 mt-1">Higher = more creative word swaps. Lower = preserves exact wording.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-dark-300 mb-2">Freeze Words (Comma separated)</label>
+                  <input type="text" value={freezeWords} onChange={e => setFreezeWords(e.target.value)}
+                    placeholder="e.g., React, Next.js, API"
+                    className="w-full px-4 py-2 bg-dark-800 border border-dark-700/50 rounded-lg text-white placeholder-dark-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50" />
+                  <p className="text-xs text-dark-500 mt-1">These words will NEVER be changed by the AI.</p>
+                </div>
+              </div>
+
               {/* Pipeline Controls */}
               <div className="border-t border-dark-700/30 pt-4 space-y-4">
                 <h4 className="text-sm font-medium text-white flex items-center gap-2">
@@ -962,7 +936,10 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                   <div className="space-y-2 animate-fade-in">
                     <p className="text-xs text-dark-400">Select models to chain through (requires API keys in Settings):</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {PROVIDERS.filter(p => p.free).map(p => (
+                      {PROVIDERS.filter(p => getApiKeys()[p.id]?.trim()).length === 0 && (
+                        <p className="text-xs text-red-400 col-span-3">No API keys found. Please add API keys in Settings to use chaining.</p>
+                      )}
+                      {PROVIDERS.filter(p => getApiKeys()[p.id]?.trim()).map(p => (
                         <label key={p.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors text-xs ${
                           selectedChainModels.includes(p.id)
                             ? 'bg-accent-500/20 border border-accent-500/50 text-accent-300'
@@ -981,7 +958,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                             className="accent-accent-500"
                           />
                           <span className="truncate">{p.name}</span>
-                          {p.free && <span className="text-green-400 text-[10px]">FREE</span>}
                         </label>
                       ))}
                     </div>
@@ -1031,8 +1007,91 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         </div>
       </div>
 
-      {/* Input/Output */}
-      <div className={`grid gap-6 ${showComparison && result ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+      
+          </div>
+        </div>
+      </div>
+
+      {/* Main Editor Area (Right) */}
+      <div className="flex-1 flex flex-col min-w-0 space-y-4">
+        {/* Top Toolbar */}
+        <div className="glass-card rounded-xl p-4 border border-dark-700/50 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="hidden lg:flex text-2xl font-bold text-white items-center gap-2">
+              <Sparkles className="w-6 h-6 text-accent-400" /> StealthHumanizer
+            </h2>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => setInputText(SAMPLE_AI_TEXT)} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-dark-400 hover:text-white text-sm transition-colors">
+                <Zap className="w-4 h-4" /> Sample
+              </button>
+              <button onClick={() => setInputText(SAMPLE_TECHNICAL_TEXT)} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-dark-400 hover:text-white text-sm transition-colors">
+                <FileText className="w-4 h-4" /> Tech Sample
+              </button>
+            </div>
+          </div>
+          
+          {/* Rewrite Level */}
+        <div>
+          <label className="block text-sm font-medium text-dark-300 mb-2">Rewrite Level</label>
+          <div className="flex gap-2 flex-wrap">
+            {REWRITE_LEVELS.map(l => (
+              <button key={l.id} onClick={() => setLevel(l.id)}
+                className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none min-w-0 ${level === l.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                {l.name} <span className="hidden sm:inline text-xs opacity-70">{l.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        
+          {/* Style + Purpose + Tone */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-dark-300 mb-2">Writing Style</label>
+            <div className="flex gap-2 flex-wrap">
+              {STYLES.map(s => (
+                <button key={s.id} onClick={() => setStyle(s.id)}
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${style === s.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                  <span>{s.icon}</span> {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-dark-300 mb-2">Purpose</label>
+            <div className="flex gap-2 flex-wrap">
+              {PURPOSES.map(p => (
+                <button key={p.id} onClick={() => setPurpose(p.id)}
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${purpose === p.id ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25' : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'}`}>
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-dark-300 mb-2">Tone</label>
+            <select value={tone} onChange={e => setTone(e.target.value as TonePreset)}
+              className="w-full px-3 py-2 bg-dark-800 border border-dark-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50">
+              {TONES.map(t => <option key={t.id} value={t.id}>{t.emoji} {t.name}</option>)}
+            </select>
+          </div>
+        </div>
+
+        
+          {/* Custom Tone */}
+        {tone === 'custom' && (
+          <div>
+            <label className="block text-sm font-medium text-dark-300 mb-2">Custom Tone Description</label>
+            <input type="text" value={customTone} onChange={e => setCustomTone(e.target.value)}
+              placeholder="e.g., Write like a tired grad student at 3am..."
+              className="w-full px-4 py-2 bg-dark-800 border border-dark-700/50 rounded-lg text-white placeholder-dark-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50" />
+          </div>
+        )}
+
+        
+        </div>
+{/* Input/Output */}
+      <div className={`grid gap-6 ${result ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'}`}>
         <div>
           {/* Recommended settings callout for first-time users */}
           {isFirstVisit && (
@@ -1073,14 +1132,10 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
               className="w-full h-64 p-4 glass-card rounded-xl text-white placeholder-dark-500 resize-none focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-all text-sm leading-relaxed" />
           </div>
 
-          <div className="mt-3 grid md:grid-cols-2 gap-2">
-            <label className="flex items-center gap-2 rounded-lg bg-dark-800/50 border border-dark-700/50 px-3 py-2 text-xs text-dark-300">
+          <div className="mt-3 grid md:grid-cols-1 gap-2">
+            <label className="flex items-center gap-2 rounded-lg bg-dark-800/50 border border-dark-700/50 px-3 py-2 text-xs text-dark-300 w-fit">
               <input type="checkbox" checked={privacyMode} onChange={e => setPrivacyMode(e.target.checked)} className="accent-accent-500" />
               🔒 Privacy Mode (offline local rewrite, no API key)
-            </label>
-            <label className="flex items-center gap-2 rounded-lg bg-dark-800/50 border border-dark-700/50 px-3 py-2 text-xs text-dark-300">
-              <input type="checkbox" checked={streamingMode} onChange={e => setStreamingMode(e.target.checked)} disabled={privacyMode} className="accent-accent-500" />
-              🌊 Streaming API route
             </label>
           </div>
 
@@ -1282,6 +1337,11 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                 <Shield className={`w-4 h-4 ${gptzeroLoading ? 'animate-pulse' : ''}`} />
                 {gptzeroLoading ? 'Scoring...' : '🔍 GPTZero Scores'}
               </button>
+              <a href="https://zerogpt.com" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors">
+                <Shield className="w-4 h-4" />
+                🔗 ZeroGPT (Check AI)
+              </a>
               <button onClick={handleExportPDF}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">
                 <Download className="w-4 h-4" />
@@ -1505,6 +1565,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

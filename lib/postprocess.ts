@@ -64,10 +64,11 @@ function isInQuotes(text: string, index: number): boolean {
 
 // ==================== 2a. SYNONYM SWAPPING ====================
 
-function swapSynonyms(text: string): string {
+function swapSynonyms(text: string, intensity: number = 25): string {
   // Only swap the safest single-word synonyms at low probability.
   // No context-blind replacements — only words where all synonyms
   // preserve meaning and grammatical role.
+  const swapChance = intensity / 100;
   const words = text.split(/(\s+)/);
   const result: string[] = [];
 
@@ -99,8 +100,7 @@ function swapSynonyms(text: string): string {
       continue;
     }
 
-    // 25% chance to swap
-    if (chance(0.25)) {
+    if (chance(swapChance)) {
       const synonym = getRandomSafeSynonym(word);
       if (synonym) {
         // Preserve capitalization
@@ -705,6 +705,7 @@ export interface PostProcessOptions {
   style?: StylePreset; // Adjust transformations to match writing style
   skipReadabilityGuard?: boolean; // For internal use when re-applying light passes
   aggressiveSynonyms?: boolean; // If false, skip aggressiveSynonymSwap. Default: true.
+  synonymIntensity?: number; // 0-100, controls synonym swap frequency. Default: 25
 }
 
 /**
@@ -732,7 +733,7 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
   result = injectPerplexity(result);
 
   if (light) {
-    result = swapSynonyms(result);
+    result = swapSynonyms(result, options?.synonymIntensity);
     if (chance(0.5)) result = addPunctuationNoise(result);
     // Skip disruptFlow in light mode: it injects emphasis fillers ("Right.",
     // "Sound familiar?", "Funny enough.") and conjunction starters at fixed
@@ -747,7 +748,7 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
   }
 
   // Full post-processing pipeline
-  result = swapSynonyms(result);
+  result = swapSynonyms(result, options?.synonymIntensity);
   result = addPunctuationNoise(result);
   result = manipulateSentenceLengths(result);
   result = disruptFlow(result, style);

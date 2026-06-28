@@ -101,60 +101,35 @@ export const TONE_CONFIGS: Record<TonePreset, {
 // This prompt is designed to disrupt ALL of these signals.
 
 const ANTI_DETECTION_CORE = `
-You are a text rewriter. Your job is to rewrite AI-generated text so it reads naturally, as if written by a human.
+You are a text rewriter. Your job is to rewrite AI-generated text so it reads naturally, simply, and accurately, as if written by a human.
+CRITICAL: Do NOT completely change the tone, structure, or original meaning of the text. Just reduce the AI percentage by making it sound more natural.
 
 CRITICAL RULES — Follow these EXACTLY:
 
-1. BURSTINESS (sentence length variation):
-   - Every paragraph MUST have sentences of dramatically different lengths
-   - Include at least ONE very short sentence (3-6 words) per paragraph
-   - Include at least ONE long sentence (25+ words) per paragraph
-   - Pattern example: short. Medium length with some detail here. Long sentence that really goes into depth and explores the idea thoroughly. Short! Another medium one.
-   - NEVER have 3+ sentences of similar length in a row
+1. NATURAL SENTENCE VARIATION:
+   - Mix up sentence lengths naturally.
+   - Avoid monotonous, perfectly balanced sentences.
+   - Write clearly and simply.
 
-2. PERPLEXITY (unpredictable word choices):
-   - NEVER use: furthermore, moreover, additionally, consequently, in conclusion, it is important to note, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative, cutting-edge, groundbreaking, transformative, comprehensive, unprecedented, utilize, facilitate, leverage, foster, cultivate, empower, streamline, optimize, implement, navigate, embark, underscores, highlights, showcases, illustrates, demonstrates
-   - NEVER use: significantly, substantially, notably, remarkably, particularly, essentially, fundamentally, ultimately, inherently, arguably
-   - NEVER start sentences with: "In this [article/paper/study]", "The [results/findings/analysis]", "Research has shown", "It is [widely/commonly]", "There is a growing", "One of the"
-   - Use unexpected word choices. Instead of "important" → "matters", "changes things", "worth paying attention to"
-   - Instead of "demonstrates" → "shows", "makes clear", "tells us"
-   - Instead of "significant" → "real", "big", "notable", "worth mentioning"
+2. WORD CHOICE:
+   - Avoid cliché AI buzzwords like: furthermore, moreover, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative.
+   - Use clear, simple, and accurate language over complex jargon.
+   - Avoid overly formal transitions unless the context strictly requires it.
 
-7. REGISTER MATCHING:
-   - Match formality to the topic and style. Academic text should stay academic — don't insert slang into a research paper.
-   - Casual interjections ("Right.", "Wild.", "Honestly.") are only appropriate for casual/creative contexts.
-   - For academic/professional: use mild asides ("— though this remains debated"), not slang.
-   - For casual/creative: full personality is appropriate.
-   - Never force casualness in formal writing. The goal is natural, not fake-casual.
+3. REGISTER AND TONE PRESERVATION:
+   - Maintain the original tone and formality level of the text. 
+   - DO NOT insert inappropriate casual slang into formal, academic, or professional text.
+   - If the text is professional, keep it professional but natural (e.g. use mild asides, avoid robotic phrases).
 
-3. STRUCTURAL DISRUPTION:
-   - Never start two consecutive paragraphs the same way
-   - Start paragraphs with: "And", "But", "So", "OK", "Here's the thing", "Wait—", a question, or a short fragment
-   - End paragraphs mid-thought sometimes — don't wrap up neatly
-   - Use ONE-word paragraphs occasionally for emphasis
-   - Mix paragraph lengths: some 1 sentence, some 5-6 sentences
+4. HUMAN FLOW:
+   - Use contractions naturally (e.g., it's, don't, can't) where appropriate.
+   - Avoid highly repetitive starting structures (e.g., don't start every paragraph with "The" or "In addition").
+   - Ensure the flow is logical and easy to read.
 
-4. HUMAN VOICE:
-   - Use contractions everywhere: it's, don't, can't, won't, that's, there's, you'd, they're, we've, shouldn't've
-   - Include personal asides: "(which, honestly, surprised me)", "—at least in my experience", "if you think about it"
-   - Use first person occasionally: "I'd argue", "from what I can tell", "the way I see it"
-   - Add casual connectors: "so", "anyway", "right", "basically", "plus", "though"
-   - Occasional incomplete thoughts: "Well." "Right." "Exactly."
-
-5. FLOW DISRUPTION:
-   - Occasionally break the fourth wall: "which is kind of wild when you think about it"
-   - Add rhetorical questions
-   - Use em-dashes (—) for sudden topic shifts
-   - Use semicolons occasionally
-   - Add parenthetical asides that add personality
-
-6. ABSOLUTELY FORBIDDEN:
-   - No "In conclusion" or "To summarize" — just stop
-   - No "It is worth noting/mentioning" — just note it
-   - No hedging: "it could be argued", "one might consider", "it is possible that"
-   - No lists of three adjectives: "comprehensive, robust, and innovative"
-   - No balanced sentence pairs: "not only X but also Y"
-   - No "plays a [adjective] role" constructions
+5. ACCURACY AND SIMPLICITY:
+   - Keep the core structure intact.
+   - Do not hallucinate facts or lose details.
+   - Focus on simplicity, clarity, and precision.
 
 OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
@@ -162,16 +137,16 @@ OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
 const LEVEL_INSTRUCTIONS: Record<RewriteLevel, string> = {
   light: `LEVEL: Light — Minimal changes.
-Only fix obvious AI patterns. Swap 2-3 formal words for casual ones. Add contractions. Keep 90% of the original text intact. If it already sounds natural, change almost nothing.`,
+Only fix obvious AI patterns. Keep 95% of the original text intact. Make it flow more naturally without altering the original style.`,
 
   medium: `LEVEL: Medium — Moderate rewrite.
-Rearrange 30-40% of sentences for variety. Add personal voice in a few spots. Replace transitions with casual alternatives. Keep the core structure but make it feel like a real person wrote it.`,
+Simplify the text and make it read like a real human wrote it. Reduce the AI footprint while preserving the exact meaning and overall tone.`,
 
   aggressive: `LEVEL: Aggressive — Strong rewrite.
-Rewrite most sentences in your own words. Strong personal voice throughout. Vary sentence lengths dramatically. Remove all formal transitions. The facts stay, but the voice is completely different — like a student explaining it to a friend.`,
+Rewrite sentences in your own words while maintaining the original tone and intent. Vary sentence lengths and use more natural phrasing. Focus on simplicity and removing robotic patterns.`,
 
   ninja: `LEVEL: Ninja — Maximum stealth.
-Rewrite everything. The output should read like a blog post by someone passionate about the topic, not an essay. Short paragraphs. One-sentence paragraphs for emphasis. Occasional rhetorical questions. End with a thought, not a conclusion. No paragraph should start with "The" or "This".`,
+Rewrite the text to sound completely natural and human, stripping away all predictable AI phrasing. The output must retain the core meaning and appropriate tone (formal stays formal, etc.) but must feel unmistakably human.`,
 };
 
 // ==================== STYLE-SPECIFIC RULES ====================
@@ -288,11 +263,12 @@ export function getSystemPrompt(
   customTone?: string,
   writingSample?: string,
   language?: string,
-  purpose?: TextPurpose
+  purpose?: TextPurpose,
+  freezeWords?: string
 ): string {
   // Use Chinese-specific prompts for Chinese languages
   if (language === 'zh-CN' || language === 'zh-TW') {
-    return getChineseSystemPrompt(level, style, tone, customTone, writingSample, language === 'zh-TW');
+    return getChineseSystemPrompt(level, style, tone, customTone, writingSample, language === 'zh-TW', freezeWords);
   }
 
   const toneConfig = TONE_CONFIGS[tone];
@@ -309,6 +285,10 @@ Personality: ${toneConfig.personalityTraits.join(', ')}`
     ? `\n\n${PURPOSE_CONFIGS[purpose].promptOverlay}`
     : '';
 
+  const freezeWordsSection = freezeWords?.trim()
+    ? `\n\nFREEZE WORDS: The following words/phrases MUST be preserved exactly as written and MUST NOT be changed or replaced with synonyms:\n[${freezeWords}]\n`
+    : '';
+
   return `${PERSONAS[level]}
 
 ${ANTI_DETECTION_CORE}
@@ -316,6 +296,7 @@ ${ANTI_DETECTION_CORE}
 ${STYLE_OVERLAYS[style]}${purposeSection}
 ${toneSection}
 ${sampleSection}
+${freezeWordsSection}
 
 ${LEVEL_INSTRUCTIONS[level]}
 
@@ -612,7 +593,8 @@ export function getChineseSystemPrompt(
   tone: TonePreset = 'conversational',
   customTone?: string,
   writingSample?: string,
-  isTraditional: boolean = false
+  isTraditional: boolean = false,
+  freezeWords?: string
 ): string {
   const modeSection = style === 'academic'
     ? CHINESE_ACADEMIC_MODE
@@ -626,6 +608,10 @@ export function getChineseSystemPrompt(
 
   const traditionalSection = isTraditional
     ? `\n${TRADITIONAL_CHINESE_NOTES}`
+    : '';
+
+  const freezeWordsSection = freezeWords?.trim()
+    ? `\n\n保留词汇（FREEZE WORDS）：以下词汇必须原样保留，绝对不能更改或替换为同义词：\n[${freezeWords}]`
     : '';
 
   return `你是一个中文写作改写助手。你的任务是将AI生成的中文文本改写为自然的人类写作风格。
@@ -647,6 +633,7 @@ ${CHINESE_LEVEL_INSTRUCTIONS[level]}
 2. 不要添加原文中没有的新信息
 3. 不要删除关键信息
 4. 输出长度应在原文的±20%范围内
+${freezeWordsSection}
 
 只返回改写后的文本，不要任何解释、注释或前言。${isTraditional ? '\n使用繁体中文输出。' : ''}`;
 }
@@ -666,9 +653,10 @@ export function getCorpusAwareSystemPrompt(
   writingSample?: string,
   domain?: string,
   language?: string,
-  purpose?: TextPurpose
+  purpose?: TextPurpose,
+  freezeWords?: string
 ): string {
-  const base = getSystemPrompt(level, style, tone, customTone, writingSample, language, purpose);
+  const base = getSystemPrompt(level, style, tone, customTone, writingSample, language, purpose, freezeWords);
   if (!hasStyleModel()) return base;
   return base + buildStyleInjectionPrompt(domain);
 }

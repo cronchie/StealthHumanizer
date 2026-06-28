@@ -78,11 +78,12 @@ export async function POST(request: NextRequest) {
       text, level, style, tone, customTone, model, apiKey,
       targetScore, language, writingSample,
       purpose,
-      // New pipeline parameters
       postprocess: enablePostprocess = true,
       chainModels: chainModelIds = [],
       apiKeys: extraApiKeys = {},
       batchTexts = [],
+      freezeWords = '',
+      synonymIntensity = 25,
     } = await request.json();
 
     if (!text || !model || !apiKey) return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
@@ -122,8 +123,8 @@ export async function POST(request: NextRequest) {
 
     const params = LEVEL_PARAMS[level as RewriteLevel];
     const systemPrompt = useCorpus
-      ? getCorpusAwareSystemPrompt(level, style, tone, customTone, writingSample, undefined, language, purpose)
-      : getSystemPrompt(level, style, tone, customTone, writingSample, language, purpose);
+      ? getCorpusAwareSystemPrompt(level, style, tone, customTone, writingSample, undefined, language, purpose, freezeWords)
+      : getSystemPrompt(level, style, tone, customTone, writingSample, language, purpose, freezeWords);
     const providerInfo = getProvider(model);
     const modelId = providerInfo?.defaultModel || model;
 
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
             });
             rewritten += (j > 0 ? '\n\n' : '') + out;
           }
-          const final = enablePostprocess ? postprocess(rewritten, { light: true, style: style as any }) : rewritten;
+          const final = enablePostprocess ? postprocess(rewritten, { light: true, style: style as any, synonymIntensity }) : rewritten;
           const detection = detectAI(final);
           const confidenceReport = buildConfidenceReport(detection.score);
           const runtimeModelScore = await scoreHumanLikeness(final);
@@ -204,7 +205,7 @@ export async function POST(request: NextRequest) {
     }
     // Also apply regular post-processing if toggled on
     if (enablePostprocess) {
-      currentText = postprocess(currentText, { style: style as any });
+      currentText = postprocess(currentText, { style: style as any, synonymIntensity });
     }
 
     // ==================== LAYER 3: Multi-Model Chain ====================
@@ -235,7 +236,7 @@ export async function POST(request: NextRequest) {
     // ==================== LAYER 4: Final Polish ====================
     if (enablePostprocess) {
       // Light post-process pass after chain
-      currentText = postprocess(currentText, { light: true });
+      currentText = postprocess(currentText, { light: true, synonymIntensity });
     }
 
     // NOTE: Self-check loop disabled — multi-pass LLM self-checking adds more AI fingerprints
