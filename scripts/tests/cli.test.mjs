@@ -124,7 +124,7 @@ describe("StealthHumanizer CLI", () => {
 
     assertSuccess(result);
     assert.match(result.stdout, /Provider\s+Free\s+Env var\s+Default model\s+Name/);
-    assert.match(result.stdout, /gemini\s+yes\s+GEMINI_API_KEY\s+gemini-1\.5-flash/);
+    assert.match(result.stdout, /gemini\s+yes\s+GEMINI_API_KEY\s+gemini-2\.5-flash/);
     assert.match(result.stdout, /openai\s+no\s+OPENAI_API_KEY\s+gpt-4o/);
     assert.match(result.stdout, /claude-code\s+yes\s+\(cli\)/);
     assert.match(result.stdout, /codex\s+yes\s+\(cli\)/);
@@ -142,7 +142,7 @@ describe("StealthHumanizer CLI", () => {
     assert.ok(providers.length >= 10);
     assert.equal(gemini.env, "GEMINI_API_KEY");
     assert.equal(gemini.free, true);
-    assert.equal(gemini.defaultModel, "gemini-1.5-flash");
+    assert.equal(gemini.defaultModel, "gemini-2.5-flash");
     assert.equal(openai.free, false);
     assert.equal(Object.hasOwn(gemini, "getApiKeyUrl"), true);
     assert.equal(claudeCode.cliOnly, true);
