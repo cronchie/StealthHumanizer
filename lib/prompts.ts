@@ -35,9 +35,9 @@ export const TONE_CONFIGS: Record<TonePreset, {
   },
   'conversational': {
     name: 'Conversational',
-    personalityTraits: ['friendly', 'relaxed', 'authentic', 'approachable'],
-    vocabularyPreferences: ['honestly', 'basically', 'kind of', 'pretty much', 'you know', 'I mean', 'stuff like that'],
-    writingPatterns: ['contractions everywhere', 'rhetorical questions', 'short sentences mixed with longer ones', 'personal asides'],
+    personalityTraits: ['accessible', 'relaxed', 'authentic', 'approachable'],
+    vocabularyPreferences: ['essentially', 'in fact', 'to put it simply', 'often', 'typically'],
+    writingPatterns: ['use natural contractions', 'mix short and long sentences', 'avoid stiff transitions', 'conversational flow'],
   },
   'professional': {
     name: 'Professional',
@@ -106,30 +106,31 @@ CRITICAL: Do NOT completely change the tone, structure, or original meaning of t
 
 CRITICAL RULES — Follow these EXACTLY:
 
-1. NATURAL SENTENCE VARIATION:
+1. MEANING & STRUCTURAL PRESERVATION (CRITICAL):
+   - You MUST preserve ALL facts, data points, entities, arguments, and underlying concepts from the original text.
+   - DO NOT delete important sentences or oversimplify complex ideas just to sound casual.
+   - DO NOT add new information, opinions, or hallucinations that were not in the original text.
+   - The output length should be roughly similar to the original text.
+
+2. NATURAL SENTENCE VARIATION:
    - Mix up sentence lengths naturally.
    - Avoid monotonous, perfectly balanced sentences.
    - Write clearly and simply.
 
-2. WORD CHOICE:
+3. WORD CHOICE:
    - Avoid cliché AI buzzwords like: furthermore, moreover, delve into, tapestry, landscape, realm, multifaceted, robust, seamless, synergy, paradigm, innovative.
    - Use clear, simple, and accurate language over complex jargon.
    - Avoid overly formal transitions unless the context strictly requires it.
 
-3. REGISTER AND TONE PRESERVATION:
+4. REGISTER AND TONE PRESERVATION:
    - Maintain the original tone and formality level of the text. 
    - DO NOT insert inappropriate casual slang into formal, academic, or professional text.
    - If the text is professional, keep it professional but natural (e.g. use mild asides, avoid robotic phrases).
 
-4. HUMAN FLOW:
+5. HUMAN FLOW:
    - Use contractions naturally (e.g., it's, don't, can't) where appropriate.
    - Avoid highly repetitive starting structures (e.g., don't start every paragraph with "The" or "In addition").
    - Ensure the flow is logical and easy to read.
-
-5. ACCURACY AND SIMPLICITY:
-   - Keep the core structure intact.
-   - Do not hallucinate facts or lose details.
-   - Focus on simplicity, clarity, and precision.
 
 OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
@@ -152,7 +153,7 @@ Rewrite the text to sound completely natural and human, stripping away all predi
 // ==================== STYLE-SPECIFIC RULES ====================
 
 const STYLE_OVERLAYS: Record<StylePreset, string> = {
-  humanize: `Style: General. Write like a college student who knows the topic but isn't trying to impress anyone.`,
+  humanize: `Style: General Natural. Write clearly and naturally. Avoid overly formal academic language unless the topic demands it.`,
   academic: `Style: Academic but real. Like a student paper, not a journal article. Use "I" sometimes. Cite casually: "Smith (2023) makes a good point about this." Don't over-explain.`,
   casual: `Style: Super casual. Like texting a friend who asked about this. Contractions everywhere. "Honestly," "basically," "kind of." Sentence fragments are fine.`,
   professional: `Style: Professional but real person. Direct, specific, no buzzwords. Short paragraphs. "We found" not "It was discovered."`,
@@ -663,8 +664,8 @@ export function getCorpusAwareSystemPrompt(
 
 // Temperature and top_p settings per level
 export const LEVEL_PARAMS: Record<RewriteLevel, { temperature: number; topP: number }> = {
-  light: { temperature: 0.8, topP: 0.92 },
-  medium: { temperature: 0.9, topP: 0.95 },
-  aggressive: { temperature: 1.0, topP: 0.97 },
-  ninja: { temperature: 1.1, topP: 0.99 },
+  light: { temperature: 0.3, topP: 0.85 },
+  medium: { temperature: 0.5, topP: 0.90 },
+  aggressive: { temperature: 0.7, topP: 0.95 },
+  ninja: { temperature: 0.8, topP: 0.95 },
 };
