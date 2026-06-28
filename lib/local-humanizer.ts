@@ -24,24 +24,6 @@ const LEVEL_STRENGTH: Record<RewriteLevel, number> = {
   ninja: 4,
 };
 
-const TONE_OPENERS: Partial<Record<TonePreset, string[]>> = {
-  conversational: ['In practice', 'Put simply', 'Here is the thing'],
-  'academic-casual': ['In practice', 'More plainly', 'At a practical level'],
-  professional: ['In practical terms', 'Operationally', 'For teams'],
-  analytical: ['From the evidence', 'Looking at the pattern', 'In context'],
-  journalistic: ['On the ground', 'In real terms', 'For readers'],
-  technical: ['Technically', 'At runtime', 'In implementation'],
-};
-
-const STYLE_CONNECTORS: Partial<Record<StylePreset, string[]>> = {
-  academic: ['This matters because', 'The key point is', 'The evidence suggests'],
-  professional: ['For teams, this means', 'The practical result is', 'That gives teams'],
-  casual: ['That means', 'So', 'The useful part is'],
-  creative: ['The effect is', 'What emerges is', 'The texture changes when'],
-  technical: ['In implementation terms', 'At system level', 'The mechanism is'],
-  humanize: ['That means', 'In practice', 'The useful part is'],
-};
-
 const PHRASE_RULES: RewriteRule[] = [
   { pattern: /\bit is important to note that\b/gi, replacements: ['notably', 'it is worth noting', 'the key point is'] },
   { pattern: /\bin conclusion,?\b/gi, replacements: ['to wrap this up,', 'overall,', 'in the end,'] },
@@ -101,12 +83,15 @@ function softenOverconfidentClaims(sentence: string, seed: number): string {
     .replace(/\bunparalleled\b/gi, 'notable');
 }
 
-function varyOpening(sentence: string, index: number, level: RewriteLevel, style: StylePreset, tone: TonePreset, seed: number): string {
-  if (LEVEL_STRENGTH[level] < 3 || sentence.length < 70 || index % 3 === 0) return sentence;
-  if (/^(In practice|Put simply|Here is the thing|Technically|Operationally|Overall|That means)/i.test(sentence)) return sentence;
-  const openerPool = TONE_OPENERS[tone] ?? STYLE_CONNECTORS[style] ?? STYLE_CONNECTORS.humanize ?? ['In practice'];
-  const opener = pick(openerPool, seed + index);
-  return `${opener}, ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)}`;
+function varyOpening(sentence: string, index: number, level: RewriteLevel, _style: StylePreset, _tone: TonePreset, seed: number): string {
+  // Only at stronger levels, only occasionally, and only with short connectors
+  // that read naturally as a lead-in to an independent clause. Avoid quirky
+  // openers ("Here is the thing,") that produce awkward comma splices.
+  if (LEVEL_STRENGTH[level] < 3 || sentence.length < 70 || index % 4 !== 2) return sentence;
+  if (/^(In practice|Put simply|Technically|Operationally|Overall|That means|Even so|That said|Still|In short|On balance)/i.test(sentence)) return sentence;
+  const safeConnectors = ['In practice', 'Even so', 'That said', 'Still', 'In short', 'On balance'];
+  const connector = pick(safeConnectors, seed + index);
+  return `${connector}, ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)}`;
 }
 
 function splitLongSentence(sentence: string, level: RewriteLevel): string {

@@ -1012,7 +1012,6 @@ const SAFE_SYNONYMS: Record<string, string[]> = {
   'start': ['begin', 'kick off', 'launch', 'get going'],
   'still': ['yet', 'even so', 'nevertheless'],
   'stop': ['halt', 'cease', 'end', 'quit'],
-  'thing': ['item', 'object', 'piece', 'stuff'],
   'think': ['believe', 'consider', 'reckon', 'feel'],
   'try': ['attempt', 'make an effort', 'give it a shot'],
   'turn': ['shift', 'change', 'flip', 'switch'],

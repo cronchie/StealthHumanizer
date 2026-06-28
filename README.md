@@ -25,6 +25,20 @@ Transform AI-generated text into natural, human-like writing using multi-pass re
 
 ---
 
+### ✨ What's new in 2.3
+
+A focused quality + reliability pass. The headline change: **the output no longer breaks.**
+
+- **Natural, complete sentences.** Rewrote the re-humanize prompt and removed the post-processing steps that injected orphan fragments ("Honestly?", "But get this—?"), mangled em-dashes into broken punctuation ("word—?" → "word,?"), and force-lowercased proper nouns. Every sentence is now grammatical and complete, with a final capitalization safety net.
+- **Real human tone, less AI footprint.** Collocations now respect word boundaries (no more "make easierd"), context-blind swaps like `thing→stuff` are gone, and empty AI-phrase replacements no longer leave dangling commas.
+- **GPTZero API scoring removed from the UI.** Without an API key it only showed a confusing local fallback — so detection stays local (Human Score, heatmap, readability) and external checks are one-click links to GPTZero, ZeroGPT, and Copyleaks.
+- **Simpler, calmer UI.** Advanced options collapsed by default, the redundant stats grid replaced with a slim footer, cleaner action labels, and no more silent clipboard writes or runaway auto-refine loops. Refinement is now opt-in (button) and bounded.
+- **`npm run lint` and the CLI runner work again** (Next 16 dropped `next lint`; flat ESLint 9 config added; Windows `.mjs` CLI spawn fixed).
+
+See the [full changelog](./CHANGELOG.md#230---2026-06-28) for details.
+
+---
+
 ## Why StealthHumanizer?
 
 AI detectors (GPTZero, Originality.ai, Turnitin) catch AI text through statistical fingerprints:
@@ -46,9 +60,9 @@ AI detectors (GPTZero, Originality.ai, Turnitin) catch AI text through statistic
 | **6 Writing Styles** | Humanize, Academic, Professional, Casual, Creative, Technical |
 | **9 Text Purposes** | Essay, Article, Blog, Email, Marketing, Report, Story, Social Media, General |
 | **13 Tone Presets** | Conversational, Journalistic, Persuasive, Storytelling, Humorous, Analytical, and more |
-| **Multi-Pass Ninja Mode** | Auto-refinement loop targeting 90%+ human score |
+| **Refinement Mode** | One-click "Refine further" to push flagged sentences toward a higher human score |
 | **Style-Aware Processing** | Post-processing adapts to academic vs casual context |
-| **AI Detection Scoring** | 12-metric analysis with confidence intervals and detailed reports |
+| **Local AI Detection** | 12-metric on-device scoring with confidence intervals, heatmap, and readability — plus one-click links to GPTZero / ZeroGPT / Copyleaks for external verification |
 | **File Upload** | Paste text or upload PDF/DOCX files |
 | **Grammar Check** | Built-in grammar and spell checking |
 | **16+ Languages** | English, Chinese (Simplified + Traditional), Spanish, French, German, Japanese, Korean, Arabic, Hindi, and more |

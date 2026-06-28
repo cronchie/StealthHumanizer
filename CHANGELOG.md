@@ -5,6 +5,65 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project follows [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] - 2026-06-28
+
+### Fixed — humanization quality overhaul
+
+This release fixes the root causes of broken output: incomplete sentences,
+grammar/punctuation errors, and over-casual rewrites that "changed everything."
+
+- **Re-humanize prompt rewritten.** The old prompt instructed the model to inject
+  casual openers ("Honestly,"), em-dashes, rhetorical questions, and to split every
+  long sentence — which produced orphan fragments ("Honestly?", "But get this—?").
+  The new prompt forbids fragments and disconnected interjections, demands complete,
+  grammatical sentences, and preserves meaning, facts, and register.
+- **Post-processing no longer creates orphan sentences.** `disruptFlow` previously
+  spliced in standalone interjections ("Right.", "Funny enough.") and rhetorical
+  questions as their own sentences. It now only softens stiff AI openers in place.
+- **Em-dash stripping is now punctuation-aware.** "word—?" no longer becomes the
+  broken "word,?"; trailing/leading and parenthetical dashes are all handled cleanly.
+  Numeric ranges (2020–2025) are still preserved.
+- **Sentence-start capitalization safety net.** A final `capitalizeSentenceStarts`
+  pass restores correct casing after every transformation, with abbreviation guards.
+- **Removed casing-mangling transforms.** The random semicolon-merge and the
+  short-sentence-merge both lowercased the following word, which broke proper nouns
+  and safety-critical phrasing ("Never share keys" → "and never share keys").
+- **Collocations now use word boundaries.** "facilitate" no longer matches inside
+  "facilitated" leaving "make easierd"; inflected words are left intact. Literal
+  "..." placeholders that injected stray ellipses were removed.
+- **`thing→stuff` and similar context-blind safe-synonym swaps removed.**
+- **`injectHumanVoice` no longer breaks proper nouns** (removed the conjunction
+  prepend that forced-lowercased the next word).
+- **Empty-string AI-phrase replacements** (`in conclusion → ''`) that left dangling
+  commas now produce clean transitions.
+
+### Changed
+
+- **Removed the GPTZero API scoring panel** from the UI. With no `GPTZERO_API_KEY`
+  configured it only ever showed a local fallback, which was confusing. Detection
+  still runs locally (Human Score, heatmap, readability); external checking is a
+  one-click link to GPTZero, ZeroGPT, and Copyleaks for anyone who wants it.
+- **Humanize is now a single pass by default.** The automatic multi-round
+  "refine to 90%+" loop that ran after every humanize (up to 8 extra API calls,
+  blocking, and silently copying to the clipboard) is gone. Refinement is opt-in
+  via the "Refine further" button (bounded to 3 rounds, no silent clipboard write).
+- **Simpler, more professional UI.** Collapsed Advanced options by default, replaced
+  the redundant 7-card stats grid with a slim footer bar, cleaned emoji-heavy action
+  labels, and grouped external detector links. The sentence diff folds stray
+  fragments into the previous row instead of showing misleading pairings.
+
+### Fixed — tooling / CI
+
+- **`npm run lint` works again.** Next.js 16 removed `next lint`; switched to a
+  flat ESLint 9 config (`eslint.config.mjs`) using the TypeScript-ESLint tooling
+  bundled with `eslint-config-next` (FlatCompat hit a circular-structure bug with
+  this version combo).
+- **CLI runners work on Windows.** `cli-providers.ts` now spawns `.mjs`/`.js`
+  runners through `node`, avoiding Windows `spawn EFTYPE` on shebang scripts.
+- **Browser extension least-privilege.** Removed the redundant always-on
+  `<all_urls>` content script (the web app already reads `?text=` itself); kept
+  `activeTab` as the minimal permission for tab messaging.
+
 ## [2.2.0] - 2026-06-02
 
 ### Added

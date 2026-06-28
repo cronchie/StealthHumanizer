@@ -89,7 +89,13 @@ async function runCli(
 
   try {
     const stdout = await new Promise<string>((resolve, reject) => {
-      const child = spawn(config.bin, prepared.args, spawnOptions);
+      // Cross-platform: Windows can't exec .mjs/.js shebang scripts directly
+      // (spawn EFTYPE), so route JavaScript runners through the current Node
+      // binary. Native executables (claude, codex) are spawned as-is.
+      const isJsScript = /\.(mjs|cjs|js)$/i.test(config.bin);
+      const command = isJsScript ? process.execPath : config.bin;
+      const commandArgs = isJsScript ? [config.bin, ...prepared.args] : prepared.args;
+      const child = spawn(command, commandArgs, spawnOptions);
 
       let stdoutBuf = '';
       let stderrBuf = '';

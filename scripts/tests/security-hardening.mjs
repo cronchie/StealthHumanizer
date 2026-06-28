@@ -16,7 +16,10 @@ test('highlight rendering escapes user HTML before using dangerouslySetInnerHTML
 });
 
 test('browser extension uses least-privilege manifest permissions', () => {
-  assert.deepEqual(manifest.permissions.sort(), ['contextMenus', 'storage']);
+  // activeTab is the minimal permission that lets the action/popup read the
+  // active tab and message it on user invocation — strictly less privileged
+  // than broad "tabs" or host_permissions, which is why we allow it here.
+  assert.deepEqual(manifest.permissions.sort(), ['activeTab', 'contextMenus', 'storage']);
   assert.equal(manifest.host_permissions, undefined);
   assert.equal(manifest.content_scripts, undefined);
 });

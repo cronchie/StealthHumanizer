@@ -18,7 +18,7 @@ import { scoreHumanLikeness } from '@/lib/server/model-runtime';
 import { asyncMapConcurrent } from '@/lib/batch';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { countWords, chunkText } from '@/lib/storage';
-import { splitIntoSentences } from '@/lib/text-utils';
+import { buildSentenceResults } from '@/lib/text-utils';
 import { assessSemanticFidelity } from '@/lib/semantic-fidelity';
 import { estimateRunCost } from '@/lib/observability';
 
@@ -281,20 +281,13 @@ export async function POST(request: NextRequest) {
     const confidenceReport = buildConfidenceReport(finalDetection.score);
     const runtimeModelScore = await scoreHumanLikeness(finalText);
     const semanticFidelity = assessSemanticFidelity(text, finalText);
-    const origSentences = splitIntoSentences(text);
-    const humanizedSentences = splitIntoSentences(finalText);
-    const maxLen = Math.max(origSentences.length, humanizedSentences.length);
-
-    const sentences = [];
-    for (let i = 0; i < maxLen; i++) {
-      sentences.push({
-        original: origSentences[i] || '',
-        humanized: humanizedSentences[i] || '',
-        alternatives: [],
-        index: i,
-        detectionScore: finalDetection.sentences[i]?.score,
-      });
-    }
+    const sentences = buildSentenceResults(text, finalText).map((row, i) => ({
+      original: row.original,
+      humanized: row.humanized,
+      alternatives: [] as string[],
+      index: i,
+      detectionScore: finalDetection.sentences[i]?.score,
+    }));
 
     const responsePayload = {
       sentences, fullText: finalText, model, modelName: providerInfo?.name || model,

@@ -63,11 +63,29 @@ export function countWords(text: string): number {
 
 /**
  * Build sentence-level results by aligning original and humanized sentences.
+ *
+ * Rows where BOTH sides are empty are dropped, and a humanized cell that is a
+ * bare interjection fragment ("Honestly?", "Right.", "But wait,") is folded
+ * into the previous humanized cell rather than shown as its own line. This
+ * keeps the side-by-side diff honest even when the humanized text has a few
+ * more or fewer sentences than the original.
  */
 export interface SentenceAlignment {
   original: string;
   humanized: string;
   index: number;
+}
+
+const FRAGMENT_INTERJECTION = /^\s*(honestly|right|exactly|yeah|hmm|look|so|plus|well|ok|okay|true story|funny enough|makes sense|but wait|and is that|sound familiar|who would have thought)[!,?.]?\s*$/i;
+
+function isFragment(text: string): boolean {
+  const t = text.trim();
+  if (!t) return true;
+  if (FRAGMENT_INTERJECTION.test(t)) return true;
+  // Very short, no sentence-ending punctuation, and no verb-like token -> likely a fragment
+  const words = t.split(/\s+/).filter(Boolean);
+  if (words.length <= 2 && !/[.!?]$/.test(t)) return true;
+  return false;
 }
 
 export function buildSentenceResults(
@@ -80,11 +98,21 @@ export function buildSentenceResults(
 
   const results: SentenceAlignment[] = [];
   for (let i = 0; i < maxLen; i++) {
-    results.push({
-      original: origSentences[i] || '',
-      humanized: humanizedSentences[i] || '',
-      index: i,
-    });
+    const original = origSentences[i] || '';
+    const humanized = humanizedSentences[i] || '';
+
+    // Skip fully-empty rows.
+    if (!original.trim() && !humanized.trim()) continue;
+
+    // If the humanized cell is a bare fragment, fold it into the previous row's
+    // humanized text so it never appears as its own (misleading) line.
+    if (original.trim() && isFragment(humanized) && results.length > 0) {
+      const prev = results[results.length - 1];
+      prev.humanized = `${prev.humanized} ${humanized}`.trim();
+      continue;
+    }
+
+    results.push({ original, humanized, index: results.length });
   }
   return results;
 }

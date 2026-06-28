@@ -9,16 +9,16 @@ import {
 } from 'lucide-react';
 import { RewriteLevel, StylePreset, TonePreset, TextPurpose, HumanizationResult, ModelProvider, SentenceDetectionResult } from '@/lib/types';
 import { SAMPLE_AI_TEXT, SAMPLE_TECHNICAL_TEXT } from '@/lib/prompts';
-import { detectAI, getScoreColor } from '@/lib/detector';
+import { detectAI } from '@/lib/detector';
 import { getReadabilityLabel } from '@/lib/readability';
 import { countWords, downloadAsTxt, downloadAsDocx, downloadAsMarkdown, getApiKeys } from '@/lib/storage';
+import { buildSentenceResults } from '@/lib/text-utils';
 import { WEB_PROVIDERS as PROVIDERS } from '@/lib/providers';
 import { assessSemanticFidelity } from '@/lib/semantic-fidelity';
 import { localHumanizeText } from '@/lib/local-humanizer';
 import { addCostEntry } from '@/lib/cost-tracker';
 import { addObservabilityEvent, estimateRunCost } from '@/lib/observability';
 import { saveHumanizationVersion } from '@/lib/version-history';
-import { consumeHumanizeStream } from '@/lib/streaming-client';
 import dynamic from 'next/dynamic';
 
 const ComparisonChart = dynamic(
@@ -118,7 +118,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const [expandedSentence, setExpandedSentence] = useState<number | null>(null);
   const [alternatives, setAlternatives] = useState<Record<number, string[]>>({});
   const [showComparison, setShowComparison] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showReadability, setShowReadability] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -145,13 +145,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const [selectedChainModels, setSelectedChainModels] = useState<string[]>([]);
   const [pipelineStep, setPipelineStep] = useState('');
   const [preferredModel, setPreferredModel] = useState<ModelProvider>('gemini');
-
-  // GPTZero detection scores (Phase 2)
-  const [gptzeroOriginal, setGptzeroOriginal] = useState<number | null>(null);
-  const [gptzeroHumanized, setGptzeroHumanized] = useState<number | null>(null);
-  const [gptzeroLoading, setGptzeroLoading] = useState(false);
-  const [gptzeroUnavailable, setGptzeroUnavailable] = useState(false);
-  const [gptzeroSource, setGptzeroSource] = useState<'gptzero' | 'local-fallback' | null>(null);
 
   // Comparison chart visibility (Phase 4)
   const [showComparisonChart, setShowComparisonChart] = useState(false);
@@ -208,13 +201,10 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   function buildLocalPrivacyResult(startedAt: number): HumanizationResult {
     const fullText = localHumanizeText(inputText, { level, style, tone });
     const detection = detectAI(fullText);
-    const origSentences = inputText.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(Boolean) || [inputText.trim()];
-    const newSentences = fullText.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(Boolean) || [fullText.trim()];
-    const maxLen = Math.max(origSentences.length, newSentences.length);
-    const sentences = Array.from({ length: maxLen }, (_, index) => ({
-      original: origSentences[index] || '',
-      humanized: newSentences[index] || '',
-      alternatives: [],
+    const sentences = buildSentenceResults(inputText, fullText).map((row, index) => ({
+      original: row.original,
+      humanized: row.humanized,
+      alternatives: [] as string[],
       index,
       detectionScore: detection.sentences[index]?.score,
     }));
@@ -291,8 +281,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         }),
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || 'Failed'); }
-      let data: HumanizationResult & { success?: boolean };
-      data = await response.json();
+      const data: HumanizationResult & { success?: boolean } = await response.json();
       setResult(data);
       saveHumanizationVersion(data);
       setPipelineStep('');
@@ -312,22 +301,28 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         costUsd: observedCost, finalScore: data.finalScore, semanticScore: data.semanticFidelity?.score, success: true,
       });
 
-      // Auto-continue: if score < 100%, start rehumanize loop automatically
-      if (data.finalScore < 90) {
-        showToast('info', `Score ${data.finalScore}% — auto-refining to 90%+...`);
-        // Don't setLoading(false) yet — autoRehumanize will handle it
-        await autoRehumanize(data);
-      } else {
-        showToast('success', `🎯 90%+ human on first pass!`);
-        navigator.clipboard.writeText(data.fullText).catch(() => {});
-        setLoading(false);
-        setProgress({ pass: 0, max: 0, message: '' });
+      // Show the result immediately. Further refinement is opt-in via the
+      // "Refine further" button — auto-running a multi-round loop on every
+      // humanize was slow, expensive, and could fail mid-loop. Never auto-copy
+      // to the clipboard; that surprised users.
+      if (data.finalScore >= 90) {
+        showToast('success', `🎯 ${data.finalScore}% human on the first pass!`);
+      } else if (flaggedCountFrom(data)) {
+        showToast('info', `${data.finalScore}% human. Click "Refine further" to push it higher.`);
       }
+      setLoading(false);
+      setPipelineStep('');
+      setProgress({ pass: 0, max: 0, message: '' });
     } catch (err: any) {
       showToast('error', err.message || 'Something went wrong');
       setLoading(false);
       setProgress({ pass: 0, max: 0, message: '' });
     }
+  }
+
+  function flaggedCountFrom(data: HumanizationResult): number {
+    try { return detectAI(data.fullText).sentences.filter(s => s.classification !== 'human').length; }
+    catch { return 0; }
   }
 
   function handleCopy() { if (result) { navigator.clipboard.writeText(result.fullText); showToast('success', 'Copied!'); } }
@@ -395,94 +390,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
     if (file) handleFileUpload(file);
   };
 
-  // Auto-continue rehumanization until 100% (called after initial humanize)
-  async function autoRehumanize(initialResult: HumanizationResult) {
-    const { providerId, apiKey } = getApiCredentials();
-    if (!apiKey) return;
-
-    setRehumanizing(true);
-    let currentFullText = initialResult.fullText;
-    let currentScore = initialResult.finalScore;
-    let round = 0;
-    const maxRounds = 8;
-
-    try {
-      while (currentScore < 90 && round < maxRounds) {
-        round++;
-        setPipelineStep(`Refining round ${round}... (${currentScore}% → targeting 90%)`);
-        setProgress({ pass: round, max: maxRounds, message: `Round ${round} — ${currentScore}%` });
-        showToast('info', `🔄 Round ${round}... current: ${currentScore}%`);
-
-        const detection = detectAI(currentFullText);
-        const flagged = detection.sentences.filter((s: any) => s.classification !== 'human').map((s: any) => s.text);
-        if (flagged.length === 0) break;
-
-        const resp = await fetch('/api/rehumanize', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            flaggedSentences: flagged, level: 'ninja', style, tone, customTone,
-            model: providerId, apiKey, fullText: currentFullText, purpose,
-          }),
-        });
-        if (!resp.ok) break;
-        const data = await resp.json();
-        const candidateText = data.fullText;
-        const newDetection = detectAI(candidateText);
-        const newScore = newDetection.score;
-
-        const changed = candidateText.trim() !== currentFullText.trim();
-        if (newScore > currentScore || (newScore === currentScore && changed && data.fallbackUsed)) {
-          currentFullText = candidateText;
-          currentScore = newScore;
-        } else {
-          showToast('warning', changed
-            ? `Stopped auto-refine: round ${round} did not improve the score (${currentScore}% → ${newScore}%).`
-            : `Stopped auto-refine: round ${round} returned no usable changes.`);
-          break;
-        }
-      }
-
-      const finalDetection = detectAI(currentFullText);
-      const origSentences = initialResult.sentences.map((s: any) => s.original);
-      const newSentencesSplit = currentFullText.match(/[^.!?]+[.!?]+[\s]*/g)?.map((s: string) => s.trim()).filter((s: string) => s.length > 0) || [currentFullText.trim()];
-      const maxLen = Math.max(origSentences.length, newSentencesSplit.length);
-      const sentences = [];
-      for (let i = 0; i < maxLen; i++) {
-        sentences.push({
-          original: origSentences[i] || '', humanized: newSentencesSplit[i] || '',
-          alternatives: [], index: i, detectionScore: finalDetection.sentences[i]?.score,
-        });
-      }
-
-      const refinedResult = {
-        ...initialResult, sentences, fullText: currentFullText,
-        passes: initialResult.passes + round,
-        finalScore: finalDetection.score,
-        semanticFidelity: assessSemanticFidelity(inputText, currentFullText),
-        wordCount: { ...initialResult.wordCount, output: countWords(currentFullText) },
-      };
-      setResult(refinedResult);
-      saveHumanizationVersion(refinedResult);
-      setPipelineStep('');
-
-      navigator.clipboard.writeText(currentFullText).catch(() => {});
-      if (finalDetection.score < 90) {
-        setShowComparison(true);
-      }
-      if (finalDetection.score >= 90) {
-        showToast('success', `🎯 90%+ human achieved in ${initialResult.passes + round} total passes!`);
-      } else {
-        showToast('info', `Refined ${round} rounds → ${finalDetection.score}% human. Click rehumanize for more.`);
-      }
-    } catch (err: any) {
-      showToast('error', err.message);
-    } finally {
-      setRehumanizing(false);
-      setLoading(false);
-      setProgress({ pass: 0, max: 0, message: '' });
-    }
-  }
-
   // Re-humanize flagged sentences (manual trigger)
   const handleRehumanize = async () => {
     if (!result) return;
@@ -493,13 +400,13 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
     let currentFullText = result.fullText;
     let currentScore = result.finalScore;
     let round = 0;
-    const maxRounds = 8;
+    const maxRounds = 3;
 
     try {
       while (currentScore < 90 && round < maxRounds) {
         round++;
         setProgress({ pass: round, max: maxRounds, message: `Round ${round} — ${currentScore}%` });
-        showToast('info', `Re-humanizing round ${round}... (current: ${currentScore}%)`);
+        showToast('info', `Refining round ${round}… (current: ${currentScore}%)`);
 
         const detection = detectAI(currentFullText);
         const flagged = detection.sentences.filter((s: any) => s.classification !== 'human').map((s: any) => s.text);
@@ -531,18 +438,13 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
       }
 
       const finalDetection = detectAI(currentFullText);
-      const origSentences = result.sentences.map((s: any) => s.original);
-      const newSentencesSplit = currentFullText.match(/[^.!?]+[.!?]+[\s]*/g)?.map((s: string) => s.trim()).filter((s: string) => s.length > 0) || [currentFullText.trim()];
-      const maxLen = Math.max(origSentences.length, newSentencesSplit.length);
-      const sentences = [];
-      for (let i = 0; i < maxLen; i++) {
-        sentences.push({
-          original: origSentences[i] || '',
-          humanized: newSentencesSplit[i] || '',
-          alternatives: [], index: i,
-          detectionScore: finalDetection.sentences[i]?.score,
-        });
-      }
+      const sentences = buildSentenceResults(inputText, currentFullText).map((row, i) => ({
+        original: row.original,
+        humanized: row.humanized,
+        alternatives: [] as string[],
+        index: i,
+        detectionScore: finalDetection.sentences[i]?.score,
+      }));
 
       const refinedResult = {
         ...result,
@@ -556,16 +458,15 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
       setResult(refinedResult);
       saveHumanizationVersion(refinedResult);
 
-      navigator.clipboard.writeText(currentFullText).catch(() => {});
       if (finalDetection.score < 90) {
         setShowComparison(true);
       }
       if (finalDetection.score >= 90) {
-        showToast('success', `🎯 90%+ human in ${round} round${round > 1 ? 's' : ''}!`);
+        showToast('success', `🎯 ${finalDetection.score}% human after ${round} round${round > 1 ? 's' : ''}!`);
       } else if (round >= maxRounds) {
-        showToast('info', `Re-humanized ${round} rounds → ${finalDetection.score}% human (max rounds reached)`);
+        showToast('info', `Refined ${round} rounds → ${finalDetection.score}% human (max rounds reached).`);
       } else {
-        showToast('success', `Re-humanized ${round} round${round > 1 ? 's' : ''} → ${finalDetection.score}% human`);
+        showToast('success', `Refined ${round} round${round > 1 ? 's' : ''} → ${finalDetection.score}% human.`);
       }
     } catch (err: any) {
       showToast('error', err.message);
@@ -627,42 +528,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
     showToast('success', 'Grammar corrections applied!');
   };
 
-  // Phase 2: GPTZero detection
-  const handleGPTZeroDetect = async () => {
-    if (!result) return;
-    setGptzeroLoading(true);
-    setGptzeroUnavailable(false);
-    setGptzeroSource(null);
-    try {
-      const [origRes, humRes] = await Promise.all([
-        fetch('/api/detect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: inputText }) }),
-        fetch('/api/detect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: result.fullText }) }),
-      ]);
-
-      const [origData, humData] = await Promise.all([origRes.json(), humRes.json()]);
-      if (!origRes.ok || !humRes.ok || !origData.success || !humData.success) {
-        throw new Error(origData.error || humData.error || 'Detection failed');
-      }
-      // Handle both old and new response formats
-      const origPayload = origData.data ?? origData;
-      const humPayload = humData.data ?? humData;
-      const origScore = typeof origPayload.score === 'number' ? Math.round(origPayload.score * 100) : null;
-      const humScore = typeof humPayload.score === 'number' ? Math.round(humPayload.score * 100) : null;
-      setGptzeroOriginal(origScore);
-      setGptzeroHumanized(humScore);
-      const source = origPayload.source === 'local-fallback' || humPayload.source === 'local-fallback' ? 'local-fallback' : 'gptzero';
-      setGptzeroSource(source);
-      setGptzeroUnavailable(source === 'local-fallback');
-      showToast(source === 'gptzero' ? 'success' : 'warning', source === 'gptzero'
-        ? 'GPTZero scores loaded!'
-        : 'GPTZero API key unavailable or failed; showing local detector fallback.');
-    } catch {
-      showToast('error', 'GPTZero detection failed.');
-    } finally {
-      setGptzeroLoading(false);
-    }
-  };
-
   // Phase 3: PDF export
   const handleExportPDF = async () => {
     if (!result) return;
@@ -675,8 +540,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         humanizedText: result.fullText,
         scores: {
           localScore: localDetection.score,
-          gptzeroOriginal,
-          gptzeroHumanized,
         },
         date: new Date().toLocaleString(),
       });
@@ -1250,37 +1113,44 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
             </div>
 
             {/* Action buttons after humanization */}
-            <div className="mt-3 flex gap-2 flex-wrap">
-              <button onClick={handleRehumanize} disabled={rehumanizing || flaggedCount === 0}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <RotateCcw className={`w-4 h-4 ${rehumanizing ? 'animate-spin' : ''}`} />
-                {rehumanizing ? 'Re-humanizing...' : `🔄 Re-Humanize to 90%+ (${flaggedCount} flagged)`}
-              </button>
-              <button onClick={handleGrammarCheck} disabled={grammarChecking}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <CheckCircle className={`w-4 h-4 ${grammarChecking ? 'animate-spin' : ''}`} />
-                {grammarChecking ? 'Checking...' : '📝 Grammar Check'}
-              </button>
-              <button onClick={handleGPTZeroDetect} disabled={gptzeroLoading}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50">
-                <Shield className={`w-4 h-4 ${gptzeroLoading ? 'animate-pulse' : ''}`} />
-                {gptzeroLoading ? 'Scoring...' : '🔍 GPTZero Scores'}
-              </button>
-              <a href="https://zerogpt.com" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors">
-                <Shield className="w-4 h-4" />
-                🔗 ZeroGPT (Check AI)
-              </a>
-              <button onClick={handleExportPDF}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">
-                <Download className="w-4 h-4" />
-                📄 Export PDF
-              </button>
-              <button onClick={() => setShowComparisonChart(!showComparisonChart)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors">
-                <BarChart2 className="w-4 h-4" />
-                📊 Chart
-              </button>
+            <div className="mt-3 flex flex-col gap-3">
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={handleRehumanize} disabled={rehumanizing || flaggedCount === 0}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-yellow-500/15 text-yellow-300 hover:bg-yellow-500/25 border border-yellow-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <RotateCcw className={`w-4 h-4 ${rehumanizing ? 'animate-spin' : ''}`} />
+                  {rehumanizing ? 'Refining…' : `Refine further (${flaggedCount} flagged)`}
+                </button>
+                <button onClick={handleGrammarCheck} disabled={grammarChecking}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500/15 text-blue-300 hover:bg-blue-500/25 border border-blue-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <CheckCircle className={`w-4 h-4 ${grammarChecking ? 'animate-spin' : ''}`} />
+                  {grammarChecking ? 'Checking…' : 'Grammar check'}
+                </button>
+                <button onClick={handleExportPDF}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-dark-700/60 text-dark-200 hover:bg-dark-700 border border-dark-600/50 transition-colors">
+                  <Download className="w-4 h-4" /> Export PDF
+                </button>
+                <button onClick={() => setShowComparisonChart(!showComparisonChart)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-dark-700/60 text-dark-200 hover:bg-dark-700 border border-dark-600/50 transition-colors">
+                  <BarChart2 className="w-4 h-4" /> Compare chart
+                </button>
+              </div>
+
+              {/* Verify online — external detectors, no API key required */}
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <span className="text-dark-500">Verify with an external detector:</span>
+                <a href="https://gptzero.me" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium bg-dark-700/60 text-dark-200 hover:text-white hover:bg-dark-700 border border-dark-600/50 transition-colors">
+                  <Shield className="w-3.5 h-3.5" /> GPTZero
+                </a>
+                <a href="https://zerogpt.com" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium bg-dark-700/60 text-dark-200 hover:text-white hover:bg-dark-700 border border-dark-600/50 transition-colors">
+                  <Shield className="w-3.5 h-3.5" /> ZeroGPT
+                </a>
+                <a href="https://copyleaks.com/ai-content-detector" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium bg-dark-700/60 text-dark-200 hover:text-white hover:bg-dark-700 border border-dark-600/50 transition-colors">
+                  <Shield className="w-3.5 h-3.5" /> Copyleaks
+                </a>
+              </div>
             </div>
           </div>
         )}
@@ -1388,33 +1258,6 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         </div>
       )}
 
-      {/* Phase 2: GPTZero before/after scores */}
-      {result && (gptzeroOriginal !== null || gptzeroHumanized !== null || gptzeroUnavailable) && (
-        <div className="bg-dark-800/50 border border-purple-500/30 rounded-xl p-4 animate-fade-in">
-          <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-purple-400" /> {gptzeroSource === 'local-fallback' ? 'Local Detection Fallback' : 'GPTZero Detection'} — Before vs After
-          </h3>
-          {gptzeroUnavailable && (
-            <p className="text-sm text-yellow-400 mb-3">⚠️ Official GPTZero API scoring requires <code className="bg-dark-700 px-1 rounded text-xs">GPTZERO_API_KEY</code>. These numbers are from the local fallback detector, not GPTZero. <a href="https://gptzero.me/" target="_blank" rel="noreferrer" className="underline hover:text-yellow-300">Open GPTZero</a></p>
-          )}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-dark-700/30 rounded-lg p-4 text-center">
-              <p className="text-xs text-dark-400 mb-1">Original (AI probability)</p>
-              <p className={`text-3xl font-bold ${gptzeroOriginal !== null && gptzeroOriginal > 50 ? 'text-red-400' : 'text-green-400'}`}>
-                {gptzeroOriginal !== null ? `${gptzeroOriginal}%` : '—'}
-              </p>
-              <p className="text-xs text-dark-500 mt-1">Before humanization</p>
-            </div>
-            <div className="bg-dark-700/30 rounded-lg p-4 text-center">
-              <p className="text-xs text-dark-400 mb-1">Humanized (AI probability)</p>
-              <p className={`text-3xl font-bold ${gptzeroHumanized !== null && gptzeroHumanized > 50 ? 'text-red-400' : 'text-green-400'}`}>
-                {gptzeroHumanized !== null ? `${gptzeroHumanized}%` : '—'}
-              </p>
-              <p className="text-xs text-dark-500 mt-1">After humanization</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Phase 4: Comparison chart */}
       {result && showComparisonChart && (
@@ -1432,41 +1275,35 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         </div>
       )}
 
-      {/* Stats */}
+      {/* Run details — slim footer bar (non-redundant with the Improvement Summary) */}
       {result && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 animate-slide-up">
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className="text-xl font-bold text-accent-400">{result.wordCount.input}</p>
-            <p className="text-xs text-dark-400">Input Words</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className="text-xl font-bold text-accent-400">{result.wordCount.output}</p>
-            <p className="text-xs text-dark-400">Output Words</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className="text-sm font-bold text-accent-400">{result.modelName}</p>
-            <p className="text-xs text-dark-400">Model</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className={`text-xl font-bold ${detection ? getScoreColor(detection.score) : 'text-dark-400'}`}>~{detection?.score || 0}%</p>
-            <p className="text-xs text-dark-400">Est. Human Score</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className="text-xl font-bold text-dark-200">{result.passes}</p>
-            <p className="text-xs text-dark-400">Passes</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className="text-xl font-bold text-dark-200">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-dark-400 px-1 animate-fade-in">
+          <span className="flex items-center gap-1.5">
+            <span className="text-dark-500">Model:</span>
+            <span className="text-dark-200 font-medium">{result.modelName}</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-dark-500">Passes:</span>
+            <span className="text-dark-200 font-medium">{result.passes}</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-dark-500">Confidence:</span>
+            <span className="text-dark-200 font-medium">
               {typeof result.confidenceReport?.confidence === 'number' ? `${result.confidenceReport.confidence}%` : 'N/A'}
-            </p>
-            <p className="text-xs text-dark-400">Confidence</p>
-          </div>
-          <div className="glass-card rounded-xl p-3 text-center">
-            <p className={`text-xs font-bold ${result.fallbackBehavior?.used ? 'text-yellow-400' : 'text-green-400'}`}>
-              {result.fallbackBehavior?.used ? 'Enabled' : 'Not Used'}
-            </p>
-            <p className="text-xs text-dark-400">Fallback Guard</p>
-          </div>
+            </span>
+          </span>
+          {typeof result.observability?.estimatedCostUsd === 'number' && result.observability.estimatedCostUsd > 0 && (
+            <span className="flex items-center gap-1.5">
+              <span className="text-dark-500">Est. cost:</span>
+              <span className="text-dark-200 font-medium">${result.observability.estimatedCostUsd.toFixed(4)}</span>
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <span className="text-dark-500">Fallback guard:</span>
+            <span className={`font-medium ${result.fallbackBehavior?.used ? 'text-yellow-400' : 'text-green-400'}`}>
+              {result.fallbackBehavior?.used ? 'engaged' : 'not needed'}
+            </span>
+          </span>
         </div>
       )}
 

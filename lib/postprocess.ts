@@ -43,6 +43,25 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
+// Ensure every sentence (and the start of the text) begins with a capital letter.
+// The various transformation passes (sentence merge/split, synonym swaps) can leave
+// a sentence starting lowercase; this restores correct casing without touching the
+// interior of words. Skips likely abbreviations (e.g. "U.S.", "Dr.", "e.g.") by
+// not capitalizing after a 1-2 letter token that ends in a period.
+const ABBREVIATION_TAIL = /(?:^|\s)(?:[A-Za-z]\.){1,2}$|(?:Dr|Mr|Mrs|Ms|Prof|Sr|Jr|St|vs|etc|e\.g|i\.e|cf|approx|Inc|Ltd|Co|Corp|No)\.$/;
+
+function capitalizeSentenceStarts(text: string): string {
+  return text.replace(
+    /(^|[.!?]["')\]]?\s+|\n\s*)([a-z])/g,
+    (match, prefix: string, ch: string, offset: number) => {
+      // Avoid capitalizing right after an abbreviation ("e.g. word" -> "e.g. Word").
+      const before = text.slice(0, offset + prefix.length);
+      if (ABBREVIATION_TAIL.test(before)) return match;
+      return prefix + ch.toUpperCase();
+    }
+  );
+}
+
 // Detect if a word looks like a proper noun (starts with uppercase mid-sentence)
 function looksLikeProperNoun(word: string, position: number, sentence: string): boolean {
   if (position === 0) return false; // First word of sentence is always capitalized
@@ -192,7 +211,12 @@ function stripAIDashes(text: string): string {
   const RANGE_PLACEHOLDER = 'RANGE';
   return text
     .replace(/(\d)\s*[–—]\s*(\d)/g, `$1${RANGE_PLACEHOLDER}$2`)
-    .replace(/\s*[—–]\s*/g, ', ')
+    // 2. Dash immediately followed by punctuation -> drop the dash, keep punctuation
+    .replace(/\s*[–—]\s*(?=[.!?,;:)\]"'…])/g, '')
+    // 3. Dash at the start of a sentence -> drop it (no leading comma)
+    .replace(/(^|[\n.!?]["')\]]?\s+)[–—]\s*/g, '$1')
+    // 4. Any remaining clausing/parenthetical dash -> ", " (a normal comma splice)
+    .replace(/\s*[–—]\s*/g, ', ')
     .replace(new RegExp(RANGE_PLACEHOLDER, 'g'), '–');
 }
 
@@ -228,18 +252,10 @@ function addPunctuationNoise(text: string): string {
     }
   }
 
-  // 5% chance: semicolon between related sentences (replace ". " with "; ")
-  if (chance(0.05)) {
-    const periodSpaces = Array.from(result.matchAll(/\.\s+(?=[A-Z])/g));
-    if (periodSpaces.length > 0) {
-      const p = randomPick(periodSpaces);
-      if (p.index !== undefined && p.index > 0) {
-        const before = result.slice(0, p.index);
-        const after = result.slice(p.index + p[0].length);
-        result = before + '; ' + after.charAt(0).toLowerCase() + after.slice(1);
-      }
-    }
-  }
+  // NOTE: a previous 5% "merge two sentences with a semicolon + lowercase the
+  // second" transform was removed. It destroyed sentence boundaries and casing
+  // (turning "Done. Never share keys." into "Done; never share keys."), which
+  // both reads worse and broke safety-text preservation. Kept out on purpose.
 
   // Contractions expansion/randomization
   if (chance(0.15)) {
@@ -260,24 +276,6 @@ function addPunctuationNoise(text: string): string {
 
 // ==================== 2d. SENTENCE LENGTH MANIPULATION ====================
 
-const FILLER_PHRASES = [
-  'in my experience,',
-  'from what I\'ve seen,',
-  'I\'d argue that',
-  'honestly,',
-  'the way I see it,',
-  'from my perspective,',
-  'if you think about it,',
-  'interestingly,',
-  'to be fair,',
-  'in practice,',
-  'at least in my view,',
-  'one thing that stands out is',
-  'what strikes me is',
-  'it\'s worth pointing out that',
-  'as far as I can tell,',
-];
-
 function manipulateSentenceLengths(text: string): string {
   const sentences = splitSentences(text);
   const result: string[] = [];
@@ -287,20 +285,11 @@ function manipulateSentenceLengths(text: string): string {
     const words = sentence.trim().split(/\s+/);
     const wc = words.length;
 
-    // Merge two consecutive short sentences (both < 8 words) with 20% chance
-    if (
-      wc < 8 && i < sentences.length - 1 &&
-      sentences[i + 1].trim().split(/\s+/).length < 8 &&
-      chance(0.20)
-    ) {
-      const next = sentences[i + 1].trim();
-      const conjunction = randomPick(['and', 'but', 'while', 'whereas']);
-      const merged = sentence.trim().replace(/[.!?]+$/, '') + ', ' + conjunction + ' ' +
-        next.charAt(0).toLowerCase() + next.slice(1);
-      result.push(merged);
-      i++; // Skip next sentence
-      continue;
-    }
+    // NOTE: a previous "merge two short sentences with a conjunction + lowercase
+    // the second" transform was removed. It lowercased the second sentence's
+    // opening word, which broke proper nouns and safety-critical phrasing
+    // ("Never share keys" -> "and never share keys"). Splitting long sentences
+    // below is kept because it capitalizes correctly.
 
     // Split long sentences (>30 words) at a natural break point with 30% chance
     if (wc > 30 && chance(0.30)) {
@@ -532,27 +521,20 @@ function injectHumanVoice(text: string, model: CorpusStyleModel): string {
     }
   }
 
-  // Occasionally start a sentence with a conjunction (10% chance per paragraph)
-  if (chance(0.10)) {
-    const paragraphs = splitParagraphs(result);
-    const pIdx = Math.floor(Math.random() * paragraphs.length);
-    const sentences = splitSentences(paragraphs[pIdx]);
-    if (sentences.length > 1) {
-      const sIdx = 1 + Math.floor(Math.random() * (sentences.length - 1));
-      const conjunction = randomPick(['And', 'But', 'So', 'Plus']);
-      sentences[sIdx] = conjunction + ' ' + sentences[sIdx].charAt(0).toLowerCase() + sentences[sIdx].slice(1);
-      paragraphs[pIdx] = sentences.join(' ');
-      result = joinParagraphs(paragraphs);
-    }
-  }
+  // NOTE: We intentionally do NOT inject conjunction sentence-starters
+  // ("And ...", "But ...", "So ...") here. Prepending them forced lowercasing
+  // the following word, which broke proper nouns ("Google" -> "google"), and
+  // starting sentences with conjunctions at a fixed rate is itself an AI tic
+  // that detectors learn. The LLM rewrite + contraction balancing already
+  // supply enough sentence-variety without this risk.
 
-  // Occasionally add a parenthetical aside (5% chance)
-  if (chance(0.05)) {
-    const asides = ['which is interesting', 'interestingly', 'if you think about it', 'at least that\'s the idea', 'in my view'];
+  // Occasionally add a short parenthetical aside (low rate; in-place, never an orphan)
+  if (chance(0.04)) {
+    const asides = ['which is worth noting', 'interestingly', 'if you think about it', 'at least in principle', 'in practice'];
     const aside = randomPick(asides);
-    // Insert before the last period
+    // Insert before the last period of the final sentence only
     const lastPeriod = result.lastIndexOf('.');
-    if (lastPeriod > 20) {
+    if (lastPeriod > 40) {
       result = result.slice(0, lastPeriod) + ` (${aside})` + result.slice(lastPeriod);
     }
   }
@@ -599,12 +581,12 @@ function aggressiveSynonymSwap(text: string, style?: StylePreset): string {
     [/\bhas the potential to\b/gi, ['could', 'might', 'stands to']],
     [/\bin today's world\b/gi, ['now', 'these days', 'right now']],
     [/\bin the modern era\b/gi, ['now', 'these days']],
-    [/\bin conclusion\b/gi, ['']],
-    [/\bin summary\b/gi, ['']],
-    [/\bto summarize\b/gi, ['']],
-    [/\bit is important to note\b/gi, ['']],
-    [/\bit is worth noting(?: that)?\b/gi, ['']],
-    [/\bit is worth mentioning\b/gi, ['']],
+    [/\bin conclusion\b/gi, ['overall', 'so', 'in short']],
+    [/\bin summary\b/gi, ['in short', 'overall', 'to sum up']],
+    [/\bto summarize\b/gi, ['in short', 'overall', 'in brief']],
+    [/\bit is important to note\b/gi, ['notably', 'worth noting', 'keep in mind']],
+    [/\bit is worth noting(?: that)?\b/gi, ['worth noting', 'notably', 'keep in mind']],
+    [/\bit is worth mentioning\b/gi, ['worth mentioning', 'notably', 'also']],
     [/\bdelves? into\b/gi, ['looks at', 'digs into', 'explores']],
     [/\blandscape\b/gi, ['space', 'area', 'world', 'field']],
     [/\bmultifaceted\b/gi, ['complex', 'complicated', 'many-sided']],
@@ -640,61 +622,63 @@ function aggressiveSynonymSwap(text: string, style?: StylePreset): string {
   return result;
 }
 
-// ==================== 2h. FLOW DISRUPTION ====================
+// ==================== 2h. FLOW SOFTENING (in-place only) ====================
+//
+// IMPORTANT: This step must NEVER create a new standalone sentence. Earlier
+// versions spliced in detached interjections ("Right.", "Honestly?", "Makes
+// you wonder, right?") and rhetorical questions as their own sentences. Those
+// orphans read as broken/incomplete text, misalign the sentence-level diff,
+// and themselves register as an AI tic. We now only MODIFY existing sentences
+// in place (soften stiff openers) — no insertions, no splices.
+
+function softenStiffOpeners(sentence: string, isFormal: boolean): string {
+  const trimmed = sentence.trimStart();
+  // Only re-touch a sentence occasionally and only if it begins with a stiff
+  // AI-typical phrase. Keep the sentence complete and grammatically correct.
+  const stiffFormal: [RegExp, string][] = [
+    [/^It is important to note that\b/i, 'Notably,'],
+    [/^It is worth noting that\b/i, 'Worth noting:'],
+    [/^It should be noted that\b/i, 'Note that'],
+    [/^It is evident that\b/i, 'Clearly,'],
+    [/^In conclusion,?\s*/i, 'Overall,'],
+    [/^In summary,?\s*/i, 'In short,'],
+    [/^Furthermore,?\s*/i, 'Also,'],
+    [/^Moreover,?\s*/i, 'On top of that,'],
+    [/^Additionally,?\s*/i, 'Plus,'],
+  ];
+  const stiffCasual: [RegExp, string][] = [
+    [/^In conclusion,?\s*/i, 'So,'],
+    [/^Furthermore,?\s*/i, 'Also,'],
+    [/^Moreover,?\s*/i, 'Plus,'],
+    [/^Additionally,?\s*/i, 'And,'],
+    [/^Therefore,?\s*/i, 'So,'],
+  ];
+  const rules = isFormal ? stiffFormal : [...stiffCasual, ...stiffFormal];
+  for (const [pattern, replacement] of rules) {
+    if (pattern.test(trimmed)) {
+      const rest = trimmed.replace(pattern, '').trim();
+      if (!rest) continue;
+      const lead = sentence.slice(0, sentence.length - trimmed.length); // preserve leading whitespace
+      const firstChar = replacement.charAt(0);
+      return `${lead}${firstChar}${replacement.slice(1)} ${rest.charAt(0).toLowerCase()}${rest.slice(1)}`;
+    }
+  }
+  return sentence;
+}
 
 function disruptFlow(text: string, style?: StylePreset): string {
   const isFormal = style === 'academic' || style === 'professional' || style === 'technical';
   const paragraphs = splitParagraphs(text);
   return paragraphs.map(p => {
     const sentences = splitSentences(p);
-    if (sentences.length < 2) return p;
+    if (sentences.length === 0) return p;
 
-    const result = [...sentences];
-
-    if (isFormal) {
-      // Formal: mild insertions — parenthetical asides, qualifying clauses
-      if (chance(0.20) && result.length >= 3) {
-        const formalInsertions = [
-          '— though this remains debated',
-          '— at least in principle',
-          'which is worth considering.',
-          'notably.',
-          '— a point worth emphasizing.',
-          'in practice.',
-        ];
-        const idx = 1 + Math.floor(Math.random() * (result.length - 1));
-        result.splice(idx, 0, randomPick(formalInsertions));
-      }
-      // Formal: start with a transition rather than a conjunction
-      if (chance(0.15)) {
-        const formalStarters = ['Importantly, ', 'In practice, ', 'Notably, ', 'As it turns out, ', 'Looking at the data, '];
-        result[0] = randomPick(formalStarters) + result[0].charAt(0).toLowerCase() + result[0].slice(1);
-      }
-    } else {
-      // Casual/creative: keep current behavior but expanded
-      if (chance(0.30) && result.length >= 3) {
-        const insertions = ['Right.', 'Exactly.', 'Makes sense.', 'Think about that.', 'Hmm.', 'Interesting.', 'Yeah.', 'No, really.', 'Honestly.', 'True story.', 'Funny enough.'];
-        const idx = 1 + Math.floor(Math.random() * (result.length - 1));
-        result.splice(idx, 0, randomPick(insertions));
-      }
-
-      // 20% chance: start with a conjunction
-      if (chance(0.20)) {
-        const conjunctions = ['And ', 'But ', 'So ', 'Plus ', 'Then again, ', 'OK, ', 'Well, '];
-        result[0] = randomPick(conjunctions) + result[0].charAt(0).toLowerCase() + result[0].slice(1);
-      }
+    // Soften at most ONE stiff opener per paragraph, in place. No insertions.
+    if (chance(0.35)) {
+      const targetIdx = Math.floor(Math.random() * sentences.length);
+      sentences[targetIdx] = softenStiffOpeners(sentences[targetIdx], isFormal);
     }
-
-    // 15% chance: add a rhetorical question (both styles)
-    if (chance(0.15) && result.length >= 2) {
-      const questions = isFormal
-        ? ['Why does this matter?', 'What are the implications?', 'Is this correlation or causation?', 'How significant is this finding?']
-        : ['Makes you wonder, right?', 'Sound familiar?', 'Who would have thought?', 'And is that really so surprising?'];
-      const idx = Math.floor(Math.random() * result.length);
-      result.splice(idx, 0, randomPick(questions));
-    }
-
-    return result.join(' ');
+    return sentences.join(' ');
   }).join('\n\n');
 }
 
@@ -744,7 +728,10 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
       .replace(/,\s*,/g, ',')
       .replace(/\s+,/g, ',')
       .replace(/\s{2,}/g, ' ')
-      .trim();
+      .trim()
+      .split(/\n/)
+      .map(line => capitalizeSentenceStarts(line))
+      .join('\n');
   }
 
   // Full post-processing pipeline
@@ -785,6 +772,9 @@ export function postprocess(text: string, options?: PostProcessOptions): string 
     .replace(/\s+,/g, ',')
     .replace(/\s{2,}/g, ' ')
     .trim();
+
+  // Restore correct sentence-start capitalization as a final safety net.
+  result = capitalizeSentenceStarts(result);
 
   return result;
 }

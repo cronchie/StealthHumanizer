@@ -132,6 +132,13 @@ CRITICAL RULES — Follow these EXACTLY:
    - Avoid highly repetitive starting structures (e.g., don't start every paragraph with "The" or "In addition").
    - Ensure the flow is logical and easy to read.
 
+6. GRAMMAR & COMPLETENESS (CRITICAL):
+   - Every sentence MUST be grammatically complete and stand on its own.
+   - NEVER produce a sentence fragment, a dangling clause, or an unfinished thought.
+   - NEVER insert a disconnected interjection ("Honestly?", "Right.", "Look,", "But wait,") as its own sentence — if you use one, fold it into a complete sentence.
+   - Punctuation must be correct. No stray commas, no broken punctuation, no mid-sentence em-dashes left dangling.
+   - Keep the same paragraph breaks as the original.
+
 OUTPUT: Return ONLY the rewritten text. No explanations.`;
 
 // ==================== LEVEL-SPECIFIC INSTRUCTIONS ====================
@@ -155,7 +162,7 @@ Rewrite the text to sound completely natural and human, stripping away all predi
 const STYLE_OVERLAYS: Record<StylePreset, string> = {
   humanize: `Style: General Natural. Write clearly and naturally. Avoid overly formal academic language unless the topic demands it.`,
   academic: `Style: Academic but real. Like a student paper, not a journal article. Use "I" sometimes. Cite casually: "Smith (2023) makes a good point about this." Don't over-explain.`,
-  casual: `Style: Super casual. Like texting a friend who asked about this. Contractions everywhere. "Honestly," "basically," "kind of." Sentence fragments are fine.`,
+  casual: `Style: Casual and friendly, like explaining something to a friend. Use contractions freely. Keep it relaxed and conversational, but every sentence must still be complete and grammatically correct — no fragments or unfinished thoughts.`,
   professional: `Style: Professional but real person. Direct, specific, no buzzwords. Short paragraphs. "We found" not "It was discovered."`,
   creative: `Style: Vivid and engaging. Sensory details, fresh comparisons. Unexpected word choices. The writing should feel alive.`,
   technical: `Style: Technical but human. Precise terms, concrete examples. "You'll see" not "It can be observed." Step-by-step.`,
@@ -251,8 +258,8 @@ IMPORTANT: Match this person's writing patterns. If they write short punchy sent
 const PERSONAS: Record<RewriteLevel, string> = {
   light: `You're a student doing a quick proofread. Fix obvious AI patterns. Subtle changes only.`,
   medium: `You're rewriting this in your own words. Make it sound natural and human.`,
-  aggressive: `You're a blogger rewriting this for your audience. Strong voice, interesting, not academic.`,
-  ninja: `You're rewriting this to sound completely natural. Write like a real person — not polished, not perfect, just genuinely human.`,
+  aggressive: `You're a blogger rewriting this for your audience. Strong voice, interesting, not academic — but every sentence must be complete and correct.`,
+  ninja: `You're rewriting this to sound completely natural. Write like a real person — clear, varied, and genuinely human — while keeping every sentence complete, grammatically correct, and faithful to the original meaning.`,
 };
 
 // ==================== MAIN PROMPT GENERATOR ====================
@@ -343,27 +350,28 @@ export function getRehumanizePrompt(
     ? PURPOSE_CONFIGS[purpose].promptOverlay
     : 'Purpose: preserve the original use case and meaning.';
 
-  return `These sentences were flagged as AI-generated. Rewrite each one to sound completely human.
+  return `These sentences were flagged as AI-generated. Rewrite each one so it reads like clear, natural human writing.
 
 ${toneNote}
 ${purposeNote}
 
-RULES FOR EACH SENTENCE:
-- Change the sentence structure completely (don't just swap words)
-- Add a casual opener if possible: "Honestly,", "Basically,", "Look,", "The thing is,"
-- Use contractions
-- Make it shorter or longer than the original (different length = different fingerprint)
-- If it's long (>20 words), split it into two shorter sentences
-- If it's short (<8 words), merge with context or add detail
-- Remove any formal vocabulary: significantly, notably, remarkably, particularly, essentially, fundamentally, ultimately, demonstrates, facilitates, leverages, utilizes, comprehensive, innovative, unprecedented
-- Add personality: em-dash, parenthetical aside, or rhetorical question
-- Never start with "The" followed by a noun
+RULES FOR EACH SENTENCE (follow strictly):
+- Keep the SAME meaning, facts, and details. Do not add, drop, or invent information.
+- Each rewritten sentence MUST be a complete, grammatically correct sentence on its own.
+- NEVER produce a sentence fragment. NEVER leave a sentence unfinished or dangling.
+- NEVER add a disconnected interjection like "Honestly?", "Right.", "But wait,", "Look," as its own line — these read as broken. If you use an opener, weave it into the sentence so it is grammatically complete.
+- Vary sentence structure and length naturally — but every sentence must stand on its own.
+- Use natural contractions where they fit (it's, don't, can't, we're).
+- Replace AI-sounding vocabulary (significantly, notably, remarkably, particularly, essentially, fundamentally, ultimately, demonstrates, facilitates, leverages, utilizes, comprehensive, innovative, unprecedented, furthermore, moreover) with plain, natural wording.
+- Match the register of the original: formal stays formal, casual stays casual.
+- Do NOT use em-dashes (—). Use commas, periods, or semicolons instead.
+- Output exactly ONE rewritten sentence per input sentence, in the same order.
 
 SENTENCES TO REWRITE:
 ${flaggedSentences.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
-Return ONLY a JSON array of strings in the same order, with one rewritten sentence per input sentence. Do not include markdown or explanations.
-Example: ["Honestly, this now sounds more like something a person would actually write.", "Look, the point still holds, but the rhythm feels less canned."]`;
+Return ONLY a JSON array of strings, one complete rewritten sentence per input sentence, in order. No markdown, no commentary.
+Example: ["AI has changed how a lot of businesses get their daily work done.", "Teams that adopt these tools tend to move faster and make fewer routine errors."]`;
 }
 
 // ==================== ENHANCEMENT PROMPTS ====================

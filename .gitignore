@@ -2,6 +2,11 @@
 /node_modules
 /.pnp
 .pnp.js
+
+# build/test scratch logs
+build-output.log
+dev-output.log
+out.txt
 .yarn/install-state.gz
 
 # testing

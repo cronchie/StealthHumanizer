@@ -100,12 +100,12 @@ export const COLLOCATIONS: Collocation[] = [
   { from: 'the purpose of', to: ['why we', 'the point of', 'what we\'re trying to do'] },
   { from: 'the fact that', to: ['that', 'how', 'the reality that'] },
   { from: 'the ability to', to: ['being able to', 'can', 'getting to'] },
-  { from: 'the importance of', to: ['why ... matters', 'how key ... is', 'how important ... is'] },
-  { from: 'the development of', to: ['how ... developed', 'building', 'the rise of'] },
-  { from: 'the implementation of', to: ['putting ... in place', 'rolling out', 'deploying'] },
+  { from: 'the importance of', to: ['the value of', 'the role of', "what's key about"] },
+  { from: 'the development of', to: ['building', 'the rise of', 'the growth of'] },
+  { from: 'the implementation of', to: ['rolling out', 'deploying', 'putting in place'] },
   { from: 'the utilization of', to: ['using', 'the use of', 'how we use'] },
   { from: 'the use of', to: ['using', 'how we use', 'relying on'] },
-  { from: 'the impact of', to: ['how ... affects things', 'what ... does', 'the effect of'] },
+  { from: 'the impact of', to: ['the effect of', 'the result of', 'what comes from'] },
   { from: 'the results of', to: ['what happened when', 'the outcome of', 'what we got from'] },
   { from: 'in conclusion', to: ['to wrap up', 'so yeah', 'basically', 'at the end of the day'] },
   { from: 'to conclude', to: ['to wrap up', 'so', 'anyway', 'long story short'] },
@@ -122,7 +122,9 @@ export const COLLOCATIONS: Collocation[] = [
   { from: 'indicates that', to: ['shows', 'points to', 'suggests', 'gives the sense that'] },
   { from: 'has been shown to', to: ['has proven to', 'we know', 'turns out to'] },
   { from: 'has been proven to', to: ['we\'ve seen that', 'it\'s been shown', 'clearly'] },
-  { from: 'capable of', to: ['able to', 'can', 'equipped to'] },
+  // 'capable of' removed: it takes a gerund ("capable of generating") but the
+  // natural replacements (able to / can / equipped to) take a bare verb, so the
+  // swap produced ungrammatical "can generating". Left intact instead.
   { from: 'responsible for', to: ['in charge of', 'handling', 'taking care of', 'doing'] },
   { from: 'associated with', to: ['linked to', 'tied to', 'connected to', 'related to'] },
   { from: 'according to', to: ['per', 'based on what', 'if you look at', 'says'] },
@@ -177,15 +179,15 @@ export const COLLOCATIONS: Collocation[] = [
   { from: 'deep dive', to: ['closer look', 'detailed look', 'proper examination', 'real analysis'] },
   { from: 'unlocking the potential', to: ['tapping into', 'making the most of', 'getting more out of', 'using'] },
   { from: 'unlocking', to: ['opening up', 'revealing', 'exposing', 'making available'] },
-  { from: 'the intersection of', to: ['where ... meets', 'the overlap between', 'how ... connects to'] },
-  { from: 'at the intersection of', to: ['where ... meets', 'between', 'at the crossroads of'] },
+  { from: 'the intersection of', to: ['the overlap between', 'the crossroads of', 'the meeting point of'] },
+  { from: 'at the intersection of', to: ['between', 'at the crossroads of', 'where'] },
   { from: 'paving the way', to: ['leading to', 'making room for', 'opening the door for', 'setting up'] },
   { from: 'paves the way', to: ['leads to', 'sets up', 'clears the path for', 'makes possible'] },
   { from: 'the backbone of', to: ['the core of', 'what supports', 'the foundation of', 'what holds up'] },
   { from: 'a testament to', to: ['proof of', 'shows that', 'evidence of', 'a sign of'] },
   { from: 'in an ever-changing', to: ['in a changing', 'as things change in', 'in today\'s', 'in a shifting'] },
   { from: 'ever-evolving', to: ['constantly changing', 'always shifting', 'developing', 'moving'] },
-  { from: 'not only... but also', to: ['both... and', 'not just... it also', '...and on top of that'] },
+  { from: 'not only', to: ['not just', 'both'] },
   { from: 'it is imperative that', to: ['we really need to', 'it\'s critical to', 'you have to', 'we must'] },
   { from: 'the landscape of', to: ['the world of', 'the field of', 'the area of', 'the space of'] },
   { from: 'navigating the complexities', to: ['dealing with the complexity', 'working through the complications', 'handling the tricky parts'] },
@@ -224,12 +226,21 @@ export const COLLOCATIONS: Collocation[] = [
   { from: 'a cornerstone of', to: ['a key part of', 'central to', 'essential to', 'a foundation of'] },
   { from: 'stands as', to: ['is', 'serves as', 'works as', 'functions as'] },
   { from: 'encompasses', to: ['includes', 'covers', 'involves', 'contains'] },
-  { from: 'the advent of', to: ['the arrival of', 'the start of', 'the beginning of', 'when ... first appeared'] },
+  { from: 'the advent of', to: ['the arrival of', 'the start of', 'the beginning of'] },
   { from: 'a stark contrast', to: ['a big difference', 'a clear difference', 'totally different from', 'nothing like'] },
   { from: 'delves deeper', to: ['goes deeper', 'looks closer', 'digs into', 'explores further'] },
   { from: 'unparalleled', to: ['unmatched', 'unequaled', 'unrivaled', 'like nothing else'] },
   { from: 'a lens through which', to: ['a way to look at', 'a perspective on', 'an angle for'] },
 ];
+
+// Build a word-boundary-anchored, case-insensitive regex for a string phrase.
+// Word boundaries are CRITICAL: without them, "facilitate" matches inside
+// "facilitated" and leaves a dangling suffix ("make easierd"), and "implement"
+// matches "implementation". This keeps replacements whole-word/whole-phrase.
+function phraseRegex(from: string): RegExp {
+  const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escaped}\\b`, 'gi');
+}
 
 // Match a collocation in text and return replacement
 export function applyCollocation(text: string): string {
@@ -242,10 +253,11 @@ export function applyCollocation(text: string): string {
         result = result.replace(col.from, replacement);
       }
     } else {
-      const regex = new RegExp(col.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const regex = phraseRegex(col.from);
       if (regex.test(result)) {
         const replacement = col.to[Math.floor(Math.random() * col.to.length)];
-        result = result.replace(regex, replacement);
+        // Rebuild the regex: the .test() above advanced lastIndex on a global regex.
+        result = result.replace(phraseRegex(col.from), replacement);
       }
     }
   }
@@ -256,16 +268,15 @@ export function applyCollocation(text: string): string {
 export function applyRandomCollocation(text: string): string {
   const applicable = COLLOCATIONS.filter(col => {
     if (col.from instanceof RegExp) return col.from.test(text);
-    return text.toLowerCase().includes(col.from.toLowerCase());
+    return phraseRegex(col.from).test(text);
   });
   if (applicable.length === 0) return text;
-  
+
   const col = applicable[Math.floor(Math.random() * applicable.length)];
   const replacement = col.to[Math.floor(Math.random() * col.to.length)];
-  
+
   if (col.from instanceof RegExp) {
     return text.replace(col.from, replacement);
   }
-  const regex = new RegExp(col.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-  return text.replace(regex, replacement);
+  return text.replace(phraseRegex(col.from), replacement);
 }
