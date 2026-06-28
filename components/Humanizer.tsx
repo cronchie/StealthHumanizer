@@ -20,6 +20,7 @@ import { addCostEntry } from '@/lib/cost-tracker';
 import { addObservabilityEvent, estimateRunCost } from '@/lib/observability';
 import { saveHumanizationVersion } from '@/lib/version-history';
 import dynamic from 'next/dynamic';
+import { loadStyleConfig, hasUserSystemPrompt, type StyleConfig } from '@/lib/style-config';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart'),
@@ -140,7 +141,8 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   const [writingSample, setWritingSample] = useState('');
 
   // Pipeline options
-  const [enablePostprocess, setEnablePostprocess] = useState(true);
+  const [enablePostprocess, setEnablePostprocess] = useState(false);
+  const [enableStyleCheck, setEnableStyleCheck] = useState(true);
   const [enableChain, setEnableChain] = useState(false);
   const [selectedChainModels, setSelectedChainModels] = useState<string[]>([]);
   const [pipelineStep, setPipelineStep] = useState('');
@@ -158,6 +160,15 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
   // Roadmap features
   const [privacyMode, setPrivacyMode] = useState(false);
 
+  // Style config (user system prompt + schema) and per-sentence violations
+  const [styleConfig, setStyleConfig] = useState<StyleConfig>({ userSystemPrompt: '', schemaSystemPrompt: '' });
+  const [sentenceViolations, setSentenceViolations] = useState<Record<number, string[]>>({});
+  const [sentenceViolationDescriptions, setSentenceViolationDescriptions] = useState<Record<number, string[]>>({});
+  const [keptSentences, setKeptSentences] = useState<Set<number>>(new Set());
+  const [feedbackOpen, setFeedbackOpen] = useState<number | null>(null);
+  const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
+  const [expandedSuggestion, setExpandedSuggestion] = useState<Set<number>>(new Set());
+
   const wordCount = countWords(inputText);
   const [mounted, setMounted] = useState(false);
   // Optimistic default true: avoids SSR/hydration mismatch (localStorage unavailable server-side)
@@ -165,6 +176,7 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
 
   useEffect(() => {
     setMounted(true);
+    setStyleConfig(loadStyleConfig());
     fetch('/api/prompt-profiles')
       .then(r => r.json())
       .then(d => {
@@ -284,20 +296,55 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
         Object.entries(getApiKeys()).map(([provider, key]) => [provider, key?.trim()])
       );
 
-      const response = await fetch('/api/humanize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: inputText, level, style, tone, customTone,
-          model: providerId, apiKey, targetScore, language, writingSample, purpose,
-          maxOutputWords: maxOutputWords || undefined,
-          postprocess: enablePostprocess,
-          chainModels: enableChain ? selectedChainModels : [],
-          apiKeys: allApiKeys,
-        }),
-      });
-      if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || 'Failed'); }
-      const data: HumanizationResult & { success?: boolean } = await response.json();
+      // Reload style config in case it was updated in the Styles tab
+      const currentStyleConfig = loadStyleConfig();
+      setStyleConfig(currentStyleConfig);
+      setSentenceViolations({});
+      setSentenceViolationDescriptions({});
+      setKeptSentences(new Set());
+      setFeedbackOpen(null);
+      setFeedbackText({});
+      setExpandedSuggestion(new Set());
+
+      let data: HumanizationResult & { success?: boolean; violations?: Record<number, string[]>; violationDescriptions?: Record<number, string[]> };
+
+      if (hasUserSystemPrompt(currentStyleConfig)) {
+        // Structured rewrite: violation detection + targeted sentence fixes
+        setPipelineStep('Checking style rules…');
+        const res = await fetch('/api/structured-rewrite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: inputText,
+            userSystemPrompt: currentStyleConfig.userSystemPrompt,
+            schemaSystemPrompt: currentStyleConfig.schemaSystemPrompt,
+            model: providerId,
+            apiKey,
+          }),
+        });
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Failed'); }
+        data = await res.json();
+        setSentenceViolations(data.violations ?? {});
+        setSentenceViolationDescriptions(data.violationDescriptions ?? {});
+        setShowComparison(true);
+      } else {
+        // Generic humanize
+        const response = await fetch('/api/humanize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: inputText, level, style, tone, customTone,
+            model: providerId, apiKey, targetScore, language, writingSample, purpose,
+            maxOutputWords: maxOutputWords || undefined,
+            postprocess: enablePostprocess,
+            chainModels: enableChain ? selectedChainModels : [],
+            apiKeys: allApiKeys,
+          }),
+        });
+        if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || 'Failed'); }
+        data = await response.json();
+      }
+
       setResult(data);
       saveHumanizationVersion(data);
       setPipelineStep('');
@@ -789,6 +836,20 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
                   <Zap className="w-4 h-4 text-accent-400" /> Pipeline Engine
                 </h4>
 
+                {/* Style Guide Check Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-dark-200">Style Guide Check</p>
+                    <p className="text-xs text-dark-500">Run targeted rule enforcement on the rewrite output (requires a user prompt in Styles)</p>
+                  </div>
+                  <button
+                    onClick={() => setEnableStyleCheck(!enableStyleCheck)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${enableStyleCheck ? 'bg-accent-500' : 'bg-dark-600'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${enableStyleCheck ? 'translate-x-5' : ''}`} />
+                  </button>
+                </div>
+
                 {/* Post-Processing Toggle */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -1082,42 +1143,93 @@ export default function Humanizer({ showToast, onGoToSettings, isFirstVisit }: H
             </div>
             <div className="w-full h-64 p-4 glass-card rounded-xl text-white overflow-y-auto">
               {showComparison ? (
-                <div className="space-y-3">
-                  {result.sentences.filter(s => s.original).map((s, i) => {
-                    const score = s.detectionScore ?? 50;
-                    const isFlagged = score < 60;
+                <div className="space-y-4">
+                  {result.sentences.map((s, globalIdx) => {
+                    if (!s.original) return null;
+                    const violations = sentenceViolations[globalIdx] ?? [];
+                    const pillLabels = sentenceViolationDescriptions[globalIdx] ?? violations;
+                    const hasViolation = violations.length > 0;
+                    const isKept = keptSentences.has(globalIdx);
+                    const suggestionExpanded = expandedSuggestion.has(globalIdx);
+                    const isFeedbackOpen = feedbackOpen === globalIdx;
+
+                    if (!hasViolation) {
+                      return (
+                        <p key={globalIdx} className="text-sm text-dark-200 leading-relaxed">{s.humanized}</p>
+                      );
+                    }
+
                     return (
-                      <div key={i} className="group">
-                        <p className="text-dark-500 text-xs line-through mb-1">{s.original}</p>
-                        <div className={`sentence-highlight cursor-pointer p-1.5 rounded border flex items-start justify-between gap-2 ${
-                          !isFlagged ? 'border-green-500/30' : score >= 40 ? 'border-yellow-500/30' : 'border-red-500/30'
-                        }`} onClick={() => handleGetAlternatives(i)}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-dark-200">{s.humanized}</p>
-                            {s.detectionScore !== undefined && (
-                              <span className={`text-xs ${s.detectionScore >= 60 ? 'text-green-400' : s.detectionScore >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                {s.detectionScore}% {isFlagged && '⚠'} •
+                      <div key={globalIdx} className="space-y-1.5">
+                        {/* Original struck through */}
+                        <p className="text-dark-500 text-sm line-through leading-relaxed">{s.original}</p>
+
+                        {/* Violation pills under original */}
+                        {pillLabels.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {pillLabels.map((label, li) => (
+                              <span key={li} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/15 text-orange-300 border border-orange-500/20">
+                                {label}
                               </span>
-                            )}
-                            <ChevronDown className="w-3 h-3 inline text-dark-500 group-hover:text-accent-400" />
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(s.humanized); showToast('success', 'Sentence copied!'); }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-dark-600/50 text-dark-400 hover:text-white transition-all shrink-0"
-                            title="Copy sentence"
-                          >
-                            <Copy className="w-3 h-3" />
-                          </button>
-                        </div>
-                        {expandedSentence === i && alternatives[i] && (
-                          <div className="ml-4 mt-1 space-y-1">
-                            {alternatives[i].map((alt, j) => (
-                              <button key={j} onClick={() => handleSelectAlternative(i, alt)}
-                                className="block w-full text-left text-xs text-dark-300 hover:text-accent-400 px-2 py-1 rounded hover:bg-dark-700/50 transition-colors">
-                                → {alt}
-                              </button>
                             ))}
                           </div>
+                        )}
+
+                        {/* Suggested replacement (collapsible) */}
+                        {isKept ? (
+                          <p className="text-xs text-dark-500 italic">Kept original.</p>
+                        ) : (
+                          <div className="border-l-2 border-orange-500/25 pl-3">
+                            <button
+                              onClick={() => setExpandedSuggestion(prev => {
+                                const next = new Set(prev);
+                                next.has(globalIdx) ? next.delete(globalIdx) : next.add(globalIdx);
+                                return next;
+                              })}
+                              className="flex items-center gap-1 text-xs text-dark-400 hover:text-white transition-colors"
+                            >
+                              <span className="font-medium">Suggested replacement</span>
+                              {suggestionExpanded
+                                ? <ChevronUp className="w-3 h-3" />
+                                : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                            {suggestionExpanded && (
+                              <p className="text-sm text-white leading-relaxed mt-1.5">{s.humanized}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Keep / Feedback actions */}
+                        {!isKept && (
+                          <div className="flex items-center gap-2 pt-0.5">
+                            <button
+                              onClick={() => {
+                                setKeptSentences(prev => new Set([...prev, globalIdx]));
+                                handleSelectAlternative(globalIdx, s.original);
+                              }}
+                              className="px-2.5 py-1 rounded text-xs font-medium bg-dark-700/60 text-dark-200 hover:bg-dark-600/60 hover:text-white border border-dark-600/40 transition-colors"
+                            >
+                              Keep original
+                            </button>
+                            <button
+                              onClick={() => setFeedbackOpen(isFeedbackOpen ? null : globalIdx)}
+                              className="px-2.5 py-1 rounded text-xs font-medium bg-dark-700/60 text-dark-400 hover:text-white border border-dark-600/40 transition-colors"
+                            >
+                              Feedback
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Inline feedback textarea */}
+                        {isFeedbackOpen && (
+                          <textarea
+                            autoFocus
+                            value={feedbackText[globalIdx] ?? ''}
+                            onChange={e => setFeedbackText(prev => ({ ...prev, [globalIdx]: e.target.value }))}
+                            placeholder="What's wrong with this suggestion?"
+                            rows={2}
+                            className="w-full mt-1 px-2 py-1.5 bg-dark-900/60 border border-dark-600/50 rounded text-xs text-white placeholder-dark-600 focus:outline-none focus:ring-1 focus:ring-accent-500/40 resize-none"
+                          />
                         )}
                       </div>
                     );

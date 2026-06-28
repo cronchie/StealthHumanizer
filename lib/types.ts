@@ -242,7 +242,7 @@ export interface Toast {
   message: string;
 }
 
-export type Tab = 'humanizer' | 'batch' | 'detector' | 'dashboard' | 'enhance' | 'history' | 'settings';
+export type Tab = 'humanizer' | 'batch' | 'detector' | 'dashboard' | 'enhance' | 'history' | 'settings' | 'styles';
 
 export type TextPurpose =
   | 'essay' | 'article' | 'blog' | 'email'

@@ -615,6 +615,7 @@ interface GenerationOptions {
   topP?: number;
   maxTokens?: number;
   model?: string;
+  timeoutMs?: number;
 }
 
 // Generic OpenAI-compatible fetch (used by Groq, Together, OpenRouter, DeepInfra, Cerebras)
@@ -652,7 +653,7 @@ async function openAICompatibleGenerate(
           : { max_tokens: options.maxTokens ?? 4096 }),
       };
     })()),
-  });
+  }, options.timeoutMs ?? 30_000, 0);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -792,7 +793,7 @@ async function anthropicCompatibleGenerate(
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     }),
-  });
+  }, options.timeoutMs ?? 30_000, 0);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

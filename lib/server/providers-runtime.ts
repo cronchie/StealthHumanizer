@@ -23,6 +23,7 @@ interface GenerationOptions {
   topP?: number;
   maxTokens?: number;
   model?: string;
+  timeoutMs?: number;
 }
 
 export async function generateWithProvider(
