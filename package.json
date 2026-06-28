@@ -25,7 +25,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "next lint",
     "papers:ingest": "node scripts/papers/ingest-open-access.mjs",
     "papers:version": "node scripts/papers/version-dataset.mjs",
     "papers:analyze": "node scripts/papers/analyze-fulltext.mjs",
